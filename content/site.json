@@ -87,8 +87,8 @@
     },
     "donateBand": {
       "kicker": "Fund the campaign",
-      "heading": "Do not let them do this quietly.",
-      "lede": "They are spending $550 million of public money to do this quietly. Your donation helps make sure Australians find out before it is too late."
+      "heading": "Do not let them get away with it.",
+      "lede": "They are spending $550 million of public money. Your donation helps make sure Australians find out before it is too late."
     },
     "tiers": [
       { "amount": "$65", "outcome": "A letterbox run through a Canberra street" },
@@ -207,7 +207,7 @@
     "lede": "A $550 million works programme is converting Australia's national shrine into an activist billboard, rewriting what it says about Australia and our fallen.",
     "proseHeading": "Our shrine is NOT for politics or activism.",
     "prose": [
-      "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth, and to hold it quietly. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",
+      "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",
       "That has changed. Under the works programme, exhibition floor space is being multiplied, curatorial plans introduce frontier conflict displays and \"contested history\" framing, and the ground beneath the Parade Ground has been excavated. None of it was ever put to Australians as a whole. Until 30 September, it finally is."
     ],
     "changesHeading": "What is actually being changed."

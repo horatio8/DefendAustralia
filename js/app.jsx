@@ -446,7 +446,7 @@ function HomePage({ site }) {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.94) 0%,rgba(10,18,34,.55) 45%,rgba(10,18,34,.12) 75%,rgba(10,18,34,0) 100%)" }}></div>
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
           <MonoKicker color={C.gold}>{site.home.hero.kicker}</MonoKicker>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400 }}>A century of quiet,<br /><span style={{ color: "#C9BFAC", fontStyle: "italic" }}>undone</span> in four years.</h1>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400 }}>A century of honour,<br /><span style={{ color: "#C9BFAC", fontStyle: "italic" }}>undone</span> in four years</h1>
           <div className="m-col" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 64, alignItems: "end", marginTop: 40, paddingBottom: 96 }}>
             <div>
               <p style={{ fontSize: 20, lineHeight: 1.6, maxWidth: 580, color: "#D6CFC2", margin: 0, textWrap: "pretty" }}>{site.home.hero.lede}</p>

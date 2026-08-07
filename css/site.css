@@ -1,0 +1,56 @@
+/* Defend Sacred Ground — global styles */
+
+body { margin:0; background:#FAF6EF; -webkit-font-smoothing:antialiased; font-family:'Public Sans',system-ui,sans-serif; color:#1B1917; }
+a { color:#1F3157; text-decoration:none; }
+::selection { background:#9E1B24; color:#FAF6EF; }
+input, textarea, button { font-family:'Public Sans',system-ui,sans-serif; }
+img { max-width:100%; }
+
+@keyframes dsgRise { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+@keyframes dsgMarquee { from { transform:translateX(0) } to { transform:translateX(-50%) } }
+
+/* Hover states (the prototype used style-hover attributes; classes here replace them) */
+.hov-red:hover { background:#6E1219 !important; }
+.hov-cream:hover { background:#E6DFD2 !important; }
+.hov-navy-fill:hover { background:#1F3157 !important; color:#FAF6EF !important; }
+.hov-navy-fill:hover * { color:#FAF6EF !important; }
+.hov-navy-deep:hover { background:#152340 !important; }
+.hov-link:hover { color:#9E1B24 !important; }
+.hov-link:hover > * { color:#9E1B24 !important; }
+.hov-underline-red:hover { border-bottom-color:#9E1B24 !important; }
+.hov-chip:hover { border-color:#1F3157 !important; background:#EFE7DA !important; }
+.hov-border-red:hover { border-color:#9E1B24 !important; }
+.hov-border-navy:hover { border-color:#1F3157 !important; color:#1F3157 !important; }
+.hov-tile:hover { background:#EFE7DA !important; color:#9E1B24 !important; }
+.hov-row:hover { background:#EFE7DA !important; }
+.hov-opacity:hover { opacity:.88; }
+.hov-ghost-cream:hover { border-color:#FAF6EF !important; }
+.hov-fg-cream:hover { color:#FAF6EF !important; }
+.hov-fg-cream:hover { border-color:#FAF6EF !important; }
+.hov-copy-red:hover { color:#9E1B24 !important; }
+
+/* Focus states */
+.field:focus { border-color:#1F3157 !important; box-shadow:inset 0 0 0 1px #1F3157; }
+.field-thin:focus { border-color:#1F3157 !important; }
+:focus-visible { outline:2px solid #1F3157; outline-offset:2px; }
+
+/* Responsive helpers (carried from the design prototype) */
+@media (max-width:768px){
+  .m-col{ display:block !important }
+  .m-col > * + *{ margin-top:28px }
+  .m-col1{ display:block !important }
+  .m-col1 > * + *{ margin-top:1px }
+  .m-col2{ grid-template-columns:1fr 1fr !important }
+  .m-pad{ padding-left:20px !important; padding-right:20px !important }
+  .m-pad h1{ font-size:40px !important; line-height:1.06 !important }
+  .m-pad h2{ font-size:31px !important }
+  .m-hide{ display:none !important }
+  .m-logo{ height:36px !important }
+  .m-static{ position:static !important; text-align:left !important; padding:24px 20px 0 !important }
+  .m-padtop{ padding-top:24px !important }
+  .m-colrev{ display:flex !important; flex-direction:column-reverse !important; gap:32px !important }
+  .m-menu{ display:flex !important }
+  .m-statsmini > div{ padding:16px 20px !important }
+  .m-statsmini > div > div:first-child{ font-size:24px !important }
+  .m-statsmini > div > div:last-child{ font-size:11px !important; margin-top:6px !important }
+}

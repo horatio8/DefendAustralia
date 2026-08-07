@@ -1,0 +1,267 @@
+{
+  "org": {
+    "name": "Defend Sacred Ground",
+    "domain": "defendsacredground.au",
+    "locale": "en-AU",
+    "currency": "AUD",
+    "petitionSlug": "defend-sacred-ground",
+    "signatureGoal": 100000,
+    "nextMilestone": 50000,
+    "signatureFallbackCount": 41208,
+    "deadlineIso": "2026-09-30",
+    "deadlineLabel": "30 September",
+    "defaultRefCode": "K7QMR4"
+  },
+  "banner": {
+    "label": "Notice",
+    "text": "Submissions close 30 September, then it is done."
+  },
+  "nav": {
+    "links": [
+      { "label": "The Issue", "href": "/the-issue", "page": "issue" },
+      { "label": "About us", "href": "/about-us", "page": "about" },
+      { "label": "News", "href": "/news", "page": "news" }
+    ],
+    "takeAction": [
+      { "label": "Volunteer", "href": "/volunteer", "page": "volunteer" },
+      { "label": "Contact the Minister", "href": "/minister", "page": "minister" },
+      { "label": "Contact us", "href": "/contact", "page": "contact" }
+    ],
+    "menu": [
+      { "label": "Home", "href": "/", "page": "home" },
+      { "label": "The Issue", "href": "/the-issue", "page": "issue" },
+      { "label": "About us", "href": "/about-us", "page": "about" },
+      { "label": "News", "href": "/news", "page": "news" },
+      { "label": "Volunteer", "href": "/volunteer", "page": "volunteer" },
+      { "label": "Contact the Minister", "href": "/minister", "page": "minister" },
+      { "label": "Contact us", "href": "/contact", "page": "contact" },
+      { "label": "Sign the petition", "href": "/take-action/defend-sacred-ground", "page": "petition" }
+    ]
+  },
+  "demands": [
+    "Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia.",
+    "Remove and rescind any plans for the frontier conflict displays.",
+    "Ensure activist or contested history never features in the Memorial."
+  ],
+  "stats": [
+    { "n": "103,000", "label": "Fallen Australians honoured on the Roll", "em": "", "accent": false },
+    { "n": "85 years", "label": "Of unbroken remembrance since 1941", "em": "", "accent": false },
+    { "n": "83,000m²", "label": "Of political activism", "em": "forced onto sacred ground", "accent": true },
+    { "n": "30 Sep", "label": "After this date they never have to listen again", "em": "", "accent": true }
+  ],
+  "changes": [
+    { "tag": "New galleries", "title": "Frontier conflict displays", "img": "/assets/change-gallery.jpg", "pos": "center center", "body": "Exhibition plans set aside space for frontier conflict displays inside the Memorial, a subject Australia's museums already cover, placed instead in the nation's shrine to its war dead." },
+    { "tag": "Reframing", "title": "\"Contested history\" curation", "img": "/assets/change-curation.jpg", "pos": "center center", "body": "Curatorial language recasts commemoration as a debate to be staged, inviting activist framing into rooms built for mourning." },
+    { "tag": "Scale", "title": "A shrine turned exhibition complex", "img": "/assets/change-excavation.jpg", "pos": "center 55%", "body": "83,000 square metres of new floor space, built for exhibitions rather than remembrance, on ground consecrated to 103,000 names." },
+    { "tag": "Process", "title": "Approved in pieces", "img": "/assets/change-documents.jpg", "pos": "center center", "body": "Each stage was assessed alone, so no process ever weighed the whole plan. The heritage review closing 30 September is the first, and last, that can." }
+  ],
+  "timeline": [
+    { "year": "1941", "title": "The Memorial opens", "accent": false, "body": "Charles Bean's idea built in stone: a place of mourning first, a museum second, and quiet by design." },
+    { "year": "2018", "title": "The redevelopment is announced", "accent": false, "body": "A $498m works programme, announced as a completed decision rather than a proposal." },
+    { "year": "2020–23", "title": "Approval, in pieces", "accent": false, "body": "Demolition of Anzac Hall, the Parade Ground excavation, and the new southern entrance are each assessed separately. No process ever weighs the whole." },
+    { "year": "2026", "title": "The heritage review", "accent": true, "body": "The first and last statutory point where the full scale can be tested by someone who did not commission it. Submissions close 30 September." }
+  ],
+  "honourNames": [
+    "R. J. Callaghan · E. M. Hartnett · W. T. Nguyen-Brown · A. K. Papadopoulos · F. G. O'Shea · L. D. Mackellar · S. R. Toohey · H. V. Amundsen · J. J. Ricketson · M. C. Warlpiri · D. A. Fitzgibbon · P. W. Sørensen · G. H. Tan · B. E. Castellano · K. M. O'Donnell · T. R. Blackwood · N. S. Papworth · C. J. Merriweather · V. L. Ashcroft · I. D. Kowalski · ",
+    "S. B. Marchetti · E. F. Woodhouse · R. T. Nakamura · J. P. Callister · A. G. Thistlewaite · M. K. Delaney · O. C. Vandenberg · H. L. Pemberton · W. J. Okafor · F. M. Castellan · L. R. Beaumont · D. G. Hollingsworth · T. A. Ferreira · C. W. MacAlister · P. J. Wetherall · B. N. Sokolov · G. E. Farnsworth · K. D. Abernathy · J. M. Trevelyan · R. S. Lindqvist · "
+  ],
+  "home": {
+    "hero": {
+      "kicker": "Canberra · Anzac Parade · Est. 1941",
+      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object. You still can."
+    },
+    "sign": {
+      "kicker": "The petition",
+      "heading": "Keep the War Memorial to honour our fallen.",
+      "lede": "We call on Australia's leaders and the leaders of the Australian War Memorial to:"
+    },
+    "timelineIntro": {
+      "kicker": "How it came to this",
+      "heading": "Snuck in, in pieces, so no one saw the plan for contested history.",
+      "lede": "They never asked you. Each stage was slipped through alone so no one could object to the whole. Until 30 September they are forced to listen. After that, they never have to again."
+    },
+    "quote": {
+      "text": "“Here is their spirit, in the heart of the land they loved; and here we guard the record which they themselves made.”",
+      "attribution": "Charles Bean · Founder of the Memorial, 1948",
+      "cta": "Do not let them get away with it."
+    },
+    "donateBand": {
+      "kicker": "Fund the campaign",
+      "heading": "Do not let them do this quietly.",
+      "lede": "They are spending $550 million of public money to do this quietly. Your donation helps make sure Australians find out before it is too late."
+    },
+    "tiers": [
+      { "amount": "$65", "outcome": "A letterbox run through a Canberra street" },
+      { "amount": "$265", "outcome": "A full-page ad in a regional paper" },
+      { "amount": "$1,500", "outcome": "A billboard on a Canberra arterial for a month" }
+    ]
+  },
+  "petition": {
+    "heading": "Keep the War Memorial to honour our fallen.",
+    "demandsLede": "We call on Australia's leaders and the leaders of the Australian War Memorial to:",
+    "changesKicker": "What is being changed",
+    "changesHeading": "The changes being made in the name of \"a fuller story\".",
+    "changesCta": "Object before 30 September",
+    "changesCtaNote": "The review is the only formal channel left.",
+    "worksHeading": "What the works actually change",
+    "worksBody": [
+      "The approved programme demolishes Anzac Hall, excavates beneath the Parade Ground, and adds 83,000 square metres of new floor area to a site whose entire architectural argument is restraint.",
+      "The heritage review is the last statutory point at which the scale of the works can be tested by someone who did not commission them. After 30 September there is no further mechanism."
+    ],
+    "worksStats": [
+      { "n": "$550m", "label": "Cost of the works programme" },
+      { "n": "103k", "label": "Names on the Roll of Honour" },
+      { "n": "30 Sep", "label": "Submissions close" }
+    ],
+    "privacyNote": "Your name is lodged with the heritage review. We never sell or share supporter data."
+  },
+  "minister": {
+    "kicker": "Direct action · the Minister",
+    "heading": "Write to the one person who can pause this.",
+    "lede": "It sends from your own address, in your own words. Ministers count individual letters. They discount petitions.",
+    "recipientName": "The Hon. Minister for Veterans' Affairs",
+    "recipientDisplay": "minister@…gov.au",
+    "toEmail": "",
+    "correspondenceEmail": "correspondence@defendsacredground.au",
+    "goesToNote": "Copied to the shadow minister and to correspondence@defendsacredground.au",
+    "variations": [
+      {
+        "subject": "Keep the War Memorial to honour our fallen",
+        "body": "Dear Minister,\n\nI am writing about the plans for the Australian War Memorial.\n\nThe Memorial is not a political vehicle. It is our national shrine, the resting place of the record of 103,000 Australians who died serving the Commonwealth. It must not be used for activism or contested history.\n\nI ask you to do three things:\n\n1. Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia.\n2. Remove and rescind any plans for the frontier conflict displays.\n3. Ensure activist or contested history never features in the Memorial.\n\nThe heritage review closing 30 September is the last point at which Australians can be heard on this. After that there is no further mechanism.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
+      }
+    ],
+    "sentHeading": "Sent. Now they have to answer.",
+    "sentLede": "Ministerial correspondence is logged and counted. Yours is on the record."
+  },
+  "donate": {
+    "kicker": "Fund the campaign",
+    "headingA": "They have $550 million to rewrite our history.",
+    "headingB": "You can stop them for $65.",
+    "lede": "Your donation helps Australians stand up before it is too late, and before our history is rewritten.",
+    "subHeading": "Do not let them get away with this.",
+    "subLede": "Digital reach, letterboxing, and press that puts the plan for the Memorial in front of Australians before submissions close.",
+    "presets": [35, 65, 135, 265, 550, 1500],
+    "outcomes": {
+      "35": "Puts the story in front of 1,400 Australians online.",
+      "65": "A letterbox run through one Canberra street.",
+      "135": "Print flyers for a full weekend of volunteering.",
+      "265": "A full-page ad in a regional paper.",
+      "550": "A week of radio spots in one regional market.",
+      "1500": "A billboard on a Canberra arterial for a month."
+    },
+    "allocation": [
+      "Digital reach: putting the plan in front of Australians who have never heard of it",
+      "Letterbox runs through Canberra and regional suburbs",
+      "Full-page ads in regional and metropolitan papers",
+      "Radio spots in regional markets",
+      "Billboards on Canberra arterials",
+      "Market stalls, town halls and volunteer kits"
+    ],
+    "breakdown": [
+      { "label": "Digital awareness", "detail": "Social and search reach targeted at Australians who have not yet heard about the plans." },
+      { "label": "Print, letterboxing and press", "detail": "Letterbox runs, flyers, and paid placements in regional and metropolitan papers." },
+      { "label": "Events and volunteer materials", "detail": "Market stalls, town halls, signage, and kits for volunteers." },
+      { "label": "Operations", "detail": "Payment processing, web hosting, and compliance." }
+    ],
+    "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible."
+  },
+  "share": {
+    "heading": "Now bring five people with you.",
+    "lede": "Five is the number that moves this. Supporters who recruit five bring in more signatures than any advertisement we have ever run.",
+    "placeholderStats": { "signups": "12", "clicks": "58", "rank": "#340" }
+  },
+  "news": {
+    "heading": "News from the campaign.",
+    "lede": "Updates, social posts, and videos, straight from the campaign. Updated as the fight moves.",
+    "instagramHandle": "@defendsacredground",
+    "youtubeChannelId": "",
+    "posts": [
+      { "title": "55 days to be heard", "img": "/assets/hero-dome-dusk.jpg" },
+      { "title": "The dawn service that started it", "img": "/assets/dawn-service.jpg" },
+      { "title": "Poppies on the Roll", "img": "/assets/poppy-wall.jpg" },
+      { "title": "Cranes over sacred ground", "img": "/assets/cranes.jpg" },
+      { "title": "Town hall — Queanbeyan", "img": "/assets/town-hall.jpg" },
+      { "title": "The stall is back Saturday", "img": "/assets/volunteers-stall.jpg" },
+      { "title": "10,000 letterboxes in July", "img": "/assets/letterbox.jpg" },
+      { "title": "What 83,000m² looks like", "img": "/assets/change-excavation.jpg" }
+    ],
+    "videos": [
+      { "date": "5 AUG 2026", "title": "The review is open. Here is what to say.", "thumb": "/assets/hero-dome-dusk.jpg", "ytId": null },
+      { "date": "28 JULY 2026", "title": "A curator speaks out on the frontier displays", "thumb": "/assets/change-gallery.jpg", "ytId": null },
+      { "date": "19 JULY 2026", "title": "83,000 square metres. Nobody voted for it.", "thumb": "/assets/change-excavation.jpg", "ytId": null },
+      { "date": "8 JULY 2026", "title": "Families of the fallen answer the Memorial Council", "thumb": "/assets/town-hall.jpg", "ytId": null },
+      { "date": "30 JUNE 2026", "title": "What Charles Bean actually intended", "thumb": "/assets/poppy-wall.jpg", "ytId": null },
+      { "date": "21 JUNE 2026", "title": "Approved in pieces: how the plan got through", "thumb": "/assets/change-documents.jpg", "ytId": null }
+    ],
+    "socials": [
+      { "platform": "X", "handle": "@DefendSacredGnd", "color": "#000000", "icon": "x", "url": "" },
+      { "platform": "Instagram", "handle": "@defendsacredground", "color": "#E4405F", "icon": "instagram", "url": "" },
+      { "platform": "Facebook", "handle": "Defend Sacred Ground", "color": "#1877F2", "icon": "facebook", "url": "" },
+      { "platform": "YouTube", "handle": "@DefendSacredGround", "color": "#FF0000", "icon": "youtube", "url": "" },
+      { "platform": "TikTok", "handle": "@defendsacredground", "color": "#010101", "icon": "tiktok", "url": "" }
+    ]
+  },
+  "issue": {
+    "kicker": "The issue",
+    "heading": "A shrine, not a soapbox.",
+    "lede": "A $550 million works programme is converting Australia's national shrine into an activist billboard, rewriting what it says about Australia and our fallen.",
+    "proseHeading": "Our shrine is NOT for politics or activism.",
+    "prose": [
+      "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth, and to hold it quietly. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",
+      "That has changed. Under the works programme, exhibition floor space is being multiplied, curatorial plans introduce frontier conflict displays and \"contested history\" framing, and the ground beneath the Parade Ground has been excavated. None of it was ever put to Australians as a whole. Until 30 September, it finally is."
+    ],
+    "changesHeading": "What is actually being changed."
+  },
+  "about": {
+    "kicker": "About us",
+    "heading": "Ordinary Australians.",
+    "lede": "Veterans, families of the fallen, and people who simply stood at a dawn service once and understood what the quiet was for.",
+    "whoHeading": "Who we are",
+    "who": [
+      "Defend Sacred Ground began around kitchen tables in Canberra and grew through RSL halls, veterans' groups, and families with a name on the Roll of Honour. We hold no office, take no party's money, and want nothing for ourselves.",
+      "We want one thing: that the Australian War Memorial remains what it was built to be, a place that honours Australians who died serving the Commonwealth, free of activism and contested history. When the plans are withdrawn, this campaign winds itself up."
+    ],
+    "directorsKicker": "Directors · Defending Australia Pty Ltd",
+    "directors": [
+      { "name": "Roger Karge", "role": "Founding director · Operations", "photoPlaceholder": "Roger's photo", "bio": "Researcher and editor best known for the Dark Emu Exposed project, which tests popular claims about Australian history against the primary record. Roger runs the campaign's operations and keeps its claims anchored to evidence." },
+      { "name": "Peter O'Brien", "role": "Founding director · Campaign statement", "photoPlaceholder": "Peter's photo", "bio": "Army veteran and writer. Peter drafted the campaign's statement and plan, and leads its dealings with parliamentarians of every party who believe the Memorial should stay above politics." },
+      { "name": "Robert Hill", "role": "Founding director · Manifesto", "photoPlaceholder": "Robert's photo", "bio": "Author of the campaign's manifesto, The Australian War Memorial Is Not a Frontier Conflict Museum: frontier history belongs in history, and the Memorial belongs to those who served Australia." }
+    ],
+    "principles": [
+      { "numeral": "I", "title": "Non-partisan", "body": "No party logos, no candidates, no endorsements. The Memorial belongs to all of us or it belongs to no one." },
+      { "numeral": "II", "title": "Funded by supporters", "body": "The campaign is funded by donations from individual Australians." },
+      { "numeral": "III", "title": "Defending Australia", "body": "Set up for one purpose: to defend Australia and its values, starting with the shrine that holds its war dead above politics." }
+    ]
+  },
+  "volunteer": {
+    "kicker": "Volunteer",
+    "heading": "Give us a Saturday morning.",
+    "lede": "Letterboxes, market stalls, phone shifts. This campaign runs on Australians who show up.",
+    "helpHeading": "How you can help",
+    "helpLede": "Pick whatever fits your life. A coordinator in your area will call you within the week with something concrete to do.",
+    "roles": [
+      "Letterboxing my suburb",
+      "A market stall shift",
+      "Phone calls to supporters",
+      "Dawn service and event support",
+      "Legal or professional help"
+    ]
+  },
+  "contact": {
+    "kicker": "Contact us",
+    "heading": "Talk to the campaign.",
+    "lede": "Questions, media enquiries, or a story about what the Memorial means to your family. A volunteer reads every message.",
+    "beforeHeading": "Before you write",
+    "before": [
+      { "title": "Media enquiries", "body": "Mark your message \"Media\" and include your deadline. A director will come back to you the same day." },
+      { "title": "Want to help?", "body": "The fastest ways are the petition and the letter to the Minister. Both take 10 seconds." },
+      { "title": "Family of the fallen?", "body": "We would be honoured to hear what the Memorial means to you. Your story stays private unless you say otherwise." }
+    ],
+    "topics": ["General", "Media enquiry", "Volunteering", "Donations"]
+  },
+  "footer": {
+    "tagline": "Not affiliated with any political party.",
+    "campaignLines": ["Run by volunteers.", "Funded by supporters.", "Wound up the day the plans are withdrawn."],
+    "legalLine": "Lest we forget"
+  }
+}

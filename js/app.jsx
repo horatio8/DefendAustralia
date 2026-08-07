@@ -442,8 +442,8 @@ function HomePage({ site }) {
     <div>
       {/* hero */}
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
-        <img src="/assets/hero-dome-dusk.jpg" alt="The Australian War Memorial at dusk" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.94) 0%,rgba(10,18,34,.55) 45%,rgba(10,18,34,.12) 75%,rgba(10,18,34,0) 100%)" }}></div>
+        <img src="/assets/hero-dome-dusk.jpg" alt="The Australian War Memorial at dusk" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "brightness(1.14) saturate(1.06)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.8) 0%,rgba(10,18,34,.36) 45%,rgba(10,18,34,.06) 75%,rgba(10,18,34,0) 100%)" }}></div>
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
           <MonoKicker color={C.gold}>{site.home.hero.kicker}</MonoKicker>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400 }}>A century of honour,<br /><span style={{ color: "#C9BFAC", fontStyle: "italic" }}>undone</span> in four years</h1>
@@ -545,17 +545,17 @@ function HomePage({ site }) {
       </div>
 
       {/* quote: editorial offset */}
-      <div style={{ background: C.deep, color: C.cream, overflow: "hidden" }}>
+      <div style={{ background: C.creamMid, color: C.ink, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line, overflow: "hidden" }}>
         <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".25fr 1fr", gap: 24, alignItems: "start" }}>
           <div className="m-hide" style={{ fontFamily: SERIF, fontSize: "clamp(110px,14vw,200px)", lineHeight: .6, color: C.red, marginTop: 26 }}>“</div>
           <div>
-            <div style={{ fontFamily: SERIF, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.22, letterSpacing: ".002em", maxWidth: 900, textWrap: "pretty" }}>{site.home.quote.text}</div>
+            <div style={{ fontFamily: SERIF, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.22, letterSpacing: ".002em", maxWidth: 900, textWrap: "pretty", color: C.navy }}>{site.home.quote.text}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 34 }}>
               <div style={{ width: 44, height: 1, background: C.gold }}></div>
-              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.steel }}>{site.home.quote.attribution}</div>
+              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>{site.home.quote.attribution}</div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24, marginTop: 36 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 26, lineHeight: 1.2, color: C.rose }}>{site.home.quote.cta}</div>
+              <div style={{ fontFamily: SERIF, fontSize: 26, lineHeight: 1.2, color: C.red }}>{site.home.quote.cta}</div>
               <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ fontSize: 14, padding: "16px 28px" })}>Sign the petition</a>
             </div>
           </div>

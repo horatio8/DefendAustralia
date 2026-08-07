@@ -49,7 +49,7 @@ img { max-width:100%; }
 @media (max-width:768px){
   .mob-only{ display:block; }
   .desk-only{ display:none; }
-  .vp-item{ border-left:none !important; padding-left:0 !important; }
+  .vp-item{ border-left:none !important; padding-left:0 !important; justify-content:flex-start !important; }
 }
 
 /* Tighter section spacing on small screens */

@@ -281,6 +281,12 @@ function ValueIcon({ name }) {
       <path d="M4.6 20.4h14.8" />
     </svg>
   );
+  if (name === "ban") return (
+    <svg {...p}>
+      <circle cx="12" cy="12" r="8.4" />
+      <path d="M6.2 6.2l11.6 11.6" />
+    </svg>
+  );
   if (name === "poppy") return (
     <svg {...p}>
       <circle cx="12" cy="5.8" r="2.5" />
@@ -504,9 +510,9 @@ function HomePage({ site }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 30 }}>
             <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>Sign the petition&nbsp;&nbsp;→</a>
           </div>
-          <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 44, padding: "26px 0 40px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
+          <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
             {site.home.valueProps.map((v, i) => (
-              <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", paddingLeft: i ? 20 : 0, paddingRight: 12 }}>
+              <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", padding: "4px 16px" }}>
                 <ValueIcon name={v.icon} />
                 <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: C.navy, fontWeight: 600, lineHeight: 1.45 }}>{v.label}</span>
               </div>

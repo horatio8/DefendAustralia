@@ -73,10 +73,10 @@
       "ledeEm": "You still can."
     },
     "valueProps": [
-      { "icon": "laurel", "label": "Honour our fallen" },
+      { "icon": "shield", "label": "Honour our fallen" },
       { "icon": "institution", "label": "Protect our institutions" },
       { "icon": "poppy", "label": "Defend history" },
-      { "icon": "shield", "label": "Keep politics out" }
+      { "icon": "ban", "label": "Keep politics out" }
     ],
     "sign": {
       "kicker": "The petition",

@@ -46,7 +46,7 @@
   "stats": [
     { "n": "103,000", "label": "Fallen Australians honoured on the Roll", "em": "", "accent": false },
     { "n": "85 years", "label": "Of unbroken remembrance since 1941", "em": "", "accent": false },
-    { "n": "83,000m²", "label": "Of political activism", "em": "forced onto sacred ground", "accent": true },
+    { "n": "83,000m²", "label": "", "em": "Of political activism forced onto sacred ground", "accent": true },
     { "n": "30 Sep", "label": "After this date they never have to listen again", "em": "", "accent": true }
   ],
   "changes": [

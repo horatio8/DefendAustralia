@@ -231,7 +231,7 @@ function Footer({ site }) {
           <div style={col}>Act</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
             <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>Sign the petition</a>
-            <a href="/minister" className="hov-copy-red" style={link}>Write to the Minister</a>
+            <a href="/minister" className="hov-copy-red" style={link}>Contact the Minister</a>
             <a href="/donate" className="hov-copy-red" style={link}>Donate</a>
             <a href="/share" className="hov-copy-red" style={link}>Share your link</a>
           </div>
@@ -537,9 +537,9 @@ function HomePage({ site }) {
           </div>
           <div style={{ border: "1px solid " + C.tanLine, padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", background: C.cream, boxSizing: "border-box" }}>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Action 02 · Your own words</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Write to the Minister</h3>
+            <h3 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Contact the Minister</h3>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px" }}>From your own address, in your own words, on the record. A letter cannot be brushed aside the way they brush aside petitions.</p>
-            <a href="/minister" className="hov-navy-fill" style={btnNavyOutline({ marginTop: "auto", alignSelf: "flex-start", padding: "14px 26px" })}>Write the letter</a>
+            <a href="/minister" className="hov-navy-fill" style={btnNavyOutline({ marginTop: "auto", alignSelf: "flex-start", padding: "14px 26px" })}>Contact the Minister</a>
           </div>
         </div>
       </div>

@@ -39,10 +39,11 @@
     ]
   },
   "demands": [
-    "Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia.",
-    "Reject the frontier conflict displays as false history. Contested revisionist history like this cannot be in the Memorial.",
+    "Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia, as per its charter.",
+    "Describing the frontier conflicts as a war is activist revision. Involving contested history like this dishonours our fallen.",
     "Ensure activist or contested history never features in the Memorial."
   ],
+  "soldiersLine": "Our soldiers did not die to protect a country for activists to destroy or give away.",
   "stats": [
     { "n": "103,000", "label": "Fallen Australians honoured on the Roll", "em": "", "accent": false },
     { "n": "85 years", "label": "Of unbroken remembrance since 1941", "em": "", "accent": false },
@@ -83,7 +84,7 @@
     "quote": {
       "text": "“Here is their spirit, in the heart of the land they loved; and here we guard the record which they themselves made.”",
       "attribution": "Charles Bean · Founder of the Memorial, 1948",
-      "cta": "Our soldiers did not die to protect a country for activists to destroy or give away."
+      "cta": "A shrine, not a soapbox."
     },
     "donateBand": {
       "kicker": "Fund the campaign",
@@ -127,7 +128,7 @@
     "variations": [
       {
         "subject": "Keep the War Memorial to honour our fallen",
-        "body": "Dear Minister,\n\nI am writing about the plans for the Australian War Memorial.\n\nThe Memorial is not a political vehicle. It is our national shrine, the resting place of the record of 103,000 Australians who died serving the Commonwealth. It must not be used for activism or contested history.\n\nI ask you to do three things:\n\n1. Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia.\n2. Reject the frontier conflict displays as false history. Contested revisionist history like this cannot be in the Memorial.\n3. Ensure activist or contested history never features in the Memorial.\n\nThe heritage review closing 30 September is the chance for Australians to be heard on this.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
+        "body": "Dear Minister,\n\nI am writing about the plans for the Australian War Memorial.\n\nThe Memorial is not a political vehicle. It is our national shrine, the resting place of the record of 103,000 Australians who died serving the Commonwealth. It must not be used for activism or contested history.\n\nI ask you to do three things:\n\n1. Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia, as per its charter.\n2. Describing the frontier conflicts as a war is activist revision. Involving contested history like this dishonours our fallen.\n3. Ensure activist or contested history never features in the Memorial.\n\nThe heritage review closing 30 September is the chance for Australians to be heard on this.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
       }
     ],
     "sentHeading": "Sent. Now they have to answer.",
@@ -136,7 +137,7 @@
   "donate": {
     "kicker": "Fund the campaign",
     "headingA": "They have $550 million to rewrite our history.",
-    "headingB": "You can stop them for $65.",
+    "headingB": "You can stop them for less.",
     "lede": "Your donation helps Australians stand up before it is too late, and before our history is rewritten.",
     "subHeading": "Do not let them get away with this.",
     "subLede": "Digital reach, letterboxing, and press that puts the plan for the Memorial in front of Australians before submissions close.",
@@ -156,12 +157,6 @@
       "Radio spots in regional markets",
       "Billboards on Canberra arterials",
       "Market stalls, town halls and volunteer kits"
-    ],
-    "breakdown": [
-      { "label": "Digital awareness", "detail": "Social and search reach targeted at Australians who have not yet heard about the plans." },
-      { "label": "Print, letterboxing and press", "detail": "Letterbox runs, flyers, and paid placements in regional and metropolitan papers." },
-      { "label": "Events and volunteer materials", "detail": "Market stalls, town halls, signage, and kits for volunteers." },
-      { "label": "Operations", "detail": "Payment processing, web hosting, and compliance." }
     ],
     "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible."
   },
@@ -209,10 +204,17 @@
     "prose": [
       "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",
       "That has changed. Under the works programme, exhibition floor space is being multiplied, curatorial plans introduce frontier conflict displays and \"contested history\" framing, and the ground beneath the Parade Ground has been excavated. None of it was ever put to Australians as a whole. Until 30 September, it finally is.",
-      "Make no mistake about why. The activists pushing these changes want to delegitimise Australia and the fact of its settlement, and the nation's shrine is the most sacred platform they can seize for that cause. Our soldiers did not die to protect a country for activists to destroy or give away.",
-      "We reject the false history and narrative that this country was engaged in a widespread frontier war. Compared with other nations, Australia was settled relatively peacefully: research so far suggests only seven British soldiers were killed during Australia's colonisation. That debate belongs in museums and history books. It must not be built into the Memorial."
+      "Make no mistake about why. The activists pushing these changes want to delegitimise Australia and the fact of its settlement, and the nation's shrine is the most sacred platform they can seize for that cause."
     ],
-    "changesHeading": "What is actually being changed."
+    "changesHeading": "What is actually being changed.",
+    "notAWar": {
+      "kicker": "Not a war",
+      "heading": "The frontier conflicts were not a war.",
+      "body": [
+        "Describing the frontier conflicts as a war is activist revision, not history. We reject the false history and narrative that this country was engaged in a widespread frontier war.",
+        "In reality, Australia was settled relatively peacefully compared with other countries: research so far suggests only seven British soldiers were killed during Australia's colonisation. Contested claims like these belong in museums and history books, not in the nation's shrine."
+      ]
+    }
   },
   "about": {
     "kicker": "About us",
@@ -256,7 +258,7 @@
     "beforeHeading": "Before you write",
     "before": [
       { "title": "Media enquiries", "body": "Mark your message \"Media\" and include your deadline. A director will come back to you the same day." },
-      { "title": "Want to help?", "body": "The fastest ways are the petition and the letter to the Minister. Both take 10 seconds." },
+      { "title": "Want to help?", "body": "The fastest way to help is the petition. It takes 10 seconds." },
       { "title": "Family of the fallen?", "body": "We would be honoured to hear what the Memorial means to you. Your story stays private unless you say otherwise." }
     ],
     "topics": ["General", "Media enquiry", "Volunteering", "Donations"]

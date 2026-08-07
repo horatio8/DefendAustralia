@@ -231,7 +231,6 @@ function Footer({ site }) {
           <div style={col}>Act</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
             <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>Sign the petition</a>
-            <a href="/minister" className="hov-copy-red" style={link}>Contact the Minister</a>
             <a href="/donate" className="hov-copy-red" style={link}>Donate</a>
             <a href="/share" className="hov-copy-red" style={link}>Share your link</a>
           </div>
@@ -241,7 +240,7 @@ function Footer({ site }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
             <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>What is being changed</a>
             <a href="/" className="hov-copy-red" style={link}>How it came to this</a>
-            <a href="/minister" className="hov-copy-red" style={link}>Who is responsible</a>
+            <a href="/the-issue" className="hov-copy-red" style={link}>Who is responsible</a>
           </div>
         </div>
         <div>
@@ -262,6 +261,14 @@ function Footer({ site }) {
 }
 
 /* ── shared campaign blocks ──────────────────────────────────────── */
+
+function SoldiersLine({ site }) {
+  return (
+    <div style={{ borderLeft: "3px solid " + C.red, padding: "6px 0 6px 22px", marginBottom: 30 }}>
+      <div style={{ fontFamily: SERIF, fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.25, color: C.navy, maxWidth: 900, textWrap: "pretty" }}>{site.soldiersLine}</div>
+    </div>
+  );
+}
 
 function StatsBand({ site }) {
   return (
@@ -298,7 +305,7 @@ function ChangesGrid({ site }) {
 function CtaBandDark({ title }) {
   return (
     <div style={{ background: C.deep, color: C.cream }}>
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 32, justifyContent: "space-between" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 32, justifyContent: "space-between" }}>
         <div style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1.15, maxWidth: 620 }}>{title}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
           <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ padding: "18px 30px" })}>Sign the petition</a>
@@ -444,13 +451,13 @@ function HomePage({ site }) {
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
         <img src="/assets/hero-dome-day.jpg" alt="The Australian War Memorial under a clear blue sky" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(10,18,34,.78) 0%,rgba(10,18,34,.5) 40%,rgba(10,18,34,.12) 68%,rgba(10,18,34,0) 85%), linear-gradient(to top,rgba(10,18,34,.88) 0%,rgba(10,18,34,.42) 45%,rgba(10,18,34,.08) 75%,rgba(10,18,34,0) 100%)" }}></div>
-        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
+        <div className="p-hero-t" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 44, height: 1, background: C.gold }}></div>
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.cream, textShadow: "0 1px 10px rgba(10,18,34,.65)" }}>{site.home.hero.kicker}</div>
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400, textShadow: "0 2px 28px rgba(10,18,34,.5)" }}>A century of honour,<br /><span style={{ color: "#E6DFD2", fontStyle: "italic" }}>undone</span> in four years</h1>
-          <div className="m-col" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 64, alignItems: "end", marginTop: 40, paddingBottom: 96 }}>
+          <div className="m-col p-sec-b" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 64, alignItems: "end", marginTop: 40, paddingBottom: 96 }}>
             <div>
               <p style={{ fontSize: 20, lineHeight: 1.6, maxWidth: 580, color: "#D6CFC2", margin: 0, textWrap: "pretty" }}>{site.home.hero.lede}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 34 }}>
@@ -468,7 +475,7 @@ function HomePage({ site }) {
 
       {/* sign the petition: primary conversion block */}
       <div id="home-sign" style={{ background: C.creamMid, borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <div>
             <MonoKicker color={C.red}>{site.home.sign.kicker}</MonoKicker>
             <h2 style={{ fontFamily: SERIF, fontSize: 48, lineHeight: 1.04, color: C.navy, margin: "20px 0 18px", fontWeight: 400 }}>{site.home.sign.heading}</h2>
@@ -480,12 +487,13 @@ function HomePage({ site }) {
       </div>
 
       {/* ledger stats */}
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 0", position: "relative" }}>
+      <div className="m-pad p-sec-t" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 0", position: "relative" }}>
+        <SoldiersLine site={site} />
         <StatsBand site={site} />
       </div>
 
       {/* how it came to this: timeline */}
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "104px 28px 96px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "104px 28px 96px" }}>
         <div className="m-col" style={{ display: "grid", gridTemplateColumns: ".9fr 1.6fr", gap: 72, alignItems: "start" }}>
           <div style={{ position: "sticky", top: 100 }} className="m-static">
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{site.home.timelineIntro.kicker}</div>
@@ -521,7 +529,7 @@ function HomePage({ site }) {
       </div>
 
       {/* two actions: asymmetric */}
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 32, marginBottom: 36 }}>
           <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: 0, fontWeight: 400 }}>Two ways to fight back.</h2>
           <div className="m-hide" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, flex: "none" }}>Before 30 September</div>
@@ -539,17 +547,17 @@ function HomePage({ site }) {
             </div>
           </div>
           <div style={{ border: "1px solid " + C.tanLine, padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", background: C.cream, boxSizing: "border-box" }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Action 02 · Your own words</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Contact the Minister</h3>
-            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px" }}>From your own address, in your own words, on the record. A letter cannot be brushed aside the way they brush aside petitions.</p>
-            <a href="/minister" className="hov-navy-fill" style={btnNavyOutline({ marginTop: "auto", alignSelf: "flex-start", padding: "14px 26px" })}>Contact the Minister</a>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Action 02 · A Saturday morning</div>
+            <h3 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Volunteer</h3>
+            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px" }}>Letterboxes, market stalls, phone shifts. This campaign runs on Australians who show up.</p>
+            <a href="/volunteer#signup" className="hov-navy-fill" style={btnNavyOutline({ marginTop: "auto", alignSelf: "flex-start", padding: "14px 26px" })}>Count me in</a>
           </div>
         </div>
       </div>
 
       {/* quote: editorial offset */}
       <div style={{ background: C.creamMid, color: C.ink, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line, overflow: "hidden" }}>
-        <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".25fr 1fr", gap: 24, alignItems: "start" }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".25fr 1fr", gap: 24, alignItems: "start" }}>
           <div className="m-hide" style={{ fontFamily: SERIF, fontSize: "clamp(110px,14vw,200px)", lineHeight: .6, color: C.red, marginTop: 26 }}>“</div>
           <div>
             <div style={{ fontFamily: SERIF, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.22, letterSpacing: ".002em", maxWidth: 900, textWrap: "pretty", color: C.navy }}>{site.home.quote.text}</div>
@@ -566,7 +574,7 @@ function HomePage({ site }) {
       </div>
 
       {/* donate: ledger */}
-      <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
+      <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
         <div>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{site.home.donateBand.kicker}</div>
           <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: "18px 0 16px", fontWeight: 400 }}>{site.home.donateBand.heading}</h2>
@@ -596,7 +604,7 @@ function PetitionPage({ site }) {
       <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 460, display: "flex", alignItems: "flex-end" }}>
         <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.4) 55%,rgba(10,18,34,.2) 100%)" }}></div>
-        <div className="m-pad m-col" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 56px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
+        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 56px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>Petition · {site.org.petitionSlug}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,6.4vw,88px)", lineHeight: .98, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 900, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
@@ -613,7 +621,7 @@ function PetitionPage({ site }) {
 
       {/* petition + form panel */}
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 64, alignItems: "start" }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 64, alignItems: "start" }}>
           <div>
             <h2 style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1.2, color: C.ink, margin: "0 0 30px", maxWidth: 640, textWrap: "pretty", fontWeight: 400 }}>{p.demandsLede}</h2>
             <DemandList site={site} variant="cards" />
@@ -624,7 +632,7 @@ function PetitionPage({ site }) {
 
       {/* activist changes */}
       <div style={{ background: C.creamMid, borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px" }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px" }}>
           <MonoKicker color={C.red}>{p.changesKicker}</MonoKicker>
           <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "18px 0 40px", maxWidth: 760, fontWeight: 400 }}>{p.changesHeading}</h2>
           <ChangesGrid site={site} />
@@ -635,7 +643,7 @@ function PetitionPage({ site }) {
         </div>
       </div>
 
-      <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
         <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{p.worksHeading}</h2>
         {p.worksBody.map((t, i) => (
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === p.worksBody.length - 1 ? "0 0 32px" : "0 0 20px", textWrap: "pretty" }}>{t}</p>
@@ -724,7 +732,7 @@ function MinisterPage({ site }) {
   return (
     <div>
       <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>{m.kicker}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: 54, lineHeight: 1.03, margin: "20px 0 18px", fontWeight: 400 }}>{m.heading}</h1>
@@ -744,7 +752,7 @@ function MinisterPage({ site }) {
       </div>
 
       {!sent ? (
-        <div id="ff-email-form" className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 48, alignItems: "start" }}>
+        <div id="ff-email-form" className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 48, alignItems: "start" }}>
           <div style={{ border: "1px solid " + C.line, padding: 32 }}>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>Your details</div>
             <Honeypot value={hp} onChange={(e) => setHp(e.target.value)} />
@@ -782,7 +790,7 @@ function MinisterPage({ site }) {
           </div>
         </div>
       ) : (
-        <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "80px 28px", animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "80px 28px", animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green }}>Sent</div>
           <h2 style={{ fontFamily: SERIF, fontSize: 50, lineHeight: 1.05, color: C.navy, margin: "16px 0 18px", fontWeight: 400 }}>{m.sentHeading}</h2>
           <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 36px" }}>{m.sentLede}</p>
@@ -839,14 +847,14 @@ function DonatePage({ site }) {
       <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
         <img src="/assets/poppy-wall.jpg" alt="Poppies tucked beside names on the Roll of Honour" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", opacity: .55 }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(15,23,45,.92) 0%,rgba(15,23,45,.6) 55%,rgba(15,23,45,.25) 100%)" }}></div>
-        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "88px 28px" }}>
+        <div className="m-pad p-sec" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "88px 28px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{d.kicker}</div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(34px,5.4vw,72px)", lineHeight: 1.0, margin: "24px 0 0", maxWidth: 980, fontWeight: 400 }}>{d.headingA}<br /><span style={{ color: C.rose }}>{d.headingB}</span></h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "24px 0 0", maxWidth: 600 }}>{d.lede}</p>
         </div>
       </div>
 
-      <div className="m-pad m-colrev" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "start" }}>
+      <div className="m-pad m-colrev p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "start" }}>
         <div>
           <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "0 0 20px", fontWeight: 400 }}>{d.subHeading}</h2>
           <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 36px", maxWidth: 560, textWrap: "pretty" }}>{d.subLede}</p>
@@ -896,23 +904,6 @@ function DonatePage({ site }) {
         </div>
       </div>
 
-      {/* full breakdown */}
-      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line }}>
-        <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 20 }}>The full breakdown</div>
-          <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 28px", lineHeight: 1.15, fontWeight: 400 }}>Where the money goes.</h2>
-          <div style={{ borderTop: "2px solid " + C.navy }}>
-            {d.breakdown.map((b, i) => (
-              <div key={i} style={{ display: "flex", gap: 24, alignItems: "baseline", borderBottom: "1px solid " + C.tanLine, padding: "20px 4px" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>{b.label}</div>
-                  <div style={{ fontSize: 14, color: C.mut, lineHeight: 1.6, marginTop: 4 }}>{b.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -949,12 +940,12 @@ function SharePage({ site }) {
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
         <img src="/assets/dawn-service.jpg" alt="Australians holding candles at a dawn service" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.9) 0%,rgba(10,18,34,.3) 60%,rgba(10,18,34,.15) 100%)" }}></div>
-        <div className="m-pad" style={{ position: "relative", maxWidth: 820, margin: "0 auto", padding: "120px 28px 64px" }}>
+        <div className="m-pad p-hero" style={{ position: "relative", maxWidth: 820, margin: "0 auto", padding: "120px 28px 64px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>Thank you</div>
           <h1 style={{ fontFamily: SERIF, fontSize: 52, lineHeight: 1.05, color: C.cream, margin: "18px 0 0", fontWeight: 400 }}>{s.heading}</h1>
         </div>
       </div>
-      <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
         <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 40px", maxWidth: 600, textWrap: "pretty" }}>{s.lede}</p>
         <div style={{ border: "1px solid " + C.line, padding: 32, marginBottom: 32 }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 18 }}>Your link</div>
@@ -1011,14 +1002,14 @@ function NewsPage({ site }) {
   return (
     <div>
       <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>News &amp; media</div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,5.4vw,72px)", lineHeight: 1.0, margin: "22px 0 0", maxWidth: 900, fontWeight: 400 }}>{n.heading}</h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{n.lede}</p>
         </div>
       </div>
 
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 0" }}>
+      <div className="m-pad p-sec-t" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 0" }}>
         {sectionHead("On Instagram", "Follow " + n.instagramHandle + " →", () => openSocial(n.socials.find((x) => x.icon === "instagram") || { platform: "Instagram" }))}
         <p style={{ fontSize: 15, color: C.mut, margin: "0 0 28px" }}>Latest from {n.instagramHandle}. Tap any tile to open the post.</p>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
@@ -1031,7 +1022,7 @@ function NewsPage({ site }) {
         </div>
       </div>
 
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 0" }}>
+      <div className="m-pad p-sec-t" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 0" }}>
         {sectionHead("Latest videos", "Visit channel →", () => openSocial(n.socials.find((x) => x.icon === "youtube") || { platform: "YouTube" }))}
         <p style={{ fontSize: 15, color: C.mut, margin: "0 0 28px" }}>Pulled from the campaign's YouTube channel. New uploads appear here automatically.</p>
         {active && (
@@ -1062,7 +1053,7 @@ function NewsPage({ site }) {
         {toast && <div style={{ fontSize: 13, color: C.green, marginTop: 18 }}>{toast}</div>}
       </div>
 
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 96px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 96px" }}>
         <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>On the socials</h2>
         <p style={{ fontSize: 15, color: C.mut, margin: "0 0 28px" }}>Follow along across every platform.</p>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 16 }}>
@@ -1087,7 +1078,7 @@ function HeroDark({ img, alt, pos, opacity, kicker, heading, lede }) {
     <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
       <img src={img} alt={alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: pos || "center 40%", opacity: opacity == null ? 1 : opacity }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.94) 0%,rgba(10,18,34,.45) 60%,rgba(10,18,34,.2) 100%)" }}></div>
-      <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 72px" }}>
+      <div className="m-pad p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 72px" }}>
         <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{kicker}</div>
         <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,5.4vw,72px)", lineHeight: 1.0, margin: "24px 0 0", maxWidth: 940, fontWeight: 400 }}>{heading}</h1>
         <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "24px 0 0", maxWidth: 620, textWrap: "pretty" }}>{lede}</p>
@@ -1101,19 +1092,27 @@ function IssuePage({ site }) {
   return (
     <div>
       <HeroDark img="/assets/cranes.jpg" alt="Construction cranes over the Australian War Memorial" opacity={.55} kicker={iss.kicker} heading={iss.heading} lede={iss.lede} />
-      <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
         <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{iss.proseHeading}</h2>
         {iss.prose.map((t, i) => (
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === iss.prose.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
+        <SoldiersLine site={site} />
         <StatsBand site={site} />
       </div>
       <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line }}>
         <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px" }}>
           <h2 style={{ fontFamily: SERIF, fontSize: 40, lineHeight: 1.06, color: C.navy, margin: "0 0 36px", maxWidth: 760, fontWeight: 400 }}>{iss.changesHeading}</h2>
           <ChangesGrid site={site} />
+          <div style={{ background: C.cream, borderLeft: "3px solid " + C.red, border: "1px solid " + C.tanLine, borderLeftWidth: 3, borderLeftColor: C.red, padding: "32px 36px", marginTop: 32 }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>{iss.notAWar.kicker}</div>
+            <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "14px 0 14px", lineHeight: 1.12, fontWeight: 400 }}>{iss.notAWar.heading}</h3>
+            {iss.notAWar.body.map((t, i) => (
+              <p key={i} style={{ fontSize: 16, lineHeight: 1.7, color: C.body, margin: i === iss.notAWar.body.length - 1 ? 0 : "0 0 14px", maxWidth: 820, textWrap: "pretty" }}>{t}</p>
+            ))}
+          </div>
         </div>
       </div>
       <CtaBandDark title={daysLeft(site) + " days to be heard before submissions close."} />
@@ -1126,13 +1125,13 @@ function AboutPage({ site }) {
   return (
     <div>
       <HeroDark img="/assets/volunteers-stall.jpg" alt="Campaign volunteers at a weekend market stall" pos="center 35%" opacity={.6} kicker={a.kicker} heading={a.heading} lede={a.lede} />
-      <div className="m-pad" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
         <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{a.whoHeading}</h2>
         {a.who.map((t, i) => (
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === a.who.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.directorsKicker}</div>
         <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 32 }}>
           {a.directors.map((dr, i) => (
@@ -1148,7 +1147,7 @@ function AboutPage({ site }) {
           ))}
         </div>
       </div>
-      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px" }}>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px" }}>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, background: C.line, border: "1px solid " + C.line }}>
           {a.principles.map((p, i) => (
             <div key={i} style={{ background: C.cream, padding: 32 }}>
@@ -1186,7 +1185,7 @@ function VolunteerPage({ site }) {
   return (
     <div>
       <HeroDark img="/assets/letterbox.jpg" alt="A volunteer letterboxing a suburban street" opacity={.6} kicker={v.kicker} heading={v.heading} lede={v.lede} />
-      <div id="signup" className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "start" }}>
+      <div id="signup" className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "start" }}>
         <div>
           <h2 style={{ fontFamily: SERIF, fontSize: 40, lineHeight: 1.06, color: C.navy, margin: "0 0 18px", fontWeight: 400 }}>{v.helpHeading}</h2>
           <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 28px", maxWidth: 500 }}>{v.helpLede}</p>
@@ -1260,13 +1259,13 @@ function ContactPage({ site }) {
   return (
     <div>
       <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{c.kicker}</div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,5.4vw,72px)", lineHeight: 1.0, margin: "22px 0 0", maxWidth: 900, fontWeight: 400 }}>{c.heading}</h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{c.lede}</p>
         </div>
       </div>
-      <div className="m-pad m-col" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 96px", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 64, alignItems: "start" }}>
+      <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px 96px", display: "grid", gridTemplateColumns: ".85fr 1.15fr", gap: 64, alignItems: "start" }}>
         <div>
           <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 18px", lineHeight: 1.15, fontWeight: 400 }}>{c.beforeHeading}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

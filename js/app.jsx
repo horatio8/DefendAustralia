@@ -505,11 +505,11 @@ function HomePage({ site }) {
           </div>
         </div>
         <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
-          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 640, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{site.home.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{site.home.hero.ledeEm}</span></p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 30 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
             <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>Sign the petition&nbsp;&nbsp;→</a>
           </div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
+          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 640, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{site.home.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{site.home.hero.ledeEm}</span></p>
           <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
             {site.home.valueProps.map((v, i) => (
               <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", padding: "4px 16px" }}>
@@ -579,26 +579,18 @@ function HomePage({ site }) {
       {/* two actions: asymmetric */}
       <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 32, marginBottom: 36 }}>
-          <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: 0, fontWeight: 400 }}>Two ways to fight back.</h2>
+          <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: 0, fontWeight: 400 }}>How you fight back.</h2>
           <div className="m-hide" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, flex: "none" }}>Before 30 September</div>
         </div>
-        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 32, alignItems: "stretch" }}>
-          <div className="m-col" style={{ background: C.navy, color: C.cream, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-            <div style={{ padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.gold }}>Action 01 · Ten seconds</div>
-              <h3 style={{ fontFamily: SERIF, fontSize: 34, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Lodge a submission</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.goldPale, margin: "0 0 24px" }}>They are required to read every named objection. Signing takes 10 seconds. Make them read yours.</p>
-              <a href="/take-action/defend-sacred-ground" className="hov-cream" style={{ ...btnBase, marginTop: "auto", alignSelf: "flex-start", fontSize: 14, color: C.navy, background: C.cream, border: "none", padding: "16px 28px", transition: "background .18s" }}>Sign and lodge</a>
-            </div>
-            <div style={{ position: "relative", minHeight: 260, overflow: "hidden" }}>
-              <img src="/assets/town-hall.jpg" alt="Australians speaking up at a town hall meeting" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
+        <div className="m-col" style={{ background: C.navy, color: C.cream, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+          <div style={{ padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.gold }}>Ten seconds</div>
+            <h3 style={{ fontFamily: SERIF, fontSize: 34, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Lodge a submission</h3>
+            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.goldPale, margin: "0 0 24px" }}>They are required to read every named objection. Signing takes 10 seconds. Make them read yours.</p>
+            <a href="/take-action/defend-sacred-ground" className="hov-cream" style={{ ...btnBase, marginTop: "auto", alignSelf: "flex-start", fontSize: 14, color: C.navy, background: C.cream, border: "none", padding: "16px 28px", transition: "background .18s" }}>Sign and lodge</a>
           </div>
-          <div style={{ border: "1px solid " + C.tanLine, padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", background: C.cream, boxSizing: "border-box" }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Action 02 · A Saturday morning</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Volunteer</h3>
-            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px" }}>Letterboxes, market stalls, phone shifts. This campaign runs on Australians who show up.</p>
-            <a href="/volunteer#signup" className="hov-navy-fill" style={btnNavyOutline({ marginTop: "auto", alignSelf: "flex-start", padding: "14px 26px" })}>Count me in</a>
+          <div style={{ position: "relative", minHeight: 260, overflow: "hidden" }}>
+            <img src="/assets/town-hall.jpg" alt="Australians speaking up at a town hall meeting" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         </div>
       </div>

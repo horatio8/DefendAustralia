@@ -442,11 +442,14 @@ function HomePage({ site }) {
     <div>
       {/* hero */}
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
-        <img src="/assets/hero-dome-dusk.jpg" alt="The Australian War Memorial at dusk" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "brightness(1.14) saturate(1.06)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.8) 0%,rgba(10,18,34,.36) 45%,rgba(10,18,34,.06) 75%,rgba(10,18,34,0) 100%)" }}></div>
+        <img src="/assets/hero-dome-day.jpg" alt="The Australian War Memorial under a clear blue sky" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.88) 0%,rgba(10,18,34,.52) 45%,rgba(10,18,34,.14) 75%,rgba(10,18,34,.05) 100%)" }}></div>
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
-          <MonoKicker color={C.gold}>{site.home.hero.kicker}</MonoKicker>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400 }}>A century of honour,<br /><span style={{ color: "#C9BFAC", fontStyle: "italic" }}>undone</span> in four years</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 44, height: 1, background: C.gold }}></div>
+            <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.cream, textShadow: "0 1px 10px rgba(10,18,34,.65)" }}>{site.home.hero.kicker}</div>
+          </div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400, textShadow: "0 2px 28px rgba(10,18,34,.5)" }}>A century of honour,<br /><span style={{ color: "#E6DFD2", fontStyle: "italic" }}>undone</span> in four years</h1>
           <div className="m-col" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 64, alignItems: "end", marginTop: 40, paddingBottom: 96 }}>
             <div>
               <p style={{ fontSize: 20, lineHeight: 1.6, maxWidth: 580, color: "#D6CFC2", margin: 0, textWrap: "pretty" }}>{site.home.hero.lede}</p>

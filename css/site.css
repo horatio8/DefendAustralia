@@ -34,6 +34,15 @@ img { max-width:100%; }
 .field-thin:focus { border-color:#1F3157 !important; }
 :focus-visible { outline:2px solid #1F3157; outline-offset:2px; }
 
+/* Compact announcement bar on small screens */
+@media (max-width:768px){
+  .topbar{ padding:7px 12px !important; gap:10px !important; }
+  .topbar-label{ display:none !important; }
+  .topbar-text{ font-size:12px !important; line-height:1.35 !important; }
+  .topbar-chip{ font-size:10px !important; padding:3px 7px !important; letter-spacing:.08em !important; }
+  .topbar-close{ font-size:16px !important; padding:2px 4px !important; }
+}
+
 /* Responsive helpers (carried from the design prototype) */
 @media (max-width:768px){
   .m-col{ display:block !important }

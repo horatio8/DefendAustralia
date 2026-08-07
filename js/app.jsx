@@ -158,11 +158,11 @@ function Banner({ site }) {
   if (!open) return null;
   const dismiss = () => { setOpen(false); try { sessionStorage.setItem("dsg_banner_dismissed", "1"); } catch (e) {} };
   return (
-    <div style={{ background: C.red, color: C.cream, display: "flex", alignItems: "center", gap: 16, padding: "11px 28px", fontSize: 14 }}>
-      <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: C.rose, flex: "none" }}>{site.banner.label}</span>
-      <span style={{ flex: 1 }}>{site.banner.text}</span>
-      <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.cream, background: C.navy, padding: "5px 10px", flex: "none" }}>{daysLeft(site)} days left</span>
-      <button onClick={dismiss} aria-label="Dismiss announcement" className="hov-fg-cream" style={{ background: "none", border: "none", color: C.rose, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "4px 6px" }}>×</button>
+    <div className="topbar" style={{ background: C.red, color: C.cream, display: "flex", alignItems: "center", gap: 16, padding: "11px 28px", fontSize: 14 }}>
+      <span className="topbar-label" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: C.rose, flex: "none" }}>{site.banner.label}</span>
+      <span className="topbar-text" style={{ flex: 1 }}>{site.banner.text}</span>
+      <span className="topbar-chip" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.cream, background: C.navy, padding: "5px 10px", flex: "none", whiteSpace: "nowrap" }}>{daysLeft(site)} days left</span>
+      <button onClick={dismiss} aria-label="Dismiss announcement" className="hov-fg-cream topbar-close" style={{ background: "none", border: "none", color: C.rose, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "4px 6px" }}>×</button>
     </div>
   );
 }

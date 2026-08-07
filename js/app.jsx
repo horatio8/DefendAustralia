@@ -368,8 +368,8 @@ function SignCard({ site, count, setCount, idp, privacyNote, showRefLink }) {
   const link = shareUrl(site);
   const shares = [
     { label: "Facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link) },
-    { label: "X", href: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Keep the War Memorial to honour our fallen. Sign before " + site.org.deadlineLabel + ".") },
-    { label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Keep the War Memorial to honour our fallen. Sign before " + site.org.deadlineLabel + ": " + link) },
+    { label: "X", href: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ".") },
+    { label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ": " + link) },
     { label: "Copy link", copy: true }
   ];
   const issueShare = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
@@ -918,7 +918,7 @@ function SharePage({ site }) {
   const s = site.share;
   const [toast, flash] = useToast();
   const link = shareUrl(site);
-  const text = "Keep the War Memorial to honour our fallen. Sign before " + site.org.deadlineLabel + ": ";
+  const text = "Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ": ";
   const enc = encodeURIComponent;
   const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
   const platforms = [
@@ -929,7 +929,7 @@ function SharePage({ site }) {
     { label: "Share on X", bg: "#000000", fg: "#FFFFFF", icon: "x", href: "https://twitter.com/intent/tweet?url=" + enc(link) + "&text=" + enc(text.trim()) },
     { label: "Share on LinkedIn", bg: "#0A66C2", fg: "#FFFFFF", icon: "linkedin", href: "https://www.linkedin.com/sharing/share-offsite/?url=" + enc(link) },
     { label: "Share on TikTok", bg: "#010101", fg: "#FFFFFF", icon: "tiktok", copy: true },
-    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc("Keep the War Memorial to honour our fallen") + "&body=" + enc(text + link) },
+    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc("Defend the War Memorial: it must continue to honour our fallen") + "&body=" + enc(text + link) },
     { label: "Share by SMS", bg: C.green, fg: "#FFFFFF", icon: "sms", href: "sms:?&body=" + enc(text + link) },
     { label: "Copy your link", bg: "transparent", fg: C.navy, border: "2px solid " + C.navy, icon: "link", copy: true }
   ];
@@ -1113,7 +1113,7 @@ function IssuePage({ site }) {
           <ChangesGrid site={site} />
         </div>
       </div>
-      <CtaBandDark title={daysLeft(site) + " days to be heard. Then never again."} />
+      <CtaBandDark title={daysLeft(site) + " days to be heard before submissions close."} />
     </div>
   );
 }

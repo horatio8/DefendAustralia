@@ -43,6 +43,15 @@ img { max-width:100%; }
   .topbar-close{ font-size:16px !important; padding:2px 4px !important; }
 }
 
+/* Breakpoint-specific hero images */
+.desk-only{ display:block; }
+.mob-only{ display:none; }
+@media (max-width:768px){
+  .mob-only{ display:block; }
+  .desk-only{ display:none; }
+  .vp-item{ border-left:none !important; padding-left:0 !important; }
+}
+
 /* Tighter section spacing on small screens */
 @media (max-width:768px){
   .p-hero{ padding-top:64px !important; padding-bottom:40px !important; }

@@ -262,6 +262,44 @@ function Footer({ site }) {
 
 /* ── shared campaign blocks ──────────────────────────────────────── */
 
+function ValueIcon({ name }) {
+  const p = { viewBox: "0 0 24 24", width: 34, height: 34, fill: "none", stroke: C.gold, strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", style: { flex: "none" }, "aria-hidden": true };
+  if (name === "laurel") return (
+    <svg {...p}>
+      <path d="M12 20.5c-4.4-1.5-7-5.2-6.8-9.6" />
+      <path d="M12 20.5c4.4-1.5 7-5.2 6.8-9.6" />
+      <path d="M5.2 10.9L3.1 9.7M5.5 13.9l-2.4-.1M6.6 16.8l-2.3.6M8.7 19.1l-1.7 1.6" />
+      <path d="M18.8 10.9l2.1-1.2M18.5 13.9l2.4-.1M17.4 16.8l2.3.6M15.3 19.1l1.7 1.6" />
+      <path d="M12 3.5v3" />
+    </svg>
+  );
+  if (name === "institution") return (
+    <svg {...p}>
+      <path d="M4 9.6L12 4l8 5.6" />
+      <path d="M5.2 9.6h13.6" />
+      <path d="M6.8 12.2v5.6M10.3 12.2v5.6M13.7 12.2v5.6M17.2 12.2v5.6" />
+      <path d="M4.6 20.4h14.8" />
+    </svg>
+  );
+  if (name === "poppy") return (
+    <svg {...p}>
+      <circle cx="12" cy="5.8" r="2.5" />
+      <circle cx="8.95" cy="8" r="2.5" />
+      <circle cx="15.05" cy="8" r="2.5" />
+      <circle cx="10.1" cy="11.6" r="2.5" />
+      <circle cx="13.9" cy="11.6" r="2.5" />
+      <circle cx="12" cy="8.9" r="1.3" fill={C.gold} stroke="none" />
+      <path d="M12 14.1V21" />
+    </svg>
+  );
+  return (
+    <svg {...p}>
+      <path d="M12 3.2l6.8 2.4v5c0 4.8-2.9 8.3-6.8 9.9-3.9-1.6-6.8-5.1-6.8-9.9v-5z" />
+      <path d="M12 3.2v17.3" />
+    </svg>
+  );
+}
+
 function SoldiersLine({ site }) {
   return (
     <div style={{ borderLeft: "3px solid " + C.red, padding: "6px 0 6px 22px", marginBottom: 30 }}>
@@ -447,28 +485,32 @@ function HomePage({ site }) {
   };
   return (
     <div>
-      {/* hero */}
-      <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
-        <img src="/assets/hero-dome-day.jpg" alt="The Australian War Memorial under a clear blue sky" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(10,18,34,.78) 0%,rgba(10,18,34,.5) 40%,rgba(10,18,34,.12) 68%,rgba(10,18,34,0) 85%), linear-gradient(to top,rgba(10,18,34,.88) 0%,rgba(10,18,34,.42) 45%,rgba(10,18,34,.08) 75%,rgba(10,18,34,0) 100%)" }}></div>
-        <div className="p-hero-t" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 44, height: 1, background: C.gold }}></div>
-            <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.cream, textShadow: "0 1px 10px rgba(10,18,34,.65)" }}>{site.home.hero.kicker}</div>
+      {/* hero: bright editorial */}
+      <div style={{ position: "relative", background: "#FFFFFF" }}>
+        <div style={{ position: "relative" }}>
+          <img className="desk-only" src="/assets/hero-courtyard-wide.jpg" alt="The commemorative courtyard of the Australian War Memorial on a bright morning" style={{ width: "100%" }} />
+          <img className="mob-only" src="/assets/hero-courtyard-portrait.jpg" alt="The commemorative courtyard of the Australian War Memorial on a bright morning" style={{ width: "100%" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom,rgba(255,255,255,0) 45%,rgba(255,255,255,.55) 72%,rgba(255,255,255,.92) 90%,#FFFFFF 100%)" }}></div>
+          <div style={{ position: "absolute", top: 26, left: 0, right: 0 }}>
+            <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px", display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 44, height: 1, background: C.gold, flex: "none" }}></div>
+              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.navy }}>{site.home.hero.kicker}</div>
+            </div>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,7.2vw,104px)", lineHeight: .96, margin: "30px 0 0", maxWidth: 1000, letterSpacing: "-.008em", fontWeight: 400, textShadow: "0 2px 28px rgba(10,18,34,.5)" }}>A century of honour,<br /><span style={{ color: "#E6DFD2", fontStyle: "italic" }}>undone</span> in four years</h1>
-          <div className="m-col p-sec-b" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 64, alignItems: "end", marginTop: 40, paddingBottom: 96 }}>
-            <div>
-              <p style={{ fontSize: 20, lineHeight: 1.6, maxWidth: 580, color: "#D6CFC2", margin: 0, textWrap: "pretty" }}>{site.home.hero.lede}</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 34 }}>
-                <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>Sign the petition</a>
+        </div>
+        <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
+          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 640, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{site.home.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{site.home.hero.ledeEm}</span></p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 30 }}>
+            <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>Sign the petition&nbsp;&nbsp;→</a>
+          </div>
+          <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 44, padding: "26px 0 40px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
+            {site.home.valueProps.map((v, i) => (
+              <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", paddingLeft: i ? 20 : 0, paddingRight: 12 }}>
+                <ValueIcon name={v.icon} />
+                <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: C.navy, fontWeight: 600, lineHeight: 1.45 }}>{v.label}</span>
               </div>
-            </div>
-            <div style={{ borderLeft: "1px solid rgba(176,141,87,.4)", paddingLeft: 28 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 56, lineHeight: 1, color: C.cream }}>{fmt(count)}</div>
-              <div style={{ fontSize: 14, color: C.goldPale, marginTop: 8, lineHeight: 1.5 }}>Australians have signed.<br />{fmt(Math.max(0, site.org.nextMilestone - count))} to the next milestone.</div>
-              <div style={{ marginTop: 18, maxWidth: 260 }}><Progress pct={pct} height={3} track="rgba(250,246,239,.15)" bar={C.gold} /></div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

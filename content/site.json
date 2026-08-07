@@ -69,8 +69,15 @@
   "home": {
     "hero": {
       "kicker": "Canberra · Anzac Parade · Est. 1941",
-      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object. You still can."
+      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object.",
+      "ledeEm": "You still can."
     },
+    "valueProps": [
+      { "icon": "laurel", "label": "Honour our fallen" },
+      { "icon": "institution", "label": "Protect our institutions" },
+      { "icon": "poppy", "label": "Defend history" },
+      { "icon": "shield", "label": "Keep politics out" }
+    ],
     "sign": {
       "kicker": "The petition",
       "heading": "Defend the War Memorial: it must continue to honour our fallen.",

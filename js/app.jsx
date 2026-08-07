@@ -443,7 +443,7 @@ function HomePage({ site }) {
       {/* hero */}
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
         <img src="/assets/hero-dome-day.jpg" alt="The Australian War Memorial under a clear blue sky" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.88) 0%,rgba(10,18,34,.52) 45%,rgba(10,18,34,.14) 75%,rgba(10,18,34,.05) 100%)" }}></div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(10,18,34,.78) 0%,rgba(10,18,34,.5) 40%,rgba(10,18,34,.12) 68%,rgba(10,18,34,0) 85%), linear-gradient(to top,rgba(10,18,34,.88) 0%,rgba(10,18,34,.42) 45%,rgba(10,18,34,.08) 75%,rgba(10,18,34,0) 100%)" }}></div>
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "130px 28px 0", width: "100%", boxSizing: "border-box" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 44, height: 1, background: C.gold }}></div>

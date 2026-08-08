@@ -14,7 +14,7 @@
   },
   "banner": {
     "label": "Notice",
-    "text": "Submissions close 30 September. Make yours count."
+    "text": "The petition closes 30 September. Make your signature count."
   },
   "nav": {
     "links": [
@@ -48,7 +48,7 @@
     { "n": "103,000", "label": "Fallen Australians honoured on the Roll", "em": "", "accent": false },
     { "n": "85 years", "label": "Of unbroken remembrance since 1941", "em": "", "accent": false },
     { "n": "83,000m²", "label": "", "em": "Of political activism forced onto sacred ground", "accent": true },
-    { "n": "30 Sep", "label": "The last day to lodge your objection", "em": "", "accent": true }
+    { "n": "30 Sep", "label": "The last day to sign the petition", "em": "", "accent": true }
   ],
   "changes": [
     { "tag": "New galleries", "title": "Frontier conflict displays", "img": "/assets/change-gallery.jpg", "pos": "center center", "body": "Exhibition plans set aside space for frontier conflict displays inside the Memorial, a subject Australia's museums already cover, placed instead in the nation's shrine to its war dead." },
@@ -109,8 +109,8 @@
     "demandsLede": "We call on Australia's leaders and the leaders of the Australian War Memorial to:",
     "changesKicker": "What is being changed",
     "changesHeading": "The changes being made in the name of \"a fuller story\".",
-    "changesCta": "Object before 30 September",
-    "changesCtaNote": "The review is the formal channel for objections.",
+    "changesCta": "Sign before 30 September",
+    "changesCtaNote": "Signing the petition is how you are heard.",
     "worksHeading": "What the works actually change",
     "worksBody": [
       "The approved programme demolishes Anzac Hall, excavates beneath the Parade Ground, and adds 83,000 square metres of new floor area to a site whose entire architectural argument is restraint.",
@@ -119,9 +119,9 @@
     "worksStats": [
       { "n": "$550m", "label": "Cost of the works programme" },
       { "n": "103k", "label": "Names on the Roll of Honour" },
-      { "n": "30 Sep", "label": "Submissions close" }
+      { "n": "30 Sep", "label": "The petition closes" }
     ],
-    "privacyNote": "Your name is lodged with the heritage review. We never sell or share supporter data."
+    "privacyNote": "Your signature is added to the petition. We never sell or share supporter data."
   },
   "minister": {
     "kicker": "Direct action · the Minister",
@@ -147,7 +147,7 @@
     "headingB": "You can stop them for less.",
     "lede": "Your donation helps Australians stand up before it is too late, and before our history is rewritten.",
     "subHeading": "Do not let them get away with this.",
-    "subLede": "Digital reach, letterboxing, and press that puts the plan for the Memorial in front of Australians before submissions close.",
+    "subLede": "Digital reach, letterboxing, and press that puts the plan for the Memorial in front of Australians before the petition closes.",
     "presets": [35, 65, 135, 265, 550, 1500],
     "outcomes": {
       "35": "Puts the story in front of 1,400 Australians online.",

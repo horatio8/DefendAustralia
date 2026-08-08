@@ -585,9 +585,9 @@ function HomePage({ site }) {
         <div className="m-col" style={{ background: C.navy, color: C.cream, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
           <div style={{ padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.gold }}>Ten seconds</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 34, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Lodge a submission</h3>
-            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.goldPale, margin: "0 0 24px" }}>They are required to read every named objection. Signing takes 10 seconds. Make them read yours.</p>
-            <a href="/take-action/defend-sacred-ground" className="hov-cream" style={{ ...btnBase, marginTop: "auto", alignSelf: "flex-start", fontSize: 14, color: C.navy, background: C.cream, border: "none", padding: "16px 28px", transition: "background .18s" }}>Sign and lodge</a>
+            <h3 style={{ fontFamily: SERIF, fontSize: 34, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Sign the petition</h3>
+            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.goldPale, margin: "0 0 24px" }}>Every signature is counted and cannot be ignored. Signing takes 10 seconds. Add your name.</p>
+            <a href="/take-action/defend-sacred-ground" className="hov-cream" style={{ ...btnBase, marginTop: "auto", alignSelf: "flex-start", fontSize: 14, color: C.navy, background: C.cream, border: "none", padding: "16px 28px", transition: "background .18s" }}>Sign the petition</a>
           </div>
           <div style={{ position: "relative", minHeight: 260, overflow: "hidden" }}>
             <img src="/assets/town-hall.jpg" alt="Australians speaking up at a town hall meeting" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -654,7 +654,7 @@ function PetitionPage({ site }) {
               <div style={{ fontFamily: SERIF, fontSize: "clamp(56px,12vw,84px)", lineHeight: .9, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{daysLeft(site)}</div>
               <div style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1, color: C.cream }}>days left</div>
             </div>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>Submissions close {site.org.deadlineLabel}</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>The petition closes {site.org.deadlineLabel}</div>
           </div>
         </div>
       </div>
@@ -1155,7 +1155,7 @@ function IssuePage({ site }) {
           </div>
         </div>
       </div>
-      <CtaBandDark title={daysLeft(site) + " days to be heard before submissions close."} />
+      <CtaBandDark title={daysLeft(site) + " days to sign before the petition closes."} />
     </div>
   );
 }

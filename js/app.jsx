@@ -36,7 +36,6 @@ const ICONS = {
 
 const fmt = (n) => Number(n).toLocaleString("en-AU");
 const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.trim());
-const daysLeft = (site) => Math.max(0, Math.ceil((new Date(site.org.deadlineIso) - new Date()) / 86400000));
 
 function apiPost(path, data, keepalive) {
   try {
@@ -155,14 +154,15 @@ function Progress({ pct, track, bar, height }) {
 
 function Banner({ site }) {
   const [open, setOpen] = useState(() => { try { return sessionStorage.getItem("dsg_banner_dismissed") !== "1"; } catch (e) { return true; } });
+  const [count] = useSignatureCount(site);
   if (!open) return null;
   const dismiss = () => { setOpen(false); try { sessionStorage.setItem("dsg_banner_dismissed", "1"); } catch (e) {} };
   return (
     <div className="topbar" style={{ background: C.red, color: C.cream, display: "flex", alignItems: "center", gap: 16, padding: "11px 28px", fontSize: 14 }}>
-      <span className="topbar-label" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: C.rose, flex: "none" }}>{site.banner.label}</span>
-      <span className="topbar-text" style={{ flex: 1 }}>{site.banner.text}</span>
-      <span className="topbar-chip" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.cream, background: C.navy, padding: "5px 10px", flex: "none", whiteSpace: "nowrap" }}>{daysLeft(site)} days left</span>
-      <button onClick={dismiss} aria-label="Dismiss announcement" className="hov-fg-cream topbar-close" style={{ background: "none", border: "none", color: C.rose, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "4px 6px" }}>×</button>
+      <a href="/take-action/defend-sacred-ground" className="topbar-text" style={{ flex: 1, color: C.cream, textAlign: "center", lineHeight: 1.45 }}>
+        <span style={{ fontWeight: 700 }}>{fmt(count)}</span> {site.banner.text} <span style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{site.banner.cta}</span>
+      </a>
+      <button onClick={dismiss} aria-label="Dismiss announcement" className="hov-fg-cream topbar-close" style={{ background: "none", border: "none", color: C.rose, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "4px 6px", flex: "none" }}>×</button>
     </div>
   );
 }
@@ -419,8 +419,8 @@ function SignCard({ site, count, setCount, idp, privacyNote, showRefLink }) {
   const link = shareUrl(site);
   const shares = [
     { label: "Facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link) },
-    { label: "X", href: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ".") },
-    { label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ": " + link) },
+    { label: "X", href: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign the petition.") },
+    { label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign the petition: " + link) },
     { label: "Copy link", copy: true }
   ];
   const issueShare = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
@@ -580,7 +580,6 @@ function HomePage({ site }) {
       <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 32, marginBottom: 36 }}>
           <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: 0, fontWeight: 400 }}>How you fight back.</h2>
-          <div className="m-hide" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, flex: "none" }}>Before 30 September</div>
         </div>
         <div className="m-col" style={{ background: C.navy, color: C.cream, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
           <div style={{ padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
@@ -650,11 +649,8 @@ function PetitionPage({ site }) {
             <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,6.4vw,88px)", lineHeight: .98, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 900, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
           </div>
           <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 14, justifyContent: "flex-end" }}>
-              <div style={{ fontFamily: SERIF, fontSize: "clamp(56px,12vw,84px)", lineHeight: .9, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{daysLeft(site)}</div>
-              <div style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1, color: C.cream }}>days left</div>
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>The petition closes {site.org.deadlineLabel}</div>
+            <div style={{ fontFamily: SERIF, fontSize: "clamp(44px,9vw,72px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>Australians have signed</div>
           </div>
         </div>
       </div>
@@ -870,7 +866,7 @@ function DonatePage({ site }) {
     } catch (e) {}
   }, []);
   const amt = other ? Number(String(other).replace(/[^\d.]/g, "")) : amount;
-  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Your gift goes straight to reaching more Australians before 30 September." : "Choose an amount.");
+  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Your gift goes straight to reaching more Australians before it is too late." : "Choose an amount.");
   const checkoutLabel = amt ? "Give $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
 
   const checkout = () => {
@@ -952,7 +948,7 @@ function SharePage({ site }) {
   const s = site.share;
   const [toast, flash] = useToast();
   const link = shareUrl(site);
-  const text = "Defend the War Memorial: it must continue to honour our fallen. Sign before " + site.org.deadlineLabel + ": ";
+  const text = "Defend the War Memorial: it must continue to honour our fallen. Sign the petition: ";
   const enc = encodeURIComponent;
   const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
   const platforms = [
@@ -1155,7 +1151,7 @@ function IssuePage({ site }) {
           </div>
         </div>
       </div>
-      <CtaBandDark title={daysLeft(site) + " days to sign before the petition closes."} />
+      <CtaBandDark title="Do not let them get away with it." />
     </div>
   );
 }
@@ -1198,7 +1194,7 @@ function AboutPage({ site }) {
           ))}
         </div>
       </div>
-      <CtaBandDark title={"Stand with us before " + site.org.deadlineLabel + "."} />
+      <CtaBandDark title="Stand with us." />
     </div>
   );
 }

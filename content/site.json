@@ -191,7 +191,7 @@
     "donateBand": {
       "kicker": "Fund the campaign",
       "heading": "Australians do not even know this is happening",
-      "body": "We have no members of parliament, no public funding and no media arm. What we have is names, and the ability to put this in front of Australians who do not yet know it is happening. Advertising is the whole answer."
+      "body": "We have no members of parliament, no public funding and no media arm. What we have is everyday Australians, and the ability to share the truth. Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
     },
     "quotes": {
       "kicker": "On the record",
@@ -199,16 +199,16 @@
       "items": [
         {
           "quote": "We conned ourselves.",
-          "attribution": "Kim Beazley on national radio, calling the Memorial's account of our history \"a fiction\" [DATE]"
+          "attribution": "Kim Beazley, ABC Radio National, February 2023"
         },
         {
           "quote": "It is by that means we established ourselves.",
-          "attribution": "Kim Beazley, on why the frontier belongs in the Memorial [DATE]",
+          "attribution": "Kim Beazley, on why the frontier belongs in the Memorial · ABC Radio National, February 2023",
           "note": "This is the project in a single sentence: an attempt to redefine Australian history as a colonial conflict, with the nation's shrine as the venue."
         },
         {
           "quote": "That's something that I will make sure the War Memorial makes all of us understand.",
-          "attribution": "Kim Beazley, lecture in Perth [DATE]"
+          "attribution": "Kim Beazley, lecture in Perth, 2023 [CONFIRM DATE]"
         },
         {
           "quote": "There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.",
@@ -278,8 +278,8 @@
     "heading": "Australians do not even know this is happening",
     "body": [
       "That is not an accident. It was done quietly, and quiet is how it stays unless someone pays to break the silence.",
-      "We do not have a member of parliament. We do not have a broadcaster. We have a list of names and whatever we can put behind it.",
-      "Every dollar goes to reaching Australians who do not yet know that the Australian War Memorial is being changed into something else, and to making sure Kim Beazley cannot pretend the country is behind him."
+      "We do not have a member of parliament. We do not have a broadcaster. What we have is everyday Australians, and the ability to share the truth.",
+      "Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
     ],
     "presets": [
       35,

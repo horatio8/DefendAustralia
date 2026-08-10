@@ -186,11 +186,7 @@
     "ask": {
       "kicker": "The petition",
       "heading": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:",
-      "formHeading": "Add your name",
-      "formBody": [
-        "This petition goes to Kim Beazley as Chair of the Council of the Australian War Memorial, and to the Minister for Veterans' Affairs, who advises on who sits on that Council.",
-        "Every name on it is an Australian telling him he does not have the authority and does not have the country behind him."
-      ]
+      "formHeading": "Add your name"
     },
     "donateBand": {
       "kicker": "Fund the campaign",

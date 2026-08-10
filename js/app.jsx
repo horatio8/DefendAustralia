@@ -567,11 +567,6 @@ function HomePage({ site }) {
             <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{h.ask.heading}</h2>
             {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
             <DemandList site={site} />
-            <div style={{ marginTop: 28 }}>
-              {h.ask.formBody.map((t, i) => (
-                <p key={i} style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 12px" }}>{t}</p>
-              ))}
-            </div>
           </div>
           <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
         </div>

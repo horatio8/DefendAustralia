@@ -64,6 +64,21 @@ In `content/site.json`:
 
 In each HTML shell: inject the Meta Pixel snippet where marked.
 
+## CRM receiver (Campaign Nucleus)
+
+Petition signups sync to Campaign Nucleus (account `teller`):
+
+- **Form:** "Defend Sacred Ground: Petition to Kim Beazley" — slug `dsg-beazley`,
+  id `0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28`, group "Defend Sacred Ground"
+- **Fields:** first_name*, last_name*, email* (unique), postcode, phone (all
+  matching the site's petition form)
+- **Receiver endpoint** (for `CN_RECEIVER_URLS` in the backend env, spec §9):
+  `POST https://api.campaignnucleus.com/v1/forms/0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28/entries`
+  mapped as `{"defend-sacred-ground": "<that URL>"}`
+- **Hosted fallback page:** https://teller.nucleuspages.com/landing/dsg-beazley
+  (branded in campaign colours; redirects to /donate after signing; admin
+  notifications to james@teller.consulting)
+
 ## Not yet implemented (backend, spec §5–§12)
 
 Serverless `/api/*` endpoints, Airtable datastore, Campaign Nucleus sync,

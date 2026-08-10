@@ -93,9 +93,8 @@
     ]
   },
   "demands": [
-    "Remove the frontier conflict displays from the galleries of the Australian War Memorial.",
-    "Build no further frontier conflict galleries, and abandon the gallery on the main concourse.",
-    "Change nothing about the Memorial's purpose unless the Parliament of Australia votes for it."
+    "Halting and removing the frontier conflicts and other contested history that contravene the War Memorial's governing Act.",
+    "Abstaining from further historical revisions without approval from the Parliament of Australia."
   ],
   "honourNames": [
     "R. J. Callaghan · E. M. Hartnett · W. T. Nguyen-Brown · A. K. Papadopoulos · F. G. O'Shea · L. D. Mackellar · S. R. Toohey · H. V. Amundsen · J. J. Ricketson · M. C. Warlpiri · D. A. Fitzgibbon · P. W. Sørensen · G. H. Tan · B. E. Castellano · K. M. O'Donnell · T. R. Blackwood · N. S. Papworth · C. J. Merriweather · V. L. Ashcroft · I. D. Kowalski · ",
@@ -178,9 +177,8 @@
       ]
     },
     "notSaying": {
-      "heading": "Let us be clear about this",
+      "heading": "Where it belongs, and who decides",
       "body": [
-        "Violence on the colonial frontier happened. It was extensive and it was terrible. The Memorial's own website puts the Aboriginal dead at around 20,000. We do not dispute that and we will not pretend otherwise.",
         "This is not an argument about whether the history is true. It is an argument about where it belongs, and about who gets to decide.",
         "In 2018 the Memorial's own Director wrote that the story \"should be told at the National Museum of Australia, not the Australian War Memorial.\" That is our position. It was the Memorial's position too, until the Council changed its mind without changing the law."
       ]
@@ -192,7 +190,8 @@
       "formBody": [
         "This petition goes to Kim Beazley as Chair of the Council of the Australian War Memorial, and to the Minister for Veterans' Affairs, who advises on who sits on that Council.",
         "Every name on it is an Australian telling him he does not have the authority and does not have the country behind him."
-      ]
+      ],
+      "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
     },
     "donateBand": {
       "kicker": "Fund the campaign",
@@ -250,20 +249,16 @@
       "Your Council has decided to put the colonial frontier conflicts inside that building. You did it without an Act of Parliament, without consulting a single Australian, and without taking legal advice on whether you had the power at all.",
       "You do not have that power. Only Parliament does.",
       "You of all people know what that building is. You have been Minister for Defence. You have represented this country in Washington. You know that the Memorial is a shrine and not a lecture theatre, and that the names on those walls were put there by families, not by curators.",
-      "We are asking you to stop."
+      "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
     ],
     "letterDemands": [
       {
-        "lead": "Remove",
-        "text": "the frontier conflict displays from the galleries of the Australian War Memorial."
+        "lead": "Halting and removing",
+        "text": "the frontier conflicts and other contested history that contravene the War Memorial's governing Act."
       },
       {
-        "lead": "Build no more.",
-        "text": "Abandon the frontier gallery on the main concourse."
-      },
-      {
-        "lead": "Ask Parliament.",
-        "text": "If the Memorial's purpose is to change, the Parliament of Australia must vote for it. Not you."
+        "lead": "Abstaining",
+        "text": "from further historical revisions without approval from the Parliament of Australia."
       }
     ],
     "letterClose": [
@@ -291,7 +286,7 @@
     "variations": [
       {
         "subject": "The War Memorial is not the Council's to change",
-        "body": "Dear Minister,\n\nI am writing about the decision of the Council of the Australian War Memorial to place colonial frontier conflict displays inside the Memorial.\n\nThe Memorial is governed by an Act of Parliament that covers war and warlike operations by the Defence Force. The Council made this change without an Act of Parliament, without public consultation, and without taking legal advice on whether it had the power at all.\n\nI ask you to do three things:\n\n1. Remove the frontier conflict displays from the galleries of the Australian War Memorial.\n2. Build no further frontier conflict galleries, and abandon the gallery on the main concourse.\n3. Change nothing about the Memorial's purpose unless the Parliament of Australia votes for it.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
+        "body": "Dear Minister,\n\nI am writing about the decision of the Council of the Australian War Memorial to place colonial frontier conflict displays inside the Memorial.\n\nThe Memorial is governed by an Act of Parliament that covers war and warlike operations by the Defence Force. The Council made this change without an Act of Parliament, without public consultation, and without taking legal advice on whether it had the power at all.\n\nI ask you to maintain the sanctity of the Australian War Memorial by:\n\n1. Halting and removing the frontier conflicts and other contested history that contravene the War Memorial's governing Act.\n2. Abstaining from further historical revisions without approval from the Parliament of Australia.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
       }
     ],
     "sentHeading": "Sent. Now they have to answer.",

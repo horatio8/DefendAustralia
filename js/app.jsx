@@ -564,7 +564,8 @@ function HomePage({ site }) {
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <div>
             <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
-            <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "20px 0 24px", fontWeight: 400 }}>{h.ask.heading}</h2>
+            <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "20px 0 18px", fontWeight: 400 }}>{h.ask.heading}</h2>
+            {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
             <DemandList site={site} />
             <div style={{ marginTop: 28 }}>
               {h.ask.formBody.map((t, i) => (

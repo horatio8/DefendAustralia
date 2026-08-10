@@ -179,9 +179,6 @@ function Nav({ site, page }) {
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div className="m-hide" style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            {site.nav.links.map((item) => (
-              <a key={item.page} href={item.href} className="hov-link" style={{ padding: "6px 0", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: page === item.page ? C.red : C.body, borderBottom: "2px solid " + (page === item.page ? C.red : "transparent") }}>{item.label}</a>
-            ))}
             <div style={{ position: "relative" }}>
               <button onClick={() => setTaOpen(!taOpen)} className="hov-link" style={{ background: "none", border: "none", padding: "6px 0", cursor: "pointer", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: taActive ? C.red : C.body, borderBottom: "2px solid " + (taActive ? C.red : "transparent"), display: "flex", alignItems: "center", gap: 6 }}>Take action <span style={{ fontSize: 10 }}>▾</span></button>
               {taOpen && (
@@ -194,6 +191,9 @@ function Nav({ site, page }) {
                 </div>
               )}
             </div>
+            {site.nav.links.map((item) => (
+              <a key={item.page} href={item.href} className="hov-link" style={{ padding: "6px 0", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: page === item.page ? C.red : C.body, borderBottom: "2px solid " + (page === item.page ? C.red : "transparent") }}>{item.label}</a>
+            ))}
             <a href="/take-action/defend-sacred-ground" className="hov-navy-fill" style={{ ...btnBase, fontSize: 13, letterSpacing: ".08em", color: C.navy, background: "transparent", border: "2px solid " + C.navy, padding: "12px 22px" }}>Sign the petition</a>
           </div>
           <button className="m-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu" style={{ display: "none", flexDirection: "column", justifyContent: "center", gap: 5, width: 44, height: 44, background: "none", border: "1px solid " + C.tan, cursor: "pointer", padding: 10, boxSizing: "border-box", flex: "none" }}>
@@ -564,7 +564,7 @@ function HomePage({ site }) {
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <div>
             <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
-            <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "20px 0 18px", fontWeight: 400 }}>{h.ask.heading}</h2>
+            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{h.ask.heading}</h2>
             {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
             <DemandList site={site} />
             <div style={{ marginTop: 28 }}>
@@ -582,18 +582,9 @@ function HomePage({ site }) {
         <div>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{h.donateBand.kicker}</div>
           <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "18px 0 16px", fontWeight: 400 }}>{h.donateBand.heading}</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 480 }}>{h.donateBand.body}</p>
-          <a href="/donate" className="hov-red" style={btnRed({ fontSize: 14, padding: "16px 28px" })}>{h.donateBand.cta}</a>
+          <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: 0, maxWidth: 480 }}>{h.donateBand.body}</p>
         </div>
-        <div style={{ borderTop: "2px solid " + C.navy }}>
-          {h.donateBand.tiers.map((t, i) => (
-            <a key={i} href="/donate?focus=1" className="hov-row" style={{ display: "flex", alignItems: "baseline", gap: 24, width: "100%", textAlign: "left", background: "transparent", borderBottom: "1px solid " + C.tanLine, padding: "26px 4px", transition: "background .18s", boxSizing: "border-box" }}>
-              <span style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, flex: "none", width: 110 }}>{t.amount}</span>
-              <span style={{ fontSize: 15, color: C.mut, flex: 1, lineHeight: 1.5 }}>{t.outcome}</span>
-              <span style={{ color: C.red, fontSize: 18, flex: "none" }}>→</span>
-            </a>
-          ))}
-        </div>
+        <DonatePanel site={site} />
       </div>
 
       {/* on the record: quotes at the bottom */}
@@ -834,13 +825,60 @@ function MinisterPage({ site }) {
   );
 }
 
-function DonatePage({ site }) {
+function DonatePanel({ site, innerRef }) {
   const d = site.donate;
   const [freq, setFreq] = useState("once");
-  const [amount, setAmount] = useState(100);
+  const [amount, setAmount] = useState(65);
   const [other, setOther] = useState("");
   const [showOther, setShowOther] = useState(false);
   const [toast, flash] = useToast();
+  const amt = other ? Number(String(other).replace(/[^\d.]/g, "")) : amount;
+  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Every dollar goes to reaching Australians who do not yet know this is happening." : "Choose an amount.");
+  const checkoutLabel = amt ? "Chip in $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
+  const checkout = () => {
+    if (!amt) return;
+    apiPost("/api/checkout", { amount: amt, frequency: freq, source_url: location.href })
+      .then((resp) => { if (resp && resp.url) window.location.href = resp.url; else throw new Error(); })
+      .catch(() => flash("Could not open checkout. Please try again in a moment."));
+  };
+  const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
+  return (
+    <div style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={innerRef}>
+      <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 28 }}>
+        <button onClick={() => { setFreq("once"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("once")}>One off</button>
+        <button onClick={() => { setFreq("monthly"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("monthly")}>Monthly</button>
+      </div>
+      <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+        {d.presets.map((v) => {
+          const active = !other && amount === v;
+          return (
+            <button key={v} onClick={() => { setAmount(v); setOther(""); setShowOther(false); }} className="hov-border-red" style={{ padding: "20px 10px", textAlign: "center", border: active ? "2px solid " + C.red : "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer" }}>
+              <div style={{ fontFamily: SERIF, fontSize: 26, color: active ? C.red : C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
+            </button>
+          );
+        })}
+      </div>
+      {!showOther ? (
+        <button onClick={() => setShowOther(true)} className="hov-border-navy" style={{ width: "100%", marginTop: 14, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 14, cursor: "pointer" }}>Other amount</button>
+      ) : (
+        <div style={{ marginTop: 14, border: "1px solid " + C.navy, padding: 16, background: C.cream, animation: "dsgRise .18s cubic-bezier(.2,.6,.2,1) both" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <label htmlFor="oa" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut }}>Other amount</label>
+            <button onClick={() => { setShowOther(false); setOther(""); }} aria-label="Close other amount" className="hov-copy-red" style={{ background: "none", border: "none", color: C.faint, fontSize: 16, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}>×</button>
+          </div>
+          <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} />
+        </div>
+      )}
+      <div style={{ background: C.creamMid, padding: "18px 20px", marginTop: 24, fontSize: 14, color: C.body, lineHeight: 1.6 }}>{outcomeLine}</div>
+      <button onClick={checkout} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>{checkoutLabel}</button>
+      {toast && <div style={{ fontSize: 13, color: C.red, marginTop: 12 }}>{toast}</div>}
+      <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{d.fineprint}</div>
+    </div>
+  );
+}
+
+function DonatePage({ site }) {
+  const d = site.donate;
   const chipsRef = useRef(null);
   useEffect(() => {
     try {
@@ -848,19 +886,6 @@ function DonatePage({ site }) {
         window.scrollTo(0, chipsRef.current.getBoundingClientRect().top + window.pageYOffset - 96);
     } catch (e) {}
   }, []);
-  const amt = other ? Number(String(other).replace(/[^\d.]/g, "")) : amount;
-  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Every dollar goes to reaching Australians who do not yet know this is happening." : "Choose an amount.");
-  const checkoutLabel = amt ? "Chip in $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
-
-  const checkout = () => {
-    if (!amt) return;
-    apiPost("/api/checkout", { amount: amt, frequency: freq, source_url: location.href })
-      .then((resp) => { if (resp && resp.url) window.location.href = resp.url; else throw new Error(); })
-      .catch(() => flash("Could not open checkout. Please try again in a moment."));
-  };
-
-  const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
-
   return (
     <div id="donate">
       <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
@@ -882,44 +907,13 @@ function DonatePage({ site }) {
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>What it buys</div>
             {d.presets.map((v) => (
               <div key={v} style={{ display: "flex", gap: 24, alignItems: "baseline", borderBottom: "1px solid " + C.line, padding: "16px 4px" }}>
-                <span style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, flex: "none", width: 90 }}>{"$" + fmt(v)}</span>
+                <span style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, flex: "none", width: 100 }}>{"$" + fmt(v)}</span>
                 <span style={{ fontSize: 15, color: C.mut, flex: 1, lineHeight: 1.5 }}>{d.outcomes[String(v)]}</span>
               </div>
             ))}
           </div>
         </div>
-
-        <div style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={chipsRef}>
-          <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 28 }}>
-            <button onClick={() => { setFreq("once"); setAmount(100); setOther(""); setShowOther(false); }} style={toggle("once")}>One off</button>
-            <button onClick={() => { setFreq("monthly"); setAmount(100); setOther(""); setShowOther(false); }} style={toggle("monthly")}>Monthly</button>
-          </div>
-          <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-            {d.presets.map((v) => {
-              const active = !other && amount === v;
-              return (
-                <button key={v} onClick={() => { setAmount(v); setOther(""); setShowOther(false); }} className="hov-border-red" style={{ padding: "20px 10px", textAlign: "center", border: active ? "2px solid " + C.red : "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer" }}>
-                  <div style={{ fontFamily: SERIF, fontSize: 26, color: active ? C.red : C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
-                </button>
-              );
-            })}
-          </div>
-          {!showOther ? (
-            <button onClick={() => setShowOther(true)} className="hov-border-navy" style={{ width: "100%", marginTop: 14, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 14, cursor: "pointer" }}>Other amount</button>
-          ) : (
-            <div style={{ marginTop: 14, border: "1px solid " + C.navy, padding: 16, background: C.cream, animation: "dsgRise .18s cubic-bezier(.2,.6,.2,1) both" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <label htmlFor="oa" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut }}>Other amount</label>
-                <button onClick={() => { setShowOther(false); setOther(""); }} aria-label="Close other amount" className="hov-copy-red" style={{ background: "none", border: "none", color: C.faint, fontSize: 16, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}>×</button>
-              </div>
-              <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} />
-            </div>
-          )}
-          <div style={{ background: C.creamMid, padding: "18px 20px", marginTop: 24, fontSize: 14, color: C.body, lineHeight: 1.6 }}>{outcomeLine}</div>
-          <button onClick={checkout} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>{checkoutLabel}</button>
-          {toast && <div style={{ fontSize: 13, color: C.red, marginTop: 12 }}>{toast}</div>}
-          <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{d.fineprint}</div>
-        </div>
+        <DonatePanel site={site} innerRef={chipsRef} />
       </div>
     </div>
   );
@@ -1326,7 +1320,6 @@ function App({ site, page }) {
   const Page = PAGES[page] || HomePage;
   return (
     <div style={{ fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" }}>
-      <Banner site={site} />
       <Nav site={site} page={page} />
       <Page site={site} />
       <Footer site={site} />

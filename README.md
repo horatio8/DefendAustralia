@@ -79,6 +79,29 @@ Petition signups sync to Campaign Nucleus (account `teller`):
   (branded in campaign colours; redirects to /donate after signing; admin
   notifications to james@teller.consulting)
 
+## Stripe (donations)
+
+`api/checkout.js` and `api/stripe-webhook.js` implement the spec's donation
+flow: the DonatePanel POSTs `{amount, frequency}` to `/api/checkout`, gets a
+hosted Stripe Checkout URL back (AUD; one-off = payment mode, monthly =
+subscription via price_data), and returns to `/share?session_id=…`. GET
+deeplinks (`/api/checkout?amount=65&frequency=monthly`) 303 to Stripe for
+SMS/email prefills.
+
+To activate, set in Vercel env:
+
+- `STRIPE_SECRET_KEY` — from dashboard.stripe.com → Developers → API keys
+  (start with the test key, swap for live at launch)
+- `STRIPE_WEBHOOK_SECRET` — create a webhook endpoint pointing at
+  `https://<domain>/api/stripe-webhook` with events
+  `checkout.session.completed` and `invoice.paid`, copy its signing secret
+- `SITE_URL` — canonical origin, e.g. `https://defendsacredground.au`
+
+Test with Stripe test mode (card 4242 4242 4242 4242) before going live.
+Billing (monthly gifts) is covered by subscription mode; Invoicing for
+major donors can run from the Stripe Dashboard without code. Webhook
+downstream pushes (datastore/CRM/Meta CAPI) are TODO-marked in the handler.
+
 ## Not yet implemented (backend, spec §5–§12)
 
 Serverless `/api/*` endpoints, Airtable datastore, Campaign Nucleus sync,

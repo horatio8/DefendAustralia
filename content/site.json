@@ -22,14 +22,19 @@
         "page": "evidence"
       },
       {
+        "label": "News",
+        "href": "/news",
+        "page": "news"
+      },
+      {
         "label": "About us",
         "href": "/about-us",
         "page": "about"
       },
       {
-        "label": "News",
-        "href": "/news",
-        "page": "news"
+        "label": "Contact us",
+        "href": "/contact",
+        "page": "contact"
       }
     ],
     "takeAction": [
@@ -42,11 +47,6 @@
         "label": "Contact the Minister",
         "href": "/minister",
         "page": "minister"
-      },
-      {
-        "label": "Contact us",
-        "href": "/contact",
-        "page": "contact"
       }
     ],
     "menu": [
@@ -61,14 +61,19 @@
         "page": "evidence"
       },
       {
+        "label": "News",
+        "href": "/news",
+        "page": "news"
+      },
+      {
         "label": "About us",
         "href": "/about-us",
         "page": "about"
       },
       {
-        "label": "News",
-        "href": "/news",
-        "page": "news"
+        "label": "Contact us",
+        "href": "/contact",
+        "page": "contact"
       },
       {
         "label": "Volunteer",
@@ -79,11 +84,6 @@
         "label": "Contact the Minister",
         "href": "/minister",
         "page": "minister"
-      },
-      {
-        "label": "Contact us",
-        "href": "/contact",
-        "page": "contact"
       },
       {
         "label": "Sign the petition",
@@ -129,7 +129,7 @@
       "kicker": "What has happened",
       "heading": "A decision no Australian was asked about",
       "body": [
-        "In August 2022, behind closed doors, the Council of the Australian War Memorial decided to build a gallery inside the Memorial devoted to the frontier conflicts of the colonial era.",
+        "In August 2022, behind closed doors, the Council of the Australian War Memorial decided to build a gallery inside the Memorial devoted to anti-colonial activism, and contested history.",
         "There was no Act of Parliament. There was no public consultation. There was no legal advice. Asked at Senate Estimates whether the Council would even check that it had the power, the Memorial's Director said there were no plans to.",
         "The decision was recorded in a single paragraph of a council minute. Those minutes did not surface for nine months, and only then because a Senator asked for them. When a member of the public later asked for the policy under Freedom of Information, the Memorial replied that no documents existed. On review, it reversed and confirmed the policy does exist.",
         "The gallery is now confirmed. Roughly 200 square metres, the size of a singles tennis court, on the main concourse at the entrance. The Director calls it \"the next step.\""
@@ -154,7 +154,7 @@
           "title": "It is sacred, not a museum.",
           "img": "/assets/poppy-wall.jpg",
           "pos": "center 40%",
-          "body": "The Memorial is sacred ground. It bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Introducing contested history into that space is not something a nation does lightly. This history already has a home: the National Museum of Australia, the Australian Museum, and the $316.5 million Ngurra precinct. It is not this one."
+          "body": "The Memorial is sacred ground. It bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Introducing activism into that space is not something a nation does lightly. This history already has a home: the National Museum of Australia, the Australian Museum, and the $316.5 million Ngurra precinct. It is not this one."
         },
         {
           "title": "It was done by stealth.",
@@ -185,33 +185,17 @@
     },
     "ask": {
       "kicker": "The petition",
-      "heading": "What we are asking for",
+      "heading": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:",
       "formHeading": "Add your name",
       "formBody": [
         "This petition goes to Kim Beazley as Chair of the Council of the Australian War Memorial, and to the Minister for Veterans' Affairs, who advises on who sits on that Council.",
         "Every name on it is an Australian telling him he does not have the authority and does not have the country behind him."
-      ],
-      "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
+      ]
     },
     "donateBand": {
       "kicker": "Fund the campaign",
-      "heading": "Signatures make the case. Money makes it visible.",
-      "body": "We have no members of parliament, no public funding and no media arm. What we have is names, and the ability to put this in front of Australians who do not yet know it is happening. Ten per cent of the country has even heard of the frontier wars debate. That is the whole problem, and advertising is the whole answer.",
-      "tiers": [
-        {
-          "amount": "$25",
-          "outcome": "Puts this in front of a thousand Australians"
-        },
-        {
-          "amount": "$100",
-          "outcome": "Puts it in front of five thousand"
-        },
-        {
-          "amount": "$500",
-          "outcome": "Keeps it running for a week in Canberra"
-        }
-      ],
-      "cta": "Chip in"
+      "heading": "Australians do not even know this is happening",
+      "body": "We have no members of parliament, no public funding and no media arm. What we have is names, and the ability to put this in front of Australians who do not yet know it is happening. Advertising is the whole answer."
     },
     "quotes": {
       "kicker": "On the record",
@@ -295,21 +279,27 @@
   },
   "donate": {
     "kicker": "Fund the campaign",
-    "heading": "Ten per cent of Australians know this is happening",
+    "heading": "Australians do not even know this is happening",
     "body": [
       "That is not an accident. It was done quietly, and quiet is how it stays unless someone pays to break the silence.",
       "We do not have a member of parliament. We do not have a broadcaster. We have a list of names and whatever we can put behind it.",
       "Every dollar goes to reaching Australians who do not yet know that the Australian War Memorial is being changed into something else, and to making sure Kim Beazley cannot pretend the country is behind him."
     ],
     "presets": [
-      25,
-      100,
-      500
+      35,
+      65,
+      135,
+      265,
+      550,
+      1500
     ],
     "outcomes": {
-      "25": "Reaches a thousand Australians.",
-      "100": "Reaches five thousand.",
-      "500": "Keeps this running for a week in Canberra where it matters most."
+      "35": "Puts the story in front of 1,400 Australians online.",
+      "65": "A letterbox run through one Canberra street.",
+      "135": "Print flyers for a full weekend of volunteering.",
+      "265": "A full-page ad in a regional paper.",
+      "550": "A week of radio spots in one regional market.",
+      "1500": "A billboard on a Canberra arterial for a month."
     },
     "cta": "Chip in now",
     "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible."
@@ -499,7 +489,7 @@
       }
     ],
     "topics": [
-      "General",
+      "General enquiry",
       "Media enquiry",
       "Volunteering",
       "Donations"

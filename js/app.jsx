@@ -605,6 +605,7 @@ function HomePage({ site }) {
             {h.quotes.items.map((q, i) => (
               <div key={i} style={{ background: C.cream, padding: "30px 32px", display: "flex", flexDirection: "column", gridColumn: h.quotes.items.length % 2 === 1 && i === h.quotes.items.length - 1 ? "1 / -1" : "auto" }}>
                 <div style={{ fontFamily: SERIF, fontSize: 22, color: C.navy, lineHeight: 1.45, textWrap: "pretty" }}>“{q.quote}”</div>
+                {q.note && <div style={{ fontSize: 15, color: C.mut, lineHeight: 1.6, marginTop: 12, textWrap: "pretty" }}>{q.note}</div>}
                 <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.faint, marginTop: "auto", paddingTop: 18, lineHeight: 1.6 }}>{q.attribution}</div>
               </div>
             ))}

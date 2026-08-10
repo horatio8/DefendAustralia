@@ -17,7 +17,7 @@
   "nav": {
     "links": [
       {
-        "label": "The Evidence",
+        "label": "The Issue",
         "href": "/evidence",
         "page": "evidence"
       },
@@ -56,7 +56,7 @@
         "page": "home"
       },
       {
-        "label": "The Evidence",
+        "label": "The Issue",
         "href": "/evidence",
         "page": "evidence"
       },
@@ -103,7 +103,7 @@
   "home": {
     "hero": {
       "kicker": "The Australian War Memorial",
-      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object.",
+      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. Our fallen cannot object.",
       "ledeEm": "You still can.",
       "cta": "Sign the petition"
     },
@@ -114,7 +114,7 @@
       },
       {
         "icon": "institution",
-        "label": "Protect our institutions"
+        "label": "Protect our Memorial"
       },
       {
         "icon": "poppy",
@@ -215,23 +215,24 @@
     },
     "quotes": {
       "kicker": "On the record",
-      "heading": "In their own words",
+      "heading": "They always planned to sneak this in",
       "items": [
         {
           "quote": "We conned ourselves.",
-          "attribution": "Kim Beazley on national radio, calling the Memorial's account of our history \"a fiction\""
+          "attribution": "Kim Beazley on national radio, calling the Memorial's account of our history \"a fiction\" [DATE]"
         },
         {
           "quote": "It is by that means we established ourselves.",
-          "attribution": "Kim Beazley, on why the frontier belongs in the Memorial"
+          "attribution": "Kim Beazley, on why the frontier belongs in the Memorial [DATE]",
+          "note": "This is the project in a single sentence: an attempt to redefine Australian history as a colonial conflict, with the nation's shrine as the venue."
         },
         {
           "quote": "That's something that I will make sure the War Memorial makes all of us understand.",
-          "attribution": "Kim Beazley, lecture in Perth"
+          "attribution": "Kim Beazley, lecture in Perth [DATE]"
         },
         {
           "quote": "There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.",
-          "attribution": "The Memorial's Director, Senate Estimates"
+          "attribution": "The Memorial's Director, Senate Estimates, November 2022"
         },
         {
           "quote": "This story and the story of Indigenous opposition to European settlement and expansion should be told. However, this Australian History should be told at the National Museum of Australia, not the Australian War Memorial.",

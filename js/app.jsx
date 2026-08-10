@@ -482,12 +482,11 @@ function HomePage({ site }) {
           </div>
         </div>
         <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
-          <div style={{ marginBottom: 26 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
             <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;→</a>
-            <div style={{ fontSize: 14, color: C.mut, marginTop: 12 }}><strong style={{ color: C.red }}>{fmt(count)}</strong> {h.hero.ctaNote}</div>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(38px,5.2vw,76px)", lineHeight: 1.05, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>{h.hero.headline}</h1>
-          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede}</p>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
+          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{h.hero.ledeEm}</span></p>
           <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
             {h.valueProps.map((v, i) => (
               <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", padding: "4px 16px" }}>
@@ -593,6 +592,22 @@ function HomePage({ site }) {
               <span style={{ color: C.red, fontSize: 18, flex: "none" }}>→</span>
             </a>
           ))}
+        </div>
+      </div>
+
+      {/* on the record: quotes at the bottom */}
+      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px" }}>
+          <MonoKicker color={C.red}>{h.quotes.kicker}</MonoKicker>
+          <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "18px 0 36px", fontWeight: 400 }}>{h.quotes.heading}</h2>
+          <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+            {h.quotes.items.map((q, i) => (
+              <div key={i} style={{ background: C.cream, padding: "30px 32px", display: "flex", flexDirection: "column", gridColumn: h.quotes.items.length % 2 === 1 && i === h.quotes.items.length - 1 ? "1 / -1" : "auto" }}>
+                <div style={{ fontFamily: SERIF, fontSize: 22, color: C.navy, lineHeight: 1.45, textWrap: "pretty" }}>“{q.quote}”</div>
+                <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.faint, marginTop: "auto", paddingTop: 18, lineHeight: 1.6 }}>{q.attribution}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

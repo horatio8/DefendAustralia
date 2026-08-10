@@ -104,10 +104,9 @@
   "home": {
     "hero": {
       "kicker": "The Australian War Memorial",
-      "headline": "Kim Beazley is rewriting what it means to serve Australia.",
-      "lede": "He was not given that power. Nobody was. The Act that governs the Australian War Memorial covers war and warlike operations by the Defence Force. It has never covered the frontier. Only Parliament can change that, and Parliament never has.",
-      "cta": "Sign the petition to Kim Beazley",
-      "ctaNote": "Australians have signed. Add your name."
+      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object.",
+      "ledeEm": "You still can.",
+      "cta": "Sign the petition"
     },
     "valueProps": [
       {
@@ -132,7 +131,7 @@
       "heading": "A decision no Australian was asked about",
       "body": [
         "In August 2022, behind closed doors, the Council of the Australian War Memorial decided to build a gallery inside the Memorial devoted to the frontier conflicts of the colonial era.",
-        "There was no Act of Parliament. There was no public consultation. There was no legal advice. When the Memorial's Director was asked at Senate Estimates whether the Council would seek advice on whether it even had the power, he said: \"There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.\"",
+        "There was no Act of Parliament. There was no public consultation. There was no legal advice. Asked at Senate Estimates whether the Council would even check that it had the power, the Memorial's Director said there were no plans to.",
         "The decision was recorded in a single paragraph of a council minute. Those minutes did not surface for nine months, and only then because a Senator asked for them. When a member of the public later asked for the policy under Freedom of Information, the Memorial replied that no documents existed. On review, it reversed and confirmed the policy does exist.",
         "The gallery is now confirmed. Roughly 200 square metres, the size of a singles tennis court, on the main concourse at the entrance. The Director calls it \"the next step.\""
       ]
@@ -142,8 +141,7 @@
       "heading": "Kim Beazley knows better than this",
       "body": [
         "Kim Beazley has been Minister for Defence. He has been Australia's Ambassador to the United States. He is the son of a man this country respected. There is no one in public life who better understands what the Memorial is for, and what it costs a nation to fill it.",
-        "He did not start this. He inherited it one month into the job, before he had even been inducted. What he did next is his.",
-        "He went on national radio and said the Memorial had been telling Australians \"a fiction,\" that \"we conned ourselves.\" He said the frontier belongs in the Memorial \"because it is by that means we established ourselves.\" And at a lecture in Perth he said of the Memorial: \"that's something that I will make sure the War Memorial makes all of us understand.\""
+        "He is the decision's loudest public advocate. On national radio he dismissed the Memorial's telling of our history as a fiction, and he has promised to use the Memorial itself to make Australians accept his version of the story. His words are on the record, at the bottom of this page."
       ],
       "em": "I will make sure.",
       "emBody": "That is a man describing the nation's shrine as his to instruct us with.",
@@ -215,6 +213,32 @@
         }
       ],
       "cta": "Chip in"
+    },
+    "quotes": {
+      "kicker": "On the record",
+      "heading": "In their own words",
+      "items": [
+        {
+          "quote": "We conned ourselves.",
+          "attribution": "Kim Beazley on national radio, calling the Memorial's account of our history \"a fiction\""
+        },
+        {
+          "quote": "It is by that means we established ourselves.",
+          "attribution": "Kim Beazley, on why the frontier belongs in the Memorial"
+        },
+        {
+          "quote": "That's something that I will make sure the War Memorial makes all of us understand.",
+          "attribution": "Kim Beazley, lecture in Perth"
+        },
+        {
+          "quote": "There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.",
+          "attribution": "The Memorial's Director, Senate Estimates"
+        },
+        {
+          "quote": "This story and the story of Indigenous opposition to European settlement and expansion should be told. However, this Australian History should be told at the National Museum of Australia, not the Australian War Memorial.",
+          "attribution": "The Memorial's Director, 2018"
+        }
+      ]
     }
   },
   "petition": {

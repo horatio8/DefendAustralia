@@ -238,9 +238,9 @@ function Footer({ site }) {
         <div>
           <div style={col}>The case</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
-            <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>What is being changed</a>
-            <a href="/" className="hov-copy-red" style={link}>How it came to this</a>
-            <a href="/the-issue" className="hov-copy-red" style={link}>Who is responsible</a>
+            <a href="/evidence" className="hov-copy-red" style={link}>The evidence</a>
+            <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>The petition</a>
+            <a href="/" className="hov-copy-red" style={link}>What has happened</a>
           </div>
         </div>
         <div>
@@ -306,38 +306,18 @@ function ValueIcon({ name }) {
   );
 }
 
-function SoldiersLine({ site }) {
-  return (
-    <div style={{ borderLeft: "3px solid " + C.red, padding: "6px 0 6px 22px", marginBottom: 30 }}>
-      <div style={{ fontFamily: SERIF, fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.25, color: C.navy, maxWidth: 900, textWrap: "pretty" }}>{site.soldiersLine}</div>
-    </div>
-  );
-}
-
-function StatsBand({ site }) {
-  return (
-    <div className="m-col2 m-statsmini" style={{ background: C.cream, border: "1px solid " + C.tanLine, boxShadow: "0 1px 0 " + C.tanLine, display: "grid", gridTemplateColumns: "repeat(4,1fr)" }}>
-      {site.stats.map((s, i) => (
-        <div key={i} style={{ padding: "36px 32px", borderLeft: i === 0 ? "none" : "1px solid " + C.line, background: s.accent ? C.statBg : "transparent", boxShadow: s.accent ? "inset 0 3px 0 " + C.red : "none" }}>
-          <div style={{ fontFamily: SERIF, fontSize: 48, lineHeight: 1, color: s.accent ? C.red : C.navy }}>{s.n}</div>
-          <div style={{ fontSize: 13, letterSpacing: ".04em", color: C.mut, marginTop: 12, lineHeight: 1.5, textTransform: "uppercase" }}>{s.label} {s.em ? <span style={{ color: C.red, fontWeight: 700 }}>{s.em}</span> : null}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ChangesGrid({ site }) {
+function CardGrid({ items }) {
   return (
     <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
-      {site.changes.map((c, i) => (
+      {items.map((c, i) => (
         <div key={i} style={{ background: C.cream }}>
-          <div style={{ height: 220, overflow: "hidden" }}>
-            <img src={c.img} alt={c.title} loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: c.pos }} />
-          </div>
+          {c.img && (
+            <div style={{ height: 220, overflow: "hidden" }}>
+              <img src={c.img} alt="" loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: c.pos || "center" }} />
+            </div>
+          )}
           <div style={{ padding: "28px 32px 32px" }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>{c.tag}</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "14px 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{c.title}</h3>
+            <h3 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "0 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{c.title}</h3>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{c.body}</p>
           </div>
         </div>
@@ -351,10 +331,7 @@ function CtaBandDark({ title }) {
     <div style={{ background: C.deep, color: C.cream }}>
       <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 32, justifyContent: "space-between" }}>
         <div style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1.15, maxWidth: 620 }}>{title}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
-          <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ padding: "18px 30px" })}>Sign the petition</a>
-          <a href="/donate" className="hov-ghost-cream" style={{ ...btnBase, fontSize: 15, color: C.cream, background: "transparent", border: "2px solid rgba(250,246,239,.5)", padding: "16px 28px" }}>Fund the campaign</a>
-        </div>
+        <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ padding: "18px 30px" })}>Sign the petition</a>
       </div>
     </div>
   );
@@ -386,8 +363,9 @@ function DemandList({ site, variant }) {
 }
 
 /* Petition sign form card (home + petition pages). */
-function SignCard({ site, count, setCount, idp, privacyNote, showRefLink }) {
+function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote }) {
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
+  const [updates, setUpdates] = useState(true);
   const [hp, setHp] = useState("");
   const [signed, setSigned] = useState(false);
   const [error, setError] = useState("");
@@ -411,79 +389,78 @@ function SignCard({ site, count, setCount, idp, privacyNote, showRefLink }) {
     setSigned(true);
     setCount(count + 1);
     try { localStorage.setItem("ff_last_petition_url", location.pathname); } catch (e) {}
-    apiPost("/api/petition-signup", { ...f, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
+    apiPost("/api/petition-signup", { ...f, consent: updates, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
       .then((d) => { if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {} })
       .catch(() => {});
   };
 
   const link = shareUrl(site);
-  const shares = [
-    { label: "Facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link) },
-    { label: "X", href: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign the petition.") },
-    { label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Defend the War Memorial: it must continue to honour our fallen. Sign the petition: " + link) },
-    { label: "Copy link", copy: true }
-  ];
+  const st = site.shareTexts;
   const issueShare = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
+  const chipStyle = { ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "12px 16px" };
+  const stepHead = { fontSize: 15, lineHeight: 1.6, color: C.body, margin: "0 0 10px" };
 
   return (
     <div id={idp === "h" ? undefined : "sign"} style={{ background: C.cream, border: "1px solid " + C.tan, padding: 36, position: "relative" }}>
       {!signed ? (
         <div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+          {formHeading && <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 8px", lineHeight: 1.1, fontWeight: 400 }}>{formHeading}</h3>}
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6, marginTop: formHeading ? 14 : 0 }}>
             <div style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, lineHeight: 1 }}>{fmt(count)}</div>
             <div style={{ fontFamily: MONO, fontSize: 11, color: C.faint }}>next milestone {fmt(milestone)}</div>
           </div>
           <div style={{ fontSize: 14, color: C.mut }}>have signed. {remaining} to go.</div>
-          <div style={{ margin: "16px 0 28px" }}><Progress pct={pct} /></div>
+          <div style={{ margin: "16px 0 24px" }}><Progress pct={pct} /></div>
+          {formBody && formBody.map((t, i) => (
+            <p key={i} style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, margin: "0 0 12px" }}>{t}</p>
+          ))}
           <Honeypot value={hp} onChange={(e) => setHp(e.target.value)} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: formBody ? 10 : 0 }}>
             <Field id={idp + "fn"} label="First name *" value={f.first} onChange={set("first")} onBlur={partialBeacon} />
             <Field id={idp + "ln"} label="Last name *" value={f.last} onChange={set("last")} onBlur={partialBeacon} />
           </div>
           <div style={{ marginTop: 16 }}>
             <Field id={idp + "em"} label="Email *" value={f.email} onChange={set("email")} onBlur={partialBeacon} />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginTop: 16 }}>
-            <Field id={idp + "mb"} label="Mobile" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 16, marginTop: 16 }}>
             <Field id={idp + "pc"} label="Postcode" value={f.postcode} onChange={set("postcode")} mono />
+            <Field id={idp + "mb"} label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
           </div>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 18, fontSize: 14, color: C.body, cursor: "pointer" }}>
+            <input type="checkbox" checked={updates} onChange={(e) => setUpdates(e.target.checked)} style={{ marginTop: 3, accentColor: "#9E1B24" }} />
+            <span>Keep me updated on this campaign</span>
+          </label>
           {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
-          <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>Sign the petition</button>
+          <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px" })}>Sign the petition</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
         </div>
       ) : (
         <div style={{ animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green }}>Signed · Thank you</div>
-          <div style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1.12, color: C.navy, margin: "16px 0 8px" }}>{f.first.trim() || "Thank you"}, your name is on the record.</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 20 }}>
-            <div style={{ fontFamily: SERIF, fontSize: 40, color: C.red, lineHeight: 1 }}>{fmt(count)}</div>
-            <div style={{ fontSize: 14, color: C.mut }}>{pct}% of the way to {fmt(goal)}</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green }}>Signed · {fmt(count)} Australians</div>
+          <div style={{ fontFamily: SERIF, fontSize: 30, lineHeight: 1.12, color: C.navy, margin: "16px 0 12px" }}>Thank you. Now do the part that actually matters.</div>
+          <p style={{ fontSize: 15, lineHeight: 1.65, color: C.body, margin: "0 0 20px" }}>Your name is on it. But a petition with ten thousand names is an opinion, and a list of a hundred thousand Australians is a constituency. The difference is you.</p>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, borderTop: "1px solid " + C.line, paddingTop: 18, marginBottom: 16 }}>Three things, two minutes</div>
+          <p style={stepHead}><strong>1. Send this to three people.</strong> Not a hundred. Three. People who had family in a war.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
+            <button onClick={() => { copyText(link); flash("Link copied to your clipboard."); issueShare("copy"); }} className="hov-chip" style={chipStyle}>Copy link</button>
+            <a href={"https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link)} target="_blank" rel="noopener noreferrer" onClick={() => issueShare("facebook")} className="hov-chip" style={chipStyle}>Share to Facebook</a>
+            <a href={"mailto:?subject=" + encodeURIComponent("The War Memorial is not theirs to change") + "&body=" + encodeURIComponent(st.long + "\n\n" + link)} onClick={() => issueShare("email")} className="hov-chip" style={chipStyle}>Share by email</a>
+            <a href={"sms:?&body=" + encodeURIComponent(st.sms + " " + link)} onClick={() => issueShare("sms")} className="hov-chip" style={chipStyle}>Share by SMS</a>
           </div>
-          <div style={{ margin: "18px 0 28px" }}><Progress pct={pct} /></div>
-          <div style={{ fontSize: 15, color: C.body, lineHeight: 1.6, marginBottom: 16 }}>Signatures matter in blocks. Send this to five people who would be angry if they knew.</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {shares.map((s) => s.copy ? (
-              <button key={s.label} onClick={() => { copyText(link); flash("Link copied to your clipboard."); issueShare("copy"); }} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>{s.label}</button>
-            ) : (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" onClick={() => issueShare(s.label.toLowerCase())} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>{s.label}</a>
-            ))}
-          </div>
-          {toast && <div style={{ fontSize: 13, color: C.green, marginTop: 14 }}>{toast}</div>}
-          {showRefLink && (
-            <div style={{ fontFamily: MONO, fontSize: 12, color: C.faint, marginTop: 20, borderTop: "1px solid " + C.line, paddingTop: 16, overflowWrap: "anywhere" }}>your link · {link.replace("https://", "")}</div>
-          )}
-          <a href="/donate" className="hov-navy-fill" style={btnNavyOutline({ width: "100%", marginTop: 22, padding: "16px 24px" })}>{showRefLink ? "Fund the legal case" : "Fund the campaign"}</a>
+          {toast && <div style={{ fontSize: 13, color: C.green, margin: "-8px 0 16px" }}>{toast}</div>}
+          <p style={stepHead}><strong>2. Chip in.</strong> Ten per cent of Australians know this is happening. Advertising is how that changes.</p>
+          <a href="/donate" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", marginBottom: 20, display: "inline-block" })}>Chip in</a>
+          <p style={stepHead}><strong>3. Read what he actually said.</strong> It is worse in his own words than in ours.</p>
+          <a href="/evidence" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", display: "inline-block" })}>Read the evidence</a>
         </div>
       )}
     </div>
   );
 }
 
-/* ── pages ───────────────────────────────────────────────────────── */
-
 function HomePage({ site }) {
   const [count, setCount] = useSignatureCount(site);
-  const pct = Math.min(100, Math.round((count / site.org.signatureGoal) * 100));
+  const h = site.home;
   const scrollToSign = (e) => {
     e.preventDefault();
     const el = document.getElementById("home-sign");
@@ -494,24 +471,25 @@ function HomePage({ site }) {
       {/* hero: bright editorial */}
       <div style={{ position: "relative", background: "#FFFFFF" }}>
         <div style={{ position: "relative" }}>
-          <img className="desk-only" src="/assets/hero-courtyard-wide.jpg" alt="The commemorative courtyard of the Australian War Memorial on a bright morning" style={{ width: "100%" }} />
-          <img className="mob-only" src="/assets/hero-courtyard-portrait.jpg" alt="The commemorative courtyard of the Australian War Memorial on a bright morning" style={{ width: "100%" }} />
+          <img className="desk-only" src="/assets/hero-courtyard-wide.jpg" alt="The commemorative courtyard of the Australian War Memorial" style={{ width: "100%" }} />
+          <img className="mob-only" src="/assets/hero-courtyard-portrait.jpg" alt="The commemorative courtyard of the Australian War Memorial" style={{ width: "100%" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom,rgba(255,255,255,0) 45%,rgba(255,255,255,.55) 72%,rgba(255,255,255,.92) 90%,#FFFFFF 100%)" }}></div>
           <div style={{ position: "absolute", top: 26, left: 0, right: 0 }}>
             <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 44, height: 1, background: C.gold, flex: "none" }}></div>
-              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.navy }}>{site.home.hero.kicker}</div>
+              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.navy }}>{h.hero.kicker}</div>
             </div>
           </div>
         </div>
         <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
-            <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>Sign the petition&nbsp;&nbsp;→</a>
+          <div style={{ marginBottom: 26 }}>
+            <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;→</a>
+            <div style={{ fontSize: 14, color: C.mut, marginTop: 12 }}><strong style={{ color: C.red }}>{fmt(count)}</strong> {h.hero.ctaNote}</div>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
-          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 640, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{site.home.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{site.home.hero.ledeEm}</span></p>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(38px,5.2vw,76px)", lineHeight: 1.05, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>{h.hero.headline}</h1>
+          <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede}</p>
           <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
-            {site.home.valueProps.map((v, i) => (
+            {h.valueProps.map((v, i) => (
               <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", padding: "4px 16px" }}>
                 <ValueIcon name={v.icon} />
                 <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: C.navy, fontWeight: 600, lineHeight: 1.45 }}>{v.label}</span>
@@ -521,44 +499,34 @@ function HomePage({ site }) {
         </div>
       </div>
 
-      {/* sign the petition: primary conversion block */}
-      <div id="home-sign" style={{ background: C.creamMid, borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
-          <div>
-            <MonoKicker color={C.red}>{site.home.sign.kicker}</MonoKicker>
-            <h2 style={{ fontFamily: SERIF, fontSize: 48, lineHeight: 1.04, color: C.navy, margin: "20px 0 18px", fontWeight: 400 }}>{site.home.sign.heading}</h2>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 28px", maxWidth: 500 }}>{site.home.sign.lede}</p>
-            <DemandList site={site} />
-          </div>
-          <SignCard site={site} count={count} setCount={setCount} idp="h" privacyNote="Privacy preserved. Unsubscribe at any time." />
-        </div>
-      </div>
-
-      {/* ledger stats */}
-      <div className="m-pad p-sec-t" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 0", position: "relative" }}>
-        <SoldiersLine site={site} />
-        <StatsBand site={site} />
-      </div>
-
-      {/* how it came to this: timeline */}
-      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "104px 28px 96px" }}>
-        <div className="m-col" style={{ display: "grid", gridTemplateColumns: ".9fr 1.6fr", gap: 72, alignItems: "start" }}>
+      {/* what has happened */}
+      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px", display: "grid", gridTemplateColumns: ".9fr 1.6fr", gap: 72, alignItems: "start" }}>
           <div style={{ position: "sticky", top: 100 }} className="m-static">
-            <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{site.home.timelineIntro.kicker}</div>
-            <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: "18px 0 18px", fontWeight: 400 }}>{site.home.timelineIntro.heading}</h2>
-            <p style={{ fontSize: 16, lineHeight: 1.65, color: C.mut, margin: 0, maxWidth: 400 }}>{site.home.timelineIntro.lede}</p>
+            <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.red }}>{h.happened.kicker}</div>
+            <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "18px 0 0", fontWeight: 400 }}>{h.happened.heading}</h2>
           </div>
-          <div style={{ borderLeft: "1px solid " + C.tanLine }}>
-            {site.timeline.map((t, i) => (
-              <div key={i} style={{ position: "relative", padding: "0 0 44px 40px" }}>
-                <div style={{ position: "absolute", left: -5, top: 8, width: 9, height: 9, background: t.accent ? C.red : C.gold }}></div>
-                <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", color: C.faint }}>{t.year}</div>
-                <div style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "8px 0 8px", lineHeight: 1.15 }}>{t.title}</div>
-                <div style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, maxWidth: 560 }}>{t.body}</div>
-              </div>
+          <div>
+            {h.happened.body.map((t, i) => (
+              <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: i ? "18px 0 0" : 0, textWrap: "pretty" }}>{t}</p>
             ))}
           </div>
         </div>
+      </div>
+
+      {/* the man responsible */}
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "88px 28px" }}>
+        <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{h.responsible.kicker}</div>
+        <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "18px 0 24px", fontWeight: 400 }}>{h.responsible.heading}</h2>
+        {h.responsible.body.map((t, i) => (
+          <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 18px", textWrap: "pretty" }}>{t}</p>
+        ))}
+        <div style={{ borderLeft: "3px solid " + C.red, padding: "10px 0 10px 24px", margin: "28px 0" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, lineHeight: 1.2, fontStyle: "italic" }}>{h.responsible.em}</div>
+          <div style={{ fontSize: 16, color: C.mut, marginTop: 10, lineHeight: 1.6 }}>{h.responsible.emBody}</div>
+        </div>
+        <p style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 28px", textWrap: "pretty" }}>{h.responsible.close}</p>
+        <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed({ fontSize: 14, padding: "17px 30px" })}>{h.responsible.cta}</a>
       </div>
 
       {/* honour band: the Roll, scrolling */}
@@ -576,51 +544,49 @@ function HomePage({ site }) {
         </div>
       </div>
 
-      {/* two actions: asymmetric */}
-      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 32, marginBottom: 36 }}>
-          <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: 0, fontWeight: 400 }}>How you fight back.</h2>
-        </div>
-        <div className="m-col" style={{ background: C.navy, color: C.cream, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-          <div style={{ padding: "44px clamp(24px,4vw,40px)", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.gold }}>Ten seconds</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 34, margin: "16px 0 14px", lineHeight: 1.08, fontWeight: 400 }}>Sign the petition</h3>
-            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.goldPale, margin: "0 0 24px" }}>Every signature is counted and cannot be ignored. Signing takes 10 seconds. Add your name.</p>
-            <a href="/take-action/defend-sacred-ground" className="hov-cream" style={{ ...btnBase, marginTop: "auto", alignSelf: "flex-start", fontSize: 14, color: C.navy, background: C.cream, border: "none", padding: "16px 28px", transition: "background .18s" }}>Sign the petition</a>
-          </div>
-          <div style={{ position: "relative", minHeight: 260, overflow: "hidden" }}>
-            <img src="/assets/town-hall.jpg" alt="Australians speaking up at a town hall meeting" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
+      {/* why it is wrong */}
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "0 0 36px", maxWidth: 760, fontWeight: 400 }}>{h.whyWrong.heading}</h2>
+        <CardGrid items={h.whyWrong.items} />
+      </div>
+
+      {/* what we are not saying */}
+      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{h.notSaying.heading}</h2>
+          {h.notSaying.body.map((t, i) => (
+            <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: i === h.notSaying.body.length - 1 ? 0 : "0 0 18px", textWrap: "pretty" }}>{t}</p>
+          ))}
         </div>
       </div>
 
-      {/* quote: editorial offset */}
-      <div style={{ background: C.creamMid, color: C.ink, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line, overflow: "hidden" }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".25fr 1fr", gap: 24, alignItems: "start" }}>
-          <div className="m-hide" style={{ fontFamily: SERIF, fontSize: "clamp(110px,14vw,200px)", lineHeight: .6, color: C.red, marginTop: 26 }}>“</div>
+      {/* demands + petition form */}
+      <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <div>
-            <div style={{ fontFamily: SERIF, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.22, letterSpacing: ".002em", maxWidth: 900, textWrap: "pretty", color: C.navy }}>{site.home.quote.text}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 34 }}>
-              <div style={{ width: 44, height: 1, background: C.gold }}></div>
-              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>{site.home.quote.attribution}</div>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24, marginTop: 36 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 26, lineHeight: 1.2, color: C.red }}>{site.home.quote.cta}</div>
-              <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ fontSize: 14, padding: "16px 28px" })}>Sign the petition</a>
+            <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
+            <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "20px 0 24px", fontWeight: 400 }}>{h.ask.heading}</h2>
+            <DemandList site={site} />
+            <div style={{ marginTop: 28 }}>
+              {h.ask.formBody.map((t, i) => (
+                <p key={i} style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 12px" }}>{t}</p>
+              ))}
             </div>
           </div>
+          <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
         </div>
       </div>
 
-      {/* donate: ledger */}
-      <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
+      {/* donate band */}
+      <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
         <div>
-          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{site.home.donateBand.kicker}</div>
-          <h2 style={{ fontFamily: SERIF, fontSize: 46, lineHeight: 1.05, color: C.navy, margin: "18px 0 16px", fontWeight: 400 }}>{site.home.donateBand.heading}</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: 0, maxWidth: 460 }}>{site.home.donateBand.lede}</p>
+          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.faint }}>{h.donateBand.kicker}</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.05, color: C.navy, margin: "18px 0 16px", fontWeight: 400 }}>{h.donateBand.heading}</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 480 }}>{h.donateBand.body}</p>
+          <a href="/donate" className="hov-red" style={btnRed({ fontSize: 14, padding: "16px 28px" })}>{h.donateBand.cta}</a>
         </div>
         <div style={{ borderTop: "2px solid " + C.navy }}>
-          {site.home.tiers.map((t, i) => (
+          {h.donateBand.tiers.map((t, i) => (
             <a key={i} href="/donate?focus=1" className="hov-row" style={{ display: "flex", alignItems: "baseline", gap: 24, width: "100%", textAlign: "left", background: "transparent", borderBottom: "1px solid " + C.tanLine, padding: "26px 4px", transition: "background .18s", boxSizing: "border-box" }}>
               <span style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, flex: "none", width: 110 }}>{t.amount}</span>
               <span style={{ fontSize: 15, color: C.mut, flex: 1, lineHeight: 1.5 }}>{t.outcome}</span>
@@ -637,16 +603,20 @@ function PetitionPage({ site }) {
   const [count, setCount] = useSignatureCount(site);
   useHashScroll();
   const p = site.petition;
+  const scrollToSign = () => {
+    const el = document.getElementById("sign");
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 84, behavior: "smooth" });
+  };
   return (
     <div>
       {/* hero panel */}
-      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 460, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 420, display: "flex", alignItems: "flex-end" }}>
         <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.4) 55%,rgba(10,18,34,.2) 100%)" }}></div>
         <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 56px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
           <div>
-            <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>Petition · {site.org.petitionSlug}</div>
-            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(44px,6.4vw,88px)", lineHeight: .98, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 900, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
+            <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
+            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(32px,4.4vw,58px)", lineHeight: 1.08, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 860, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
           </div>
           <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
             <div style={{ fontFamily: SERIF, fontSize: "clamp(44px,9vw,72px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
@@ -655,42 +625,38 @@ function PetitionPage({ site }) {
         </div>
       </div>
 
-      {/* petition + form panel */}
+      {/* letter + form */}
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 64, alignItems: "start" }}>
           <div>
-            <h2 style={{ fontFamily: SERIF, fontSize: 34, lineHeight: 1.2, color: C.ink, margin: "0 0 30px", maxWidth: 640, textWrap: "pretty", fontWeight: 400 }}>{p.demandsLede}</h2>
-            <DemandList site={site} variant="cards" />
-          </div>
-          <SignCard site={site} count={count} setCount={setCount} idp="p" privacyNote={p.privacyNote} showRefLink />
-        </div>
-      </div>
-
-      {/* activist changes */}
-      <div style={{ background: C.creamMid, borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px" }}>
-          <MonoKicker color={C.red}>{p.changesKicker}</MonoKicker>
-          <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "18px 0 40px", maxWidth: 760, fontWeight: 400 }}>{p.changesHeading}</h2>
-          <ChangesGrid site={site} />
-          <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 32, flexWrap: "wrap" }}>
-            <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="hov-red" style={btnRed({ fontSize: 14, padding: "16px 28px" })}>{p.changesCta}</button>
-            <span style={{ fontSize: 14, color: C.mut }}>{p.changesCtaNote}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
-        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{p.worksHeading}</h2>
-        {p.worksBody.map((t, i) => (
-          <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === p.worksBody.length - 1 ? "0 0 32px" : "0 0 20px", textWrap: "pretty" }}>{t}</p>
-        ))}
-        <div className="m-col2" style={{ borderTop: "2px solid " + C.navy, paddingTop: 26, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 28 }}>
-          {p.worksStats.map((s, i) => (
-            <div key={i}>
-              <div style={{ fontFamily: SERIF, fontSize: 38, color: C.navy, lineHeight: 1 }}>{s.n}</div>
-              <div style={{ fontSize: 13, color: C.mut, marginTop: 6, lineHeight: 1.5 }}>{s.label}</div>
+            {p.letter.map((t, i) => (
+              <p key={i} style={{ fontSize: i === 0 ? 20 : 17, fontFamily: i === 0 ? SERIF : "inherit", lineHeight: 1.7, color: i === 0 ? C.navy : C.body, margin: "0 0 18px", textWrap: "pretty" }}>{t}</p>
+            ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, margin: "24px 0" }}>
+              {p.letterDemands.map((d, i) => (
+                <div key={i} style={{ background: C.cream, borderLeft: "2px solid " + C.red, padding: "18px 22px", display: "flex", gap: 18, alignItems: "baseline" }}>
+                  <span style={{ fontFamily: SERIF, fontSize: 24, color: C.red, lineHeight: 1, flex: "none" }}>{i + 1}</span>
+                  <span style={{ fontSize: 16, lineHeight: 1.55, color: C.ink }}><strong>{d.lead}</strong> {d.text}</span>
+                </div>
+              ))}
             </div>
+            {p.letterClose.map((t, i) => (
+              <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 18px", fontWeight: i === p.letterClose.length - 1 ? 600 : 400, textWrap: "pretty" }}>{t}</p>
+            ))}
+            <div style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, marginTop: 26, borderTop: "1px solid " + C.line, paddingTop: 20 }}>{fmt(count)} Australians</div>
+          </div>
+          <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading="Add your name" privacyNote={p.privacyNote} />
+        </div>
+      </div>
+
+      {/* sidebar: why one man */}
+      <div style={{ background: C.creamMid }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{p.sidebar.heading}</h2>
+          {p.sidebar.body.map((t, i) => (
+            <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 18px", textWrap: "pretty" }}>{t}</p>
           ))}
+          <button onClick={scrollToSign} className="hov-red" style={btnRed({ fontSize: 14, padding: "17px 30px", marginTop: 8 })}>Sign the petition</button>
         </div>
       </div>
     </div>
@@ -854,7 +820,7 @@ function MinisterPage({ site }) {
 function DonatePage({ site }) {
   const d = site.donate;
   const [freq, setFreq] = useState("once");
-  const [amount, setAmount] = useState(65);
+  const [amount, setAmount] = useState(100);
   const [other, setOther] = useState("");
   const [showOther, setShowOther] = useState(false);
   const [toast, flash] = useToast();
@@ -866,8 +832,8 @@ function DonatePage({ site }) {
     } catch (e) {}
   }, []);
   const amt = other ? Number(String(other).replace(/[^\d.]/g, "")) : amount;
-  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Your gift goes straight to reaching more Australians before it is too late." : "Choose an amount.");
-  const checkoutLabel = amt ? "Give $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
+  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Every dollar goes to reaching Australians who do not yet know this is happening." : "Choose an amount.");
+  const checkoutLabel = amt ? "Chip in $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
 
   const checkout = () => {
     if (!amt) return;
@@ -885,39 +851,38 @@ function DonatePage({ site }) {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(15,23,45,.92) 0%,rgba(15,23,45,.6) 55%,rgba(15,23,45,.25) 100%)" }}></div>
         <div className="m-pad p-sec" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "88px 28px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{d.kicker}</div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(34px,5.4vw,72px)", lineHeight: 1.0, margin: "24px 0 0", maxWidth: 980, fontWeight: 400 }}>{d.headingA}<br /><span style={{ color: C.rose }}>{d.headingB}</span></h1>
-          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "24px 0 0", maxWidth: 600 }}>{d.lede}</p>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(34px,5vw,66px)", lineHeight: 1.02, margin: "24px 0 0", maxWidth: 940, fontWeight: 400 }}>{d.heading}</h1>
+          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "24px 0 0", maxWidth: 620 }}>{d.body[0]}</p>
         </div>
       </div>
 
       <div className="m-pad m-colrev p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "start" }}>
         <div>
-          <h2 style={{ fontFamily: SERIF, fontSize: 44, lineHeight: 1.06, color: C.navy, margin: "0 0 20px", fontWeight: 400 }}>{d.subHeading}</h2>
-          <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 36px", maxWidth: 560, textWrap: "pretty" }}>{d.subLede}</p>
-          <div style={{ borderTop: "2px solid " + C.navy, paddingTop: 26 }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 20 }}>Where it goes</div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {d.allocation.map((a, i) => (
-                <div key={i} style={{ display: "flex", gap: 16, alignItems: "baseline", borderBottom: "1px solid " + C.line, padding: "16px 4px" }}>
-                  <span style={{ color: C.gold, flex: "none" }}>—</span>
-                  <span style={{ fontSize: 16, color: C.ink }}>{a}</span>
-                </div>
-              ))}
-            </div>
+          {d.body.slice(1).map((t, i) => (
+            <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: "0 0 20px", maxWidth: 560, textWrap: "pretty" }}>{t}</p>
+          ))}
+          <div style={{ borderTop: "2px solid " + C.navy, paddingTop: 26, marginTop: 32 }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>What it buys</div>
+            {d.presets.map((v) => (
+              <div key={v} style={{ display: "flex", gap: 24, alignItems: "baseline", borderBottom: "1px solid " + C.line, padding: "16px 4px" }}>
+                <span style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, flex: "none", width: 90 }}>{"$" + fmt(v)}</span>
+                <span style={{ fontSize: 15, color: C.mut, flex: 1, lineHeight: 1.5 }}>{d.outcomes[String(v)]}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         <div style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={chipsRef}>
           <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 28 }}>
-            <button onClick={() => { setFreq("once"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("once")}>One off</button>
-            <button onClick={() => { setFreq("monthly"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("monthly")}>Monthly</button>
+            <button onClick={() => { setFreq("once"); setAmount(100); setOther(""); setShowOther(false); }} style={toggle("once")}>One off</button>
+            <button onClick={() => { setFreq("monthly"); setAmount(100); setOther(""); setShowOther(false); }} style={toggle("monthly")}>Monthly</button>
           </div>
           <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
             {d.presets.map((v) => {
               const active = !other && amount === v;
               return (
                 <button key={v} onClick={() => { setAmount(v); setOther(""); setShowOther(false); }} className="hov-border-red" style={{ padding: "20px 10px", textAlign: "center", border: active ? "2px solid " + C.red : "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer" }}>
-                  <div style={{ fontFamily: SERIF, fontSize: 26, color: active ? C.red : C.navy, lineHeight: 1 }}>${fmt(v)}</div>
+                  <div style={{ fontFamily: SERIF, fontSize: 26, color: active ? C.red : C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
                 </button>
               );
             })}
@@ -939,28 +904,27 @@ function DonatePage({ site }) {
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{d.fineprint}</div>
         </div>
       </div>
-
     </div>
   );
 }
 
 function SharePage({ site }) {
   const s = site.share;
+  const st = site.shareTexts;
   const [toast, flash] = useToast();
   const link = shareUrl(site);
-  const text = "Defend the War Memorial: it must continue to honour our fallen. Sign the petition: ";
   const enc = encodeURIComponent;
   const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
   const platforms = [
     { label: "Share on Facebook", bg: "#1877F2", fg: "#FFFFFF", icon: "facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + enc(link) },
     { label: "Share on Messenger", bg: "#0084FF", fg: "#FFFFFF", icon: "messenger", href: "https://www.facebook.com/sharer/sharer.php?u=" + enc(link) },
-    { label: "Share on WhatsApp", bg: "#25D366", fg: "#FFFFFF", icon: "whatsapp", href: "https://wa.me/?text=" + enc(text + link) },
+    { label: "Share on WhatsApp", bg: "#25D366", fg: "#FFFFFF", icon: "whatsapp", href: "https://wa.me/?text=" + enc(st.sms + " " + link) },
     { label: "Share on Instagram", bg: "#E4405F", fg: "#FFFFFF", icon: "instagram", copy: true },
-    { label: "Share on X", bg: "#000000", fg: "#FFFFFF", icon: "x", href: "https://twitter.com/intent/tweet?url=" + enc(link) + "&text=" + enc(text.trim()) },
+    { label: "Share on X", bg: "#000000", fg: "#FFFFFF", icon: "x", href: "https://twitter.com/intent/tweet?url=" + enc(link) + "&text=" + enc(st.x) },
     { label: "Share on LinkedIn", bg: "#0A66C2", fg: "#FFFFFF", icon: "linkedin", href: "https://www.linkedin.com/sharing/share-offsite/?url=" + enc(link) },
     { label: "Share on TikTok", bg: "#010101", fg: "#FFFFFF", icon: "tiktok", copy: true },
-    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc("Defend the War Memorial: it must continue to honour our fallen") + "&body=" + enc(text + link) },
-    { label: "Share by SMS", bg: C.green, fg: "#FFFFFF", icon: "sms", href: "sms:?&body=" + enc(text + link) },
+    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc("The War Memorial is not theirs to change") + "&body=" + enc(st.long + "\n\n" + link) },
+    { label: "Share by SMS", bg: C.green, fg: "#FFFFFF", icon: "sms", href: "sms:?&body=" + enc(st.sms + " " + link) },
     { label: "Copy your link", bg: "transparent", fg: C.navy, border: "2px solid " + C.navy, icon: "link", copy: true }
   ];
   const shareBtnStyle = (p) => ({ display: "flex", alignItems: "center", gap: 16, width: "100%", fontSize: 15, fontWeight: 600, letterSpacing: ".03em", color: p.fg, background: p.bg, border: p.border || "none", padding: "16px 22px", cursor: "pointer", textAlign: "left", transition: "opacity .15s", boxSizing: "border-box", textDecoration: "none" });
@@ -1123,35 +1087,22 @@ function HeroDark({ img, alt, pos, opacity, kicker, heading, lede }) {
   );
 }
 
-function IssuePage({ site }) {
-  const iss = site.issue;
+function EvidencePage({ site }) {
+  const e = site.evidence;
   return (
     <div>
-      <HeroDark img="/assets/cranes.jpg" alt="Construction cranes over the Australian War Memorial" opacity={.55} kicker={iss.kicker} heading={iss.heading} lede={iss.lede} />
-      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
-        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{iss.proseHeading}</h2>
-        {iss.prose.map((t, i) => (
-          <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === iss.prose.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
-        ))}
-      </div>
-      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
-        <SoldiersLine site={site} />
-        <StatsBand site={site} />
-      </div>
-      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px" }}>
-          <h2 style={{ fontFamily: SERIF, fontSize: 40, lineHeight: 1.06, color: C.navy, margin: "0 0 36px", maxWidth: 760, fontWeight: 400 }}>{iss.changesHeading}</h2>
-          <ChangesGrid site={site} />
-          <div style={{ background: C.cream, borderLeft: "3px solid " + C.red, border: "1px solid " + C.tanLine, borderLeftWidth: 3, borderLeftColor: C.red, padding: "32px 36px", marginTop: 32 }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>{iss.notAWar.kicker}</div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "14px 0 14px", lineHeight: 1.12, fontWeight: 400 }}>{iss.notAWar.heading}</h3>
-            {iss.notAWar.body.map((t, i) => (
-              <p key={i} style={{ fontSize: 16, lineHeight: 1.7, color: C.body, margin: i === iss.notAWar.body.length - 1 ? 0 : "0 0 14px", maxWidth: 820, textWrap: "pretty" }}>{t}</p>
+      <HeroDark img="/assets/cranes.jpg" alt="Construction cranes over the Australian War Memorial" opacity={.55} kicker={e.kicker} heading={e.heading} lede={e.lede} />
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
+        {e.sections.map((sec, i) => (
+          <div key={i} style={{ marginBottom: i === e.sections.length - 1 ? 0 : 48 }}>
+            <h2 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 16px", lineHeight: 1.15, fontWeight: 400, borderTop: i ? "1px solid " + C.line : "none", paddingTop: i ? 40 : 0 }}>{sec.heading}</h2>
+            {sec.body.map((t, j) => (
+              <p key={j} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: j === sec.body.length - 1 ? 0 : "0 0 16px", textWrap: "pretty" }}>{t}</p>
             ))}
           </div>
-        </div>
+        ))}
       </div>
-      <CtaBandDark title="Do not let them get away with it." />
+      <CtaBandDark title="The Memorial is not theirs to change." />
     </div>
   );
 }
@@ -1162,30 +1113,14 @@ function AboutPage({ site }) {
     <div>
       <HeroDark img="/assets/volunteers-stall.jpg" alt="Campaign volunteers at a weekend market stall" pos="center 35%" opacity={.6} kicker={a.kicker} heading={a.heading} lede={a.lede} />
       <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
-        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{a.whoHeading}</h2>
         {a.who.map((t, i) => (
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === a.who.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
-      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
-        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.directorsKicker}</div>
-        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 32 }}>
-          {a.directors.map((dr, i) => (
-            <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, padding: 32, background: C.cream }}>
-              {/* Photo slot: swap the placeholder for an <img> when portraits are supplied. */}
-              <div role="img" aria-label={dr.photoPlaceholder} style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{dr.photoPlaceholder}</span>
-              </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 6px", lineHeight: 1.1, fontWeight: 400 }}>{dr.name}</h3>
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{dr.role}</div>
-              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{dr.bio}</p>
-            </div>
-          ))}
-        </div>
-      </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 24px", lineHeight: 1.15, fontWeight: 400 }}>{a.believeHeading}</h2>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, background: C.line, border: "1px solid " + C.line }}>
-          {a.principles.map((p, i) => (
+          {a.believe.map((p, i) => (
             <div key={i} style={{ background: C.cream, padding: 32 }}>
               <div style={{ fontFamily: SERIF, fontSize: 40, color: C.gold, lineHeight: 1 }}>{p.numeral}</div>
               <h3 style={{ fontSize: 16, margin: "14px 0 10px", color: C.navy, fontWeight: 600 }}>{p.title}</h3>
@@ -1364,7 +1299,7 @@ const PAGES = {
   donate: DonatePage,
   share: SharePage,
   news: NewsPage,
-  issue: IssuePage,
+  evidence: EvidencePage,
   about: AboutPage,
   volunteer: VolunteerPage,
   contact: ContactPage

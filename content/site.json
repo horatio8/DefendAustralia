@@ -16,49 +16,86 @@
   },
   "nav": {
     "links": [
-      { "label": "The Issue", "href": "/the-issue", "page": "issue" },
-      { "label": "About us", "href": "/about-us", "page": "about" },
-      { "label": "News", "href": "/news", "page": "news" }
+      {
+        "label": "The Evidence",
+        "href": "/evidence",
+        "page": "evidence"
+      },
+      {
+        "label": "About us",
+        "href": "/about-us",
+        "page": "about"
+      },
+      {
+        "label": "News",
+        "href": "/news",
+        "page": "news"
+      }
     ],
     "takeAction": [
-      { "label": "Volunteer", "href": "/volunteer", "page": "volunteer" },
-      { "label": "Contact the Minister", "href": "/minister", "page": "minister" },
-      { "label": "Contact us", "href": "/contact", "page": "contact" }
+      {
+        "label": "Volunteer",
+        "href": "/volunteer",
+        "page": "volunteer"
+      },
+      {
+        "label": "Contact the Minister",
+        "href": "/minister",
+        "page": "minister"
+      },
+      {
+        "label": "Contact us",
+        "href": "/contact",
+        "page": "contact"
+      }
     ],
     "menu": [
-      { "label": "Home", "href": "/", "page": "home" },
-      { "label": "The Issue", "href": "/the-issue", "page": "issue" },
-      { "label": "About us", "href": "/about-us", "page": "about" },
-      { "label": "News", "href": "/news", "page": "news" },
-      { "label": "Volunteer", "href": "/volunteer", "page": "volunteer" },
-      { "label": "Contact the Minister", "href": "/minister", "page": "minister" },
-      { "label": "Contact us", "href": "/contact", "page": "contact" },
-      { "label": "Sign the petition", "href": "/take-action/defend-sacred-ground", "page": "petition" }
+      {
+        "label": "Home",
+        "href": "/",
+        "page": "home"
+      },
+      {
+        "label": "The Evidence",
+        "href": "/evidence",
+        "page": "evidence"
+      },
+      {
+        "label": "About us",
+        "href": "/about-us",
+        "page": "about"
+      },
+      {
+        "label": "News",
+        "href": "/news",
+        "page": "news"
+      },
+      {
+        "label": "Volunteer",
+        "href": "/volunteer",
+        "page": "volunteer"
+      },
+      {
+        "label": "Contact the Minister",
+        "href": "/minister",
+        "page": "minister"
+      },
+      {
+        "label": "Contact us",
+        "href": "/contact",
+        "page": "contact"
+      },
+      {
+        "label": "Sign the petition",
+        "href": "/take-action/defend-sacred-ground",
+        "page": "petition"
+      }
     ]
   },
   "demands": [
-    "Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia, as per its charter.",
-    "Describing the frontier conflicts as a war is activist revision. Involving contested history like this dishonours our fallen.",
-    "Ensure activist or contested history never features in the Memorial."
-  ],
-  "soldiersLine": "Our soldiers did not die to protect a country for activists to destroy or give away.",
-  "stats": [
-    { "n": "103,000", "label": "Fallen Australians honoured on the Roll", "em": "", "accent": false },
-    { "n": "85 years", "label": "Of unbroken remembrance since 1941", "em": "", "accent": false },
-    { "n": "83,000m²", "label": "", "em": "Of political activism forced onto sacred ground", "accent": true },
-    { "n": "$550m", "label": "Of public money spent rewriting our history", "em": "", "accent": true }
-  ],
-  "changes": [
-    { "tag": "New galleries", "title": "Frontier conflict displays", "img": "/assets/change-gallery.jpg", "pos": "center center", "body": "Exhibition plans set aside space for frontier conflict displays inside the Memorial, a subject Australia's museums already cover, placed instead in the nation's shrine to its war dead." },
-    { "tag": "Reframing", "title": "\"Contested history\" curation", "img": "/assets/change-curation.jpg", "pos": "center center", "body": "Curatorial language recasts commemoration as a debate to be staged, inviting activist framing into rooms built for mourning." },
-    { "tag": "Scale", "title": "A shrine turned exhibition complex", "img": "/assets/change-excavation.jpg", "pos": "center 55%", "body": "83,000 square metres of new floor space, built for exhibitions rather than remembrance, on ground consecrated to 103,000 names." },
-    { "tag": "Process", "title": "Approved in pieces", "img": "/assets/change-documents.jpg", "pos": "center center", "body": "Each stage was assessed alone, so no process ever weighed the whole plan. The heritage review is the first that can." }
-  ],
-  "timeline": [
-    { "year": "1941", "title": "The Memorial opens", "accent": false, "body": "Charles Bean's idea built in stone: a place of mourning first, a museum second, and quiet by design." },
-    { "year": "2018", "title": "The redevelopment is announced", "accent": false, "body": "A $498m works programme, announced as a completed decision rather than a proposal." },
-    { "year": "2020–23", "title": "Approval, in pieces", "accent": false, "body": "Demolition of Anzac Hall, the Parade Ground excavation, and the new southern entrance are each assessed separately. No process ever weighs the whole." },
-    { "year": "2026", "title": "The heritage review", "accent": true, "body": "The first statutory point where the full scale can be tested by someone who did not commission it." }
+    "Remove the frontier conflict displays from the galleries of the Australian War Memorial.",
+    "Build no further frontier conflict galleries, and abandon the gallery on the main concourse.",
+    "Change nothing about the Memorial's purpose unless the Parliament of Australia votes for it."
   ],
   "honourNames": [
     "R. J. Callaghan · E. M. Hartnett · W. T. Nguyen-Brown · A. K. Papadopoulos · F. G. O'Shea · L. D. Mackellar · S. R. Toohey · H. V. Amundsen · J. J. Ricketson · M. C. Warlpiri · D. A. Fitzgibbon · P. W. Sørensen · G. H. Tan · B. E. Castellano · K. M. O'Donnell · T. R. Blackwood · N. S. Papworth · C. J. Merriweather · V. L. Ashcroft · I. D. Kowalski · ",
@@ -66,60 +103,157 @@
   ],
   "home": {
     "hero": {
-      "kicker": "Canberra · Anzac Parade · Est. 1941",
-      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. The dead cannot object.",
-      "ledeEm": "You still can."
+      "kicker": "The Australian War Memorial",
+      "headline": "Kim Beazley is rewriting what it means to serve Australia.",
+      "lede": "He was not given that power. Nobody was. The Act that governs the Australian War Memorial covers war and warlike operations by the Defence Force. It has never covered the frontier. Only Parliament can change that, and Parliament never has.",
+      "cta": "Sign the petition to Kim Beazley",
+      "ctaNote": "Australians have signed. Add your name."
     },
     "valueProps": [
-      { "icon": "shield", "label": "Honour our fallen" },
-      { "icon": "institution", "label": "Protect our institutions" },
-      { "icon": "poppy", "label": "Defend history" },
-      { "icon": "ban", "label": "Keep politics out" }
+      {
+        "icon": "shield",
+        "label": "Honour our fallen"
+      },
+      {
+        "icon": "institution",
+        "label": "Protect our institutions"
+      },
+      {
+        "icon": "poppy",
+        "label": "Defend history"
+      },
+      {
+        "icon": "ban",
+        "label": "Keep politics out"
+      }
     ],
-    "sign": {
+    "happened": {
+      "kicker": "What has happened",
+      "heading": "A decision no Australian was asked about",
+      "body": [
+        "In August 2022, behind closed doors, the Council of the Australian War Memorial decided to build a gallery inside the Memorial devoted to the frontier conflicts of the colonial era.",
+        "There was no Act of Parliament. There was no public consultation. There was no legal advice. When the Memorial's Director was asked at Senate Estimates whether the Council would seek advice on whether it even had the power, he said: \"There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.\"",
+        "The decision was recorded in a single paragraph of a council minute. Those minutes did not surface for nine months, and only then because a Senator asked for them. When a member of the public later asked for the policy under Freedom of Information, the Memorial replied that no documents existed. On review, it reversed and confirmed the policy does exist.",
+        "The gallery is now confirmed. Roughly 200 square metres, the size of a singles tennis court, on the main concourse at the entrance. The Director calls it \"the next step.\""
+      ]
+    },
+    "responsible": {
+      "kicker": "The man responsible",
+      "heading": "Kim Beazley knows better than this",
+      "body": [
+        "Kim Beazley has been Minister for Defence. He has been Australia's Ambassador to the United States. He is the son of a man this country respected. There is no one in public life who better understands what the Memorial is for, and what it costs a nation to fill it.",
+        "He did not start this. He inherited it one month into the job, before he had even been inducted. What he did next is his.",
+        "He went on national radio and said the Memorial had been telling Australians \"a fiction,\" that \"we conned ourselves.\" He said the frontier belongs in the Memorial \"because it is by that means we established ourselves.\" And at a lecture in Perth he said of the Memorial: \"that's something that I will make sure the War Memorial makes all of us understand.\""
+      ],
+      "em": "I will make sure.",
+      "emBody": "That is a man describing the nation's shrine as his to instruct us with.",
+      "close": "Kim Beazley can be remembered as a Defence Minister and an ambassador who served his country. Or he can be remembered as the man who redefined what it means to serve Australia, on his own authority, without asking anyone. That is his choice, and he is making it now.",
+      "cta": "Tell him no. Sign the petition."
+    },
+    "whyWrong": {
+      "heading": "Four reasons this must stop",
+      "items": [
+        {
+          "title": "It is a shrine, not a museum.",
+          "img": "/assets/poppy-wall.jpg",
+          "pos": "center 40%",
+          "body": "The Australian War Memorial is where families go to find a name on a wall. It is a place of mourning, and mourning requires that some things are settled. A contested argument about the founding of the country is not settled and does not belong in a place where people come to grieve. The National Museum of Australia has told this history since 2001. The Australian Museum tells it now. The Commonwealth has committed $316.5 million to the Ngurra precinct. This history has a home. It is not this one."
+        },
+        {
+          "title": "It was done by stealth.",
+          "img": "/assets/change-documents.jpg",
+          "pos": "center center",
+          "body": "No Act. No consultation. No legal advice. A single paragraph in a minute, nine months to release, and an FOI answer that said no documents existed until it was challenged. Whatever you think of the history, this is not how a national institution is supposed to change what it is for."
+        },
+        {
+          "title": "It rewrites what this country is.",
+          "img": "/assets/change-curation.jpg",
+          "pos": "center center",
+          "body": "The historians behind this have been explicit. One has proposed placing a second tomb beside the Tomb of the Unknown Australian Soldier, so that \"those who fought for empire would be at rest with those who fought against the empire.\" The campaign's own website calls for names added to the Roll of Honour. The same historian co-wrote a book asking whether it is \"not now time for Australia to cast aside\" the Anzac legend. This is not an addition to Anzac. It is a replacement for it."
+        },
+        {
+          "title": "It is costing $550 million.",
+          "img": "/assets/cranes.jpg",
+          "pos": "center 40%",
+          "body": "The Memorial's redevelopment has been funded at $548.7 million. Three in four Australians say that money would be better spent on health, education and veterans' services. Fewer than one in five support putting frontier conflict in the Memorial at all. It is being built anyway, with money that is not the Council's, for a purpose Parliament never authorised."
+        }
+      ]
+    },
+    "notSaying": {
+      "heading": "Let us be clear about this",
+      "body": [
+        "Violence on the colonial frontier happened. It was extensive and it was terrible. The Memorial's own website puts the Aboriginal dead at around 20,000. We do not dispute that and we will not pretend otherwise.",
+        "This is not an argument about whether the history is true. It is an argument about where it belongs, and about who gets to decide.",
+        "In 2018 the Memorial's own Director wrote that the story \"should be told at the National Museum of Australia, not the Australian War Memorial.\" That is our position. It was the Memorial's position too, until the Council changed its mind without changing the law."
+      ]
+    },
+    "ask": {
       "kicker": "The petition",
-      "heading": "Defend the War Memorial: it must continue to honour our fallen.",
-      "lede": "We call on Australia's leaders and the leaders of the Australian War Memorial to:"
-    },
-    "timelineIntro": {
-      "kicker": "How it came to this",
-      "heading": "Snuck in, in pieces, so no one saw the politicisation of sacred ground.",
-      "lede": "They never asked you. Each stage was slipped through alone so no one could object to the whole. This was never about a fuller story: the activists pushing it want to delegitimise Australia and the fact of its settlement."
-    },
-    "quote": {
-      "text": "“Here is their spirit, in the heart of the land they loved; and here we guard the record which they themselves made.”",
-      "attribution": "Charles Bean · Founder of the Memorial, 1948",
-      "cta": "A shrine, not a soapbox."
+      "heading": "What we are asking for",
+      "formHeading": "Add your name",
+      "formBody": [
+        "This petition goes to Kim Beazley as Chair of the Council of the Australian War Memorial, and to the Minister for Veterans' Affairs, who advises on who sits on that Council.",
+        "Every name on it is an Australian telling him he does not have the authority and does not have the country behind him."
+      ]
     },
     "donateBand": {
       "kicker": "Fund the campaign",
-      "heading": "Do not let them get away with it.",
-      "lede": "They are spending $550 million of public money. Your donation helps make sure Australians find out before it is too late."
-    },
-    "tiers": [
-      { "amount": "$65", "outcome": "A letterbox run through a Canberra street" },
-      { "amount": "$265", "outcome": "A full-page ad in a regional paper" },
-      { "amount": "$1,500", "outcome": "A billboard on a Canberra arterial for a month" }
-    ]
+      "heading": "Signatures make the case. Money makes it visible.",
+      "body": "We have no members of parliament, no public funding and no media arm. What we have is names, and the ability to put this in front of Australians who do not yet know it is happening. Ten per cent of the country has even heard of the frontier wars debate. That is the whole problem, and advertising is the whole answer.",
+      "tiers": [
+        {
+          "amount": "$25",
+          "outcome": "Puts this in front of a thousand Australians"
+        },
+        {
+          "amount": "$100",
+          "outcome": "Puts it in front of five thousand"
+        },
+        {
+          "amount": "$500",
+          "outcome": "Keeps it running for a week in Canberra"
+        }
+      ],
+      "cta": "Chip in"
+    }
   },
   "petition": {
-    "heading": "Defend the War Memorial: it must continue to honour our fallen.",
-    "demandsLede": "We call on Australia's leaders and the leaders of the Australian War Memorial to:",
-    "changesKicker": "What is being changed",
-    "changesHeading": "The changes being made in the name of \"a fuller story\".",
-    "changesCta": "Sign the petition",
-    "changesCtaNote": "Signing the petition is how you are heard.",
-    "worksHeading": "What the works actually change",
-    "worksBody": [
-      "The approved programme demolishes Anzac Hall, excavates beneath the Parade Ground, and adds 83,000 square metres of new floor area to a site whose entire architectural argument is restraint.",
-      "The heritage review is the first statutory point at which the scale of the works can be tested by someone who did not commission them."
+    "badge": "Petition · to Kim Beazley",
+    "heading": "To Kim Beazley, Chair of the Council of the Australian War Memorial",
+    "letter": [
+      "Mr Beazley,",
+      "The Australian War Memorial does not belong to its Council. It belongs to every Australian family that lost someone, and it is governed by an Act of Parliament that says what it is for: war and warlike operations by the Defence Force.",
+      "Your Council has decided to put the colonial frontier conflicts inside that building. You did it without an Act of Parliament, without consulting a single Australian, and without taking legal advice on whether you had the power at all.",
+      "You do not have that power. Only Parliament does.",
+      "You of all people know what that building is. You have been Minister for Defence. You have represented this country in Washington. You know that the Memorial is a shrine and not a lecture theatre, and that the names on those walls were put there by families, not by curators.",
+      "We are asking you to stop."
     ],
-    "worksStats": [
-      { "n": "$550m", "label": "Cost of the works programme" },
-      { "n": "103k", "label": "Names on the Roll of Honour" },
-      { "n": "100k", "label": "Signature goal" }
+    "letterDemands": [
+      {
+        "lead": "Remove",
+        "text": "the frontier conflict displays from the galleries of the Australian War Memorial."
+      },
+      {
+        "lead": "Build no more.",
+        "text": "Abandon the frontier gallery on the main concourse."
+      },
+      {
+        "lead": "Ask Parliament.",
+        "text": "If the Memorial's purpose is to change, the Parliament of Australia must vote for it. Not you."
+      }
     ],
-    "privacyNote": "Your signature is added to the petition. We never sell or share supporter data."
+    "letterClose": [
+      "We do not deny what happened on the frontier. We say it belongs where the Memorial's own Director said it belonged in 2018: at the National Museum of Australia.",
+      "This is not yours to change."
+    ],
+    "sidebar": {
+      "heading": "Why this petition is addressed to one man",
+      "body": [
+        "Kim Beazley chairs the Council that made this decision and he has become its loudest public advocate. He has said the Memorial told Australians \"a fiction.\" He has said the frontier belongs there \"because it is by that means we established ourselves.\" He has said he will \"make sure the War Memorial makes all of us understand.\"",
+        "He can stop this. That is why the petition is his."
+      ]
+    },
+    "privacyNote": "We will never sell your details. Unsubscribe any time."
   },
   "minister": {
     "kicker": "Direct action · the Minister",
@@ -132,8 +266,8 @@
     "goesToNote": "Copied to the shadow minister and to correspondence@defendsacredground.au",
     "variations": [
       {
-        "subject": "Keep the War Memorial to honour our fallen",
-        "body": "Dear Minister,\n\nI am writing about the plans for the Australian War Memorial.\n\nThe Memorial is not a political vehicle. It is our national shrine, the resting place of the record of 103,000 Australians who died serving the Commonwealth. It must not be used for activism or contested history.\n\nI ask you to do three things:\n\n1. Keep the Memorial to honour Australian troops who died serving the Commonwealth of Australia, as per its charter.\n2. Describing the frontier conflicts as a war is activist revision. Involving contested history like this dishonours our fallen.\n3. Ensure activist or contested history never features in the Memorial.\n\nThe heritage review is the chance for Australians to be heard on this.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
+        "subject": "The War Memorial is not the Council's to change",
+        "body": "Dear Minister,\n\nI am writing about the decision of the Council of the Australian War Memorial to place colonial frontier conflict displays inside the Memorial.\n\nThe Memorial is governed by an Act of Parliament that covers war and warlike operations by the Defence Force. The Council made this change without an Act of Parliament, without public consultation, and without taking legal advice on whether it had the power at all.\n\nI ask you to do three things:\n\n1. Remove the frontier conflict displays from the galleries of the Australian War Memorial.\n2. Build no further frontier conflict galleries, and abandon the gallery on the main concourse.\n3. Change nothing about the Memorial's purpose unless the Parliament of Australia votes for it.\n\nI would appreciate a response setting out your position.\n\nYours sincerely,"
       }
     ],
     "sentHeading": "Sent. Now they have to answer.",
@@ -141,34 +275,33 @@
   },
   "donate": {
     "kicker": "Fund the campaign",
-    "headingA": "They have $550 million to rewrite our history.",
-    "headingB": "You can stop them for less.",
-    "lede": "Your donation helps Australians stand up before it is too late, and before our history is rewritten.",
-    "subHeading": "Do not let them get away with this.",
-    "subLede": "Digital reach, letterboxing, and press that puts the plan for the Memorial in front of Australians before it is too late.",
-    "presets": [35, 65, 135, 265, 550, 1500],
-    "outcomes": {
-      "35": "Puts the story in front of 1,400 Australians online.",
-      "65": "A letterbox run through one Canberra street.",
-      "135": "Print flyers for a full weekend of volunteering.",
-      "265": "A full-page ad in a regional paper.",
-      "550": "A week of radio spots in one regional market.",
-      "1500": "A billboard on a Canberra arterial for a month."
-    },
-    "allocation": [
-      "Digital reach: putting the plan in front of Australians who have never heard of it",
-      "Letterbox runs through Canberra and regional suburbs",
-      "Full-page ads in regional and metropolitan papers",
-      "Radio spots in regional markets",
-      "Billboards on Canberra arterials",
-      "Market stalls, town halls and volunteer kits"
+    "heading": "Ten per cent of Australians know this is happening",
+    "body": [
+      "That is not an accident. It was done quietly, and quiet is how it stays unless someone pays to break the silence.",
+      "We do not have a member of parliament. We do not have a broadcaster. We have a list of names and whatever we can put behind it.",
+      "Every dollar goes to reaching Australians who do not yet know that the Australian War Memorial is being changed into something else, and to making sure Kim Beazley cannot pretend the country is behind him."
     ],
+    "presets": [
+      25,
+      100,
+      500
+    ],
+    "outcomes": {
+      "25": "Reaches a thousand Australians.",
+      "100": "Reaches five thousand.",
+      "500": "Keeps this running for a week in Canberra where it matters most."
+    },
+    "cta": "Chip in now",
     "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible."
   },
   "share": {
     "heading": "Now bring five people with you.",
     "lede": "Five is the number that moves this. Supporters who recruit five bring in more signatures than any advertisement we have ever run.",
-    "placeholderStats": { "signups": "12", "clicks": "58", "rank": "#340" }
+    "placeholderStats": {
+      "signups": "12",
+      "clicks": "58",
+      "rank": "#340"
+    }
   },
   "news": {
     "heading": "News from the campaign.",
@@ -176,70 +309,140 @@
     "instagramHandle": "@defendsacredground",
     "youtubeChannelId": "",
     "posts": [
-      { "title": "55 days to be heard", "img": "/assets/hero-dome-dusk.jpg" },
-      { "title": "The dawn service that started it", "img": "/assets/dawn-service.jpg" },
-      { "title": "Poppies on the Roll", "img": "/assets/poppy-wall.jpg" },
-      { "title": "Cranes over sacred ground", "img": "/assets/cranes.jpg" },
-      { "title": "Town hall — Queanbeyan", "img": "/assets/town-hall.jpg" },
-      { "title": "The stall is back Saturday", "img": "/assets/volunteers-stall.jpg" },
-      { "title": "10,000 letterboxes in July", "img": "/assets/letterbox.jpg" },
-      { "title": "What 83,000m² looks like", "img": "/assets/change-excavation.jpg" }
+      {
+        "title": "The country is waking up",
+        "img": "/assets/hero-dome-dusk.jpg"
+      },
+      {
+        "title": "The dawn service that started it",
+        "img": "/assets/dawn-service.jpg"
+      },
+      {
+        "title": "Poppies on the Roll",
+        "img": "/assets/poppy-wall.jpg"
+      },
+      {
+        "title": "Cranes over sacred ground",
+        "img": "/assets/cranes.jpg"
+      },
+      {
+        "title": "Town hall — Queanbeyan",
+        "img": "/assets/town-hall.jpg"
+      },
+      {
+        "title": "The stall is back Saturday",
+        "img": "/assets/volunteers-stall.jpg"
+      },
+      {
+        "title": "10,000 letterboxes in July",
+        "img": "/assets/letterbox.jpg"
+      },
+      {
+        "title": "What 83,000m² looks like",
+        "img": "/assets/change-excavation.jpg"
+      }
     ],
     "videos": [
-      { "date": "5 AUG 2026", "title": "The review is open. Here is what to say.", "thumb": "/assets/hero-dome-dusk.jpg", "ytId": null },
-      { "date": "28 JULY 2026", "title": "A curator speaks out on the frontier displays", "thumb": "/assets/change-gallery.jpg", "ytId": null },
-      { "date": "19 JULY 2026", "title": "83,000 square metres. Nobody voted for it.", "thumb": "/assets/change-excavation.jpg", "ytId": null },
-      { "date": "8 JULY 2026", "title": "Families of the fallen answer the Memorial Council", "thumb": "/assets/town-hall.jpg", "ytId": null },
-      { "date": "30 JUNE 2026", "title": "What Charles Bean actually intended", "thumb": "/assets/poppy-wall.jpg", "ytId": null },
-      { "date": "21 JUNE 2026", "title": "Approved in pieces: how the plan got through", "thumb": "/assets/change-documents.jpg", "ytId": null }
+      {
+        "date": "5 AUG 2026",
+        "title": "The review is open. Here is what to say.",
+        "thumb": "/assets/hero-dome-dusk.jpg",
+        "ytId": null
+      },
+      {
+        "date": "28 JULY 2026",
+        "title": "A curator speaks out on the frontier displays",
+        "thumb": "/assets/change-gallery.jpg",
+        "ytId": null
+      },
+      {
+        "date": "19 JULY 2026",
+        "title": "83,000 square metres. Nobody voted for it.",
+        "thumb": "/assets/change-excavation.jpg",
+        "ytId": null
+      },
+      {
+        "date": "8 JULY 2026",
+        "title": "Families of the fallen answer the Memorial Council",
+        "thumb": "/assets/town-hall.jpg",
+        "ytId": null
+      },
+      {
+        "date": "30 JUNE 2026",
+        "title": "What Charles Bean actually intended",
+        "thumb": "/assets/poppy-wall.jpg",
+        "ytId": null
+      },
+      {
+        "date": "21 JUNE 2026",
+        "title": "Approved in pieces: how the plan got through",
+        "thumb": "/assets/change-documents.jpg",
+        "ytId": null
+      }
     ],
     "socials": [
-      { "platform": "X", "handle": "@DefendSacredGnd", "color": "#000000", "icon": "x", "url": "" },
-      { "platform": "Instagram", "handle": "@defendsacredground", "color": "#E4405F", "icon": "instagram", "url": "" },
-      { "platform": "Facebook", "handle": "Defend Sacred Ground", "color": "#1877F2", "icon": "facebook", "url": "" },
-      { "platform": "YouTube", "handle": "@DefendSacredGround", "color": "#FF0000", "icon": "youtube", "url": "" },
-      { "platform": "TikTok", "handle": "@defendsacredground", "color": "#010101", "icon": "tiktok", "url": "" }
+      {
+        "platform": "X",
+        "handle": "@DefendSacredGnd",
+        "color": "#000000",
+        "icon": "x",
+        "url": ""
+      },
+      {
+        "platform": "Instagram",
+        "handle": "@defendsacredground",
+        "color": "#E4405F",
+        "icon": "instagram",
+        "url": ""
+      },
+      {
+        "platform": "Facebook",
+        "handle": "Defend Sacred Ground",
+        "color": "#1877F2",
+        "icon": "facebook",
+        "url": ""
+      },
+      {
+        "platform": "YouTube",
+        "handle": "@DefendSacredGround",
+        "color": "#FF0000",
+        "icon": "youtube",
+        "url": ""
+      },
+      {
+        "platform": "TikTok",
+        "handle": "@defendsacredground",
+        "color": "#010101",
+        "icon": "tiktok",
+        "url": ""
+      }
     ]
-  },
-  "issue": {
-    "kicker": "The issue",
-    "heading": "A shrine, not a soapbox.",
-    "lede": "A $550 million works programme is converting Australia's national shrine into an activist billboard, rewriting what it says about Australia and our fallen.",
-    "proseHeading": "Our shrine is NOT for politics or activism.",
-    "prose": [
-      "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",
-      "That has changed. Under the works programme, exhibition floor space is being multiplied, curatorial plans introduce frontier conflict displays and \"contested history\" framing, and the ground beneath the Parade Ground has been excavated. None of it was ever put to Australians as a whole. Now it finally is.",
-      "Make no mistake about why. The activists pushing these changes want to delegitimise Australia and the fact of its settlement, and the nation's shrine is the most sacred platform they can seize for that cause."
-    ],
-    "changesHeading": "What is actually being changed.",
-    "notAWar": {
-      "kicker": "Not a war",
-      "heading": "The frontier conflicts were not a war.",
-      "body": [
-        "Describing the frontier conflicts as a war is activist revision, not history. We reject the false history and narrative that this country was engaged in a widespread frontier war.",
-        "In reality, Australia was settled relatively peacefully compared with other countries: research so far suggests only seven British soldiers were killed during Australia's colonisation. Contested claims like these belong in museums and history books, not in the nation's shrine."
-      ]
-    }
   },
   "about": {
     "kicker": "About us",
-    "heading": "Ordinary Australians.",
-    "lede": "Veterans, families of the fallen, and people who simply stood at a dawn service once and understood what the quiet was for.",
-    "whoHeading": "Who we are",
+    "heading": "Who we are",
+    "lede": "We are Australians who think the Australian War Memorial should remain what Parliament built it to be.",
     "who": [
-      "Defend Sacred Ground began around kitchen tables in Canberra and grew through RSL halls, veterans' groups, and families with a name on the Roll of Honour. We hold no office, take no party's money, and want nothing for ourselves.",
-      "We want one thing: that the Australian War Memorial remains what it was built to be, a place that honours Australians who died serving the Commonwealth, free of activism and contested history. When the plans are withdrawn, this campaign winds itself up."
+      "Among us are veterans, the children and grandchildren of the fallen, historians and ordinary people who have stood at that wall and found a name. We are not a political party and we are not funded by one.",
+      "We came together because a decision was made about the most significant building in this country by fourteen people nobody elected, and because nobody asked."
     ],
-    "directorsKicker": "Directors · Defending Australia Pty Ltd",
-    "directors": [
-      { "name": "Roger Karge", "role": "Founding director · Operations", "photoPlaceholder": "Roger's photo", "bio": "Researcher and editor best known for the Dark Emu Exposed project, which tests popular claims about Australian history against the primary record. Roger runs the campaign's operations and keeps its claims anchored to evidence." },
-      { "name": "Peter O'Brien", "role": "Founding director · Campaign statement", "photoPlaceholder": "Peter's photo", "bio": "Army veteran and writer. Peter drafted the campaign's statement and plan, and leads its dealings with parliamentarians of every party who believe the Memorial should stay above politics." },
-      { "name": "Robert Hill", "role": "Founding director · Manifesto", "photoPlaceholder": "Robert's photo", "bio": "Author of the campaign's manifesto, The Australian War Memorial Is Not a Frontier Conflict Museum: frontier history belongs in history, and the Memorial belongs to those who served Australia." }
-    ],
-    "principles": [
-      { "numeral": "I", "title": "Non-partisan", "body": "No party logos, no candidates, no endorsements. The Memorial belongs to all of us or it belongs to no one." },
-      { "numeral": "II", "title": "Funded by supporters", "body": "The campaign is funded by donations from individual Australians." },
-      { "numeral": "III", "title": "Defending Australia", "body": "Set up for one purpose: to defend Australia and its values, starting with the shrine that holds its war dead above politics." }
+    "believeHeading": "What we believe",
+    "believe": [
+      {
+        "numeral": "I",
+        "title": "A shrine",
+        "body": "The Memorial is a shrine. Shrines are for grief, not for argument."
+      },
+      {
+        "numeral": "II",
+        "title": "History has a home",
+        "body": "Frontier violence happened and should be taught. The National Museum of Australia, the Australian Museum and the $316.5 million Ngurra precinct exist to do exactly that."
+      },
+      {
+        "numeral": "III",
+        "title": "Parliament decides",
+        "body": "An Act of Parliament means what it says until Parliament changes it. Not until a Council decides it would prefer otherwise."
+      }
     ]
   },
   "volunteer": {
@@ -262,15 +465,84 @@
     "lede": "Questions, media enquiries, or a story about what the Memorial means to your family. A volunteer reads every message.",
     "beforeHeading": "Before you write",
     "before": [
-      { "title": "Media enquiries", "body": "Mark your message \"Media\" and include your deadline. A director will come back to you the same day." },
-      { "title": "Want to help?", "body": "The fastest way to help is the petition. It takes 10 seconds." },
-      { "title": "Family of the fallen?", "body": "We would be honoured to hear what the Memorial means to you. Your story stays private unless you say otherwise." }
+      {
+        "title": "Media enquiries",
+        "body": "Mark your message \"Media\" and include your deadline. A director will come back to you the same day."
+      },
+      {
+        "title": "Want to help?",
+        "body": "The fastest way to help is the petition. It takes 10 seconds."
+      },
+      {
+        "title": "Family of the fallen?",
+        "body": "We would be honoured to hear what the Memorial means to you. Your story stays private unless you say otherwise."
+      }
     ],
-    "topics": ["General", "Media enquiry", "Volunteering", "Donations"]
+    "topics": [
+      "General",
+      "Media enquiry",
+      "Volunteering",
+      "Donations"
+    ]
   },
   "footer": {
     "tagline": "Not affiliated with any political party.",
-    "campaignLines": ["Run by volunteers.", "Funded by supporters.", "Wound up the day the plans are withdrawn."],
+    "campaignLines": [
+      "Run by volunteers.",
+      "Funded by supporters.",
+      "Wound up the day the plans are withdrawn."
+    ],
     "legalLine": "Lest we forget"
+  },
+  "shareTexts": {
+    "long": "The Australian War Memorial is being changed into something it was never meant to be, and no Australian was asked. Kim Beazley's Council did it without an Act of Parliament and without taking legal advice. I have signed the petition.",
+    "sms": "They're changing the War Memorial and nobody asked us. I've signed this. Takes 20 seconds.",
+    "x": "No Act of Parliament. No consultation. No legal advice. Kim Beazley's Council is changing what the Australian War Memorial is for. Sign:"
+  },
+  "evidence": {
+    "kicker": "The evidence",
+    "heading": "The evidence, with sources",
+    "lede": "Everything on this page is sourced. We have published the citations because we expect to be checked, and because the people on the other side of this argument have not been.",
+    "sections": [
+      {
+        "heading": "The Act does not cover it",
+        "body": [
+          "The Australian War Memorial Act 1980 defines active service as \"active service in war or in warlike operations by members of the Defence Force.\" The words frontier, Aboriginal, Indigenous and 1788 appear nowhere in it. Parliament has amended the Act eighteen times since 1981 and has never extended it to the frontier. No bill to do so has ever been introduced.",
+          "The people campaigning for the change have themselves proposed amending the Act to allow it, which is an admission that as written it does not."
+        ]
+      },
+      {
+        "heading": "The Memorial used to say so itself",
+        "body": [
+          "The Memorial published that it \"is not the appropriate institution\" and pointed to the National Museum. A 2014 article on its own website said the Act's definition \"does not include the internal conflict between Indigenous populations and colonial powers of the day.\" At Senate Estimates in November 2022, the Director confirmed that was still the Memorial's formal position.",
+          "In 2018 the Director wrote: \"This story and the story of Indigenous opposition to European settlement and expansion should be told. However, this Australian History should be told at the National Museum of Australia, not the Australian War Memorial.\"",
+          "Nothing in the Act has changed since. Only the Council has."
+        ]
+      },
+      {
+        "heading": "No legal advice was taken",
+        "body": [
+          "Asked at Senate Estimates whether the Council would seek advice: \"There are no plans to take legal advice simply because we believe we have the discretion available to us to be able to do this.\""
+        ]
+      },
+      {
+        "heading": "The paper trail",
+        "body": [
+          "Decided at Council Meeting No. 178, 19 August 2022, in a single paragraph. Minutes released nine months later after a Senator asked. Published twelve months later. An FOI applicant told in April 2025 that no documents existed, then told in June 2025 that the policy exists after all."
+        ]
+      },
+      {
+        "heading": "The scale",
+        "body": [
+          "$548.7 million redevelopment. Roughly 200 square metres devoted to the frontier, at the entrance, on the main concourse. The Director calls it \"the next step.\""
+        ]
+      },
+      {
+        "heading": "Where the public is",
+        "body": [
+          "A UNSW survey of 1,500 Australians found 16 per cent support including frontier conflicts at the Memorial. Ten per cent had heard of the frontier wars at all."
+        ]
+      }
+    ]
   }
 }

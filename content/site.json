@@ -192,7 +192,7 @@
     "donateBand": {
       "kicker": "Fund the campaign",
       "heading": "Australians do not even know this is happening. You can make the difference.",
-      "body": "We have no members of parliament, no public funding and no media arm. What we have is everyday Australians, and the ability to share the truth. Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
+      "body": "They have $548 million of public money and a national institution. We have everyday Australians and the truth. Only one Australian in ten has heard this is happening, and every dollar you give buys another one who finds out in time to object."
     },
     "quotes": {
       "kicker": "On the record",
@@ -254,8 +254,9 @@
     "heading": "Australians do not even know this is happening. You can make the difference.",
     "body": [
       "They did this quietly in secret, and quiet is how it stays unless you help break the silence.",
-      "We do not have a member of parliament. We do not have a broadcaster. What we have is everyday Australians, and the ability to share the truth.",
-      "Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
+      "They have $548 million of public money, a national institution, and the advantage of already being inside the building. We have no member of parliament, no broadcaster and no public funding. What we have is everyday Australians and the truth. Neither of those reaches anyone for free.",
+      "Only one Australian in ten has heard that any of this is happening. That silence is not bad luck. It is the strategy, and it is exactly why they expect to get away with it. Every dollar you give buys the one thing that beats it: another Australian who finds out in time to object.",
+      "$35 puts the story in front of 1,400 people. $265 buys a full page in a regional paper. $1,500 puts it on a Canberra billboard for a month. That is the entire campaign. There is nothing else funding this and no one else coming."
     ],
     "presets": [
       35,
@@ -328,7 +329,7 @@
         "img": "/assets/cranes.jpg"
       },
       {
-        "title": "Town hall — Queanbeyan",
+        "title": "Town hall in Queanbeyan",
         "img": "/assets/town-hall.jpg"
       },
       {

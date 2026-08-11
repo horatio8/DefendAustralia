@@ -417,13 +417,12 @@ function DemandList({ site, variant }) {
 
 /* The ask: kicker, heading, "we call on…" line and the demands.
    Shared so the home page and the petition page are typographically identical. */
-function AskBlock({ site, ask, heading }) {
-  const H = heading === "h1" ? "h1" : "h2";
+function AskBlock({ site, ask, showHeading }) {
   return (
     <div>
       <MonoKicker color={C.red}>{ask.kicker}</MonoKicker>
-      <H style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{ask.heading}</H>
-      {ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{ask.lede}</p>}
+      {showHeading && <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{ask.heading}</h2>}
+      {ask.lede && <p style={{ fontFamily: SERIF, fontSize: "clamp(21px,1.9vw,26px)", lineHeight: 1.4, color: C.navy, margin: showHeading ? "0 0 28px" : "22px 0 28px", maxWidth: 560, textWrap: "pretty" }}>{ask.lede}</p>}
       <DemandList site={site} />
     </div>
   );
@@ -432,7 +431,6 @@ function AskBlock({ site, ask, heading }) {
 /* Petition sign form card (home + petition pages). */
 function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote }) {
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
-  const [updates, setUpdates] = useState(true);
   const [hp, setHp] = useState("");
   const [signed, setSigned] = useState(false);
   const [error, setError] = useState("");
@@ -456,7 +454,9 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
     setSigned(true);
     setCount(count + 1);
     try { localStorage.setItem("ff_last_petition_url", location.pathname); } catch (e) {}
-    apiPost("/api/petition-signup", { ...f, consent: updates, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
+    // Campaign updates are the default for signatories, so there is no tickbox
+    // to read: consent is implied by signing and stated in the privacy note.
+    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
       .then((d) => { if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {} })
       .catch(() => {});
   };
@@ -499,10 +499,6 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
             <Field id={idp + "pc"} label="Postcode" value={f.postcode} onChange={set("postcode")} mono />
             <Field id={idp + "mb"} label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
           </div>
-          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 18, fontSize: 14, color: C.body, cursor: "pointer" }}>
-            <input type="checkbox" checked={updates} onChange={(e) => setUpdates(e.target.checked)} style={{ marginTop: 3, accentColor: "#9E1B24" }} />
-            <span>Keep me updated on this campaign</span>
-          </label>
           {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
           <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px" })}>Sign the petition</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
@@ -574,7 +570,7 @@ function HomePage({ site }) {
       {/* demands + petition form */}
       <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
-          <AskBlock site={site} ask={h.ask} />
+          <AskBlock site={site} ask={h.ask} showHeading />
           <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
         </div>
       </div>
@@ -680,12 +676,15 @@ function PetitionPage({ site }) {
   };
   return (
     <div>
-      {/* hero band: the count carries it, the ask below carries the headline */}
-      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
+      {/* hero panel */}
+      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 320, display: "flex", alignItems: "flex-end" }}>
         <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.5) 60%,rgba(10,18,34,.25) 100%)" }}></div>
-        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "96px 28px 36px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
-          <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
+        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "110px 28px 44px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
+            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(32px,4.2vw,54px)", lineHeight: 1.08, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 820, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
+          </div>
           {count > 0 && (
             <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
               <div style={{ fontFamily: SERIF, fontSize: "clamp(40px,7vw,64px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
@@ -695,10 +694,10 @@ function PetitionPage({ site }) {
         </div>
       </div>
 
-      {/* the ask + form: identical treatment to the home page */}
+      {/* the ask + form: heading lives in the hero, so the ask leads with the call */}
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
-          <AskBlock site={site} ask={p} heading="h1" />
+          <AskBlock site={site} ask={p} />
           <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading={p.formHeading} privacyNote={p.privacyNote} />
         </div>
       </div>

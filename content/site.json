@@ -298,7 +298,27 @@
       "1500": "A billboard on a Canberra arterial for a month."
     },
     "cta": "Chip in now",
-    "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible."
+    "fineprint": "Card details are handled by Stripe. We never see or store them. Donations to the campaign are not tax deductible.",
+    "stripeLinks": {
+      "once": {
+        "35": "https://donate.stripe.com/7sY9ASdJyfIdaywdAR3Ru00",
+        "65": "https://donate.stripe.com/6oU3cuaxm0NjcGE8gx3Ru01",
+        "135": "https://donate.stripe.com/fZu5kCdJyeE96ig9kB3Ru02",
+        "265": "https://donate.stripe.com/9B6fZgeNCcw1364cwN3Ru03",
+        "550": "https://donate.stripe.com/eVq7sK8pe0Nj4a8eEV3Ru04",
+        "1500": "https://donate.stripe.com/eVqfZg48YeE93641S93Ru05",
+        "custom": "https://donate.stripe.com/eVq5kC7ladA5bCA0O53Ru0c"
+      },
+      "monthly": {
+        "35": "https://donate.stripe.com/aFa6oG7lacw1fSQdAR3Ru06",
+        "65": "https://donate.stripe.com/8x2bJ034U9jP364eEV3Ru07",
+        "135": "https://donate.stripe.com/00w00ibBqanTdKI1S93Ru08",
+        "265": "https://donate.stripe.com/6oUaEWaxm53zeOM2Wd3Ru09",
+        "550": "https://donate.stripe.com/cNi00i9ti1RnfSQ7ct3Ru0a",
+        "1500": "https://donate.stripe.com/aFa8wOcFueE9ayw8gx3Ru0b"
+      }
+    },
+    "panelNote": "Secure checkout by Stripe. Card, PayPal, Apple Pay and Google Pay accepted."
   },
   "share": {
     "heading": "Now bring five people with you.",

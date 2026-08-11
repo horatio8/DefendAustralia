@@ -823,51 +823,56 @@ function MinisterPage({ site }) {
 function DonatePanel({ site, innerRef }) {
   const d = site.donate;
   const [freq, setFreq] = useState("once");
-  const [amount, setAmount] = useState(65);
   const [other, setOther] = useState("");
   const [showOther, setShowOther] = useState(false);
   const [toast, flash] = useToast();
-  const amt = other ? Number(String(other).replace(/[^\d.]/g, "")) : amount;
-  const outcomeLine = d.outcomes[String(amt)] || (amt ? "Every dollar goes to reaching Australians who do not yet know this is happening." : "Choose an amount.");
-  const checkoutLabel = amt ? "Chip in $" + fmt(amt) + (freq === "monthly" ? " a month" : "") : "Choose an amount";
-  const checkout = () => {
-    if (!amt) return;
-    apiPost("/api/checkout", { amount: amt, frequency: freq, source_url: location.href })
+  const links = (d.stripeLinks && d.stripeLinks[freq]) || {};
+  const customLink = d.stripeLinks && d.stripeLinks.once && d.stripeLinks.once.custom;
+
+  // Monthly pay-what-you-want is not supported by Stripe Payment Links, so a
+  // custom monthly gift goes through the checkout endpoint instead.
+  const monthlyOther = () => {
+    const amt = Number(String(other).replace(/[^\d.]/g, ""));
+    if (!amt) return flash("Enter an amount first.");
+    apiPost("/api/checkout", { amount: amt, frequency: "monthly", source_url: location.href })
       .then((resp) => { if (resp && resp.url) window.location.href = resp.url; else throw new Error(); })
       .catch(() => flash("Could not open checkout. Please try again in a moment."));
   };
+
   const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
+  const chip = { padding: "22px 10px", textAlign: "center", border: "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer", textDecoration: "none", display: "block", boxSizing: "border-box" };
+
   return (
     <div style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={innerRef}>
-      <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 28 }}>
-        <button onClick={() => { setFreq("once"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("once")}>One off</button>
-        <button onClick={() => { setFreq("monthly"); setAmount(65); setOther(""); setShowOther(false); }} style={toggle("monthly")}>Monthly</button>
+      <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 24 }}>
+        <button onClick={() => { setFreq("once"); setShowOther(false); setOther(""); }} style={toggle("once")}>One off</button>
+        <button onClick={() => { setFreq("monthly"); setShowOther(false); setOther(""); }} style={toggle("monthly")}>Monthly</button>
       </div>
       <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-        {d.presets.map((v) => {
-          const active = !other && amount === v;
-          return (
-            <button key={v} onClick={() => { setAmount(v); setOther(""); setShowOther(false); }} className="hov-border-red" style={{ padding: "20px 10px", textAlign: "center", border: active ? "2px solid " + C.red : "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer" }}>
-              <div style={{ fontFamily: SERIF, fontSize: 26, color: active ? C.red : C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
-            </button>
-          );
-        })}
+        {d.presets.map((v) => (
+          <a key={v} href={links[String(v)] || "#"} className="hov-border-red" style={chip}>
+            <div style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
+            {freq === "monthly" && <div style={{ fontSize: 11, color: C.faint, marginTop: 5, letterSpacing: ".04em" }}>a month</div>}
+          </a>
+        ))}
       </div>
-      {!showOther ? (
-        <button onClick={() => setShowOther(true)} className="hov-border-navy" style={{ width: "100%", marginTop: 14, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 14, cursor: "pointer" }}>Other amount</button>
+      {freq === "once" ? (
+        <a href={customLink || "#"} className="hov-border-navy" style={{ display: "block", width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Other amount</a>
+      ) : !showOther ? (
+        <button onClick={() => setShowOther(true)} className="hov-border-navy" style={{ width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer" }}>Other amount</button>
       ) : (
-        <div style={{ marginTop: 14, border: "1px solid " + C.navy, padding: 16, background: C.cream, animation: "dsgRise .18s cubic-bezier(.2,.6,.2,1) both" }}>
+        <div style={{ marginTop: 12, border: "1px solid " + C.navy, padding: 16, background: C.cream, animation: "dsgRise .18s cubic-bezier(.2,.6,.2,1) both" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <label htmlFor="oa" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut }}>Other amount</label>
+            <label htmlFor="oa" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut }}>Other monthly amount</label>
             <button onClick={() => { setShowOther(false); setOther(""); }} aria-label="Close other amount" className="hov-copy-red" style={{ background: "none", border: "none", color: C.faint, fontSize: 16, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}>×</button>
           </div>
           <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} />
+          <button onClick={monthlyOther} className="hov-red" style={btnRed({ width: "100%", marginTop: 12, fontSize: 14, padding: "16px 20px" })}>Continue to Stripe</button>
         </div>
       )}
-      <div style={{ background: C.creamMid, padding: "18px 20px", marginTop: 24, fontSize: 14, color: C.body, lineHeight: 1.6 }}>{outcomeLine}</div>
-      <button onClick={checkout} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>{checkoutLabel}</button>
       {toast && <div style={{ fontSize: 13, color: C.red, marginTop: 12 }}>{toast}</div>}
-      <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{d.fineprint}</div>
+      <div style={{ fontSize: 12, color: C.faint, marginTop: 18, lineHeight: 1.6 }}>{d.panelNote}</div>
+      <div style={{ fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 1.6 }}>{d.fineprint}</div>
     </div>
   );
 }

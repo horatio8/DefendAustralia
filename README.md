@@ -81,26 +81,47 @@ Petition signups sync to Campaign Nucleus (account `teller`):
 
 ## Stripe (donations)
 
-`api/checkout.js` and `api/stripe-webhook.js` implement the spec's donation
-flow: the DonatePanel POSTs `{amount, frequency}` to `/api/checkout`, gets a
-hosted Stripe Checkout URL back (AUD; one-off = payment mode, monthly =
-subscription via price_data), and returns to `/share?session_id=…`. GET
-deeplinks (`/api/checkout?amount=65&frequency=monthly`) 303 to Stripe for
-SMS/email prefills.
+Live account: **Defend Australia** (`acct_1U2ufdCy6Gkrn2pI`).
 
-To activate, set in Vercel env:
+Donations run on **Stripe Payment Links** so a donor reaches Stripe in one
+click with the amount already set — the site never collects the amount.
+Clicking any chip in the DonatePanel navigates straight to
+`donate.stripe.com`. Links live in `content/site.json` under
+`donate.stripeLinks` and can be swapped without touching code.
 
-- `STRIPE_SECRET_KEY` — from dashboard.stripe.com → Developers → API keys
-  (start with the test key, swap for live at launch)
-- `STRIPE_WEBHOOK_SECRET` — create a webhook endpoint pointing at
-  `https://<domain>/api/stripe-webhook` with events
-  `checkout.session.completed` and `invoice.paid`, copy its signing secret
-- `SITE_URL` — canonical origin, e.g. `https://defendsacredground.au`
+- Products: `prod_V3FawQKMSVc0q5` (one-off), `prod_V3FaRw3sHgMvAB` (monthly)
+- 6 one-off + 6 monthly links ($35/$65/$135/$265/$550/$1500 AUD) plus a
+  one-off "customer chooses what to pay" link ($5–$10,000)
+- Every link carries `metadata.campaign = defend-sacred-ground`, a
+  `DSG DONATION` statement-descriptor suffix, and redirects to `/share`
+- Payment methods are dynamic (dashboard-controlled), so PayPal / Apple Pay /
+  Google Pay appear automatically once enabled in Dashboard settings
 
-Test with Stripe test mode (card 4242 4242 4242 4242) before going live.
-Billing (monthly gifts) is covered by subscription mode; Invoicing for
-major donors can run from the Stripe Dashboard without code. Webhook
-downstream pushes (datastore/CRM/Meta CAPI) are TODO-marked in the handler.
+**Custom monthly amounts** are the one gap: Stripe Payment Links do not
+support pay-what-you-want on recurring prices. In monthly mode the "Other
+amount" control collects the amount and posts to `api/checkout.js`, which
+creates a subscription Checkout Session. That path needs the env vars below;
+every other amount works with no backend at all.
+
+`api/checkout.js` / `api/stripe-webhook.js` env (Vercel):
+
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`
+- Webhook endpoint `https://<domain>/api/stripe-webhook`, events
+  `checkout.session.completed` and `invoice.paid`
+
+### Dashboard steps that cannot be done over the API
+
+1. **Logo** — Settings → Branding: upload `assets/stripe-logo.png` (900×239)
+   and `assets/stripe-icon.png` (512×512). Colours, font (Inter) and square
+   border style are already set via the API.
+2. **PayPal** — Settings → Payment methods: turn on PayPal (card, Apple Pay
+   and Google Pay are on by default). Apple Pay also needs the live domain
+   registered once the site is deployed.
+3. **Receipts** — Settings → Business → Customer emails: enable
+   "Successful payments" (and, for monthly donors, the Billing email
+   notifications).
+4. **Public details** — Settings → Business: set the public business name,
+   support email and statement descriptor so donors recognise the charge.
 
 ## Not yet implemented (backend, spec §5–§12)
 

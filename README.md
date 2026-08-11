@@ -59,7 +59,11 @@ In `content/site.json`:
   disabled until set; copy/webmail fallbacks still work).
 - `news.youtubeChannelId` — enables the live video feed via `/api/youtube`.
 - `news.socials[].url` — real profile URLs.
-- `org.signatureFallbackCount` — baseline shown until `/api/signature-count` is live.
+- `org.signatureFallbackCount` — shown only for the moment before
+  `/api/signature-count` answers. Keep it at the real Nucleus total (0 today),
+  never a padded number: the displayed count has to match Nucleus exactly.
+- `org.signatureGoalStep` — the goal ladder, 15,000 by default. The target is
+  always the next unreached multiple, so it rolls over on its own.
 - Director portraits on About us: swap each placeholder slot for an `<img>`.
 
 In each HTML shell: inject the Meta Pixel snippet where marked.
@@ -75,6 +79,12 @@ Petition signups sync to Campaign Nucleus (account `teller`):
 - **Receiver endpoint** (for `CN_RECEIVER_URLS` in the backend env, spec §9):
   `POST https://api.campaignnucleus.com/v1/forms/0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28/entries`
   mapped as `{"defend-sacred-ground": "<that URL>"}`
+- **Signature count:** `api/signature-count.js` reads the form's entry total
+  from Nucleus (60 s cache) so the number on the site is the number in the CRM.
+  Env: `CN_API_TOKEN`, `CN_PETITION_FORM_ID`
+  (`0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28`), optionally `CN_API_BASE` and
+  `CN_ACCOUNT_SLUG` (`teller`). Until those are set the endpoint returns 503 and
+  the site falls back to `org.signatureFallbackCount`.
 - **Hosted fallback page:** https://teller.nucleuspages.com/landing/dsg-beazley
   (branded in campaign colours; redirects to /donate after signing; admin
   notifications to james@teller.consulting)

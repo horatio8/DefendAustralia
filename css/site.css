@@ -61,6 +61,45 @@ img { max-width:100%; }
   .p-sec-b{ padding-bottom:44px !important; }
 }
 
+/* Nothing may push the page sideways: an overflowing row on a tablet reads as
+   a broken site long before anyone finds the scrollbar. */
+html, body { max-width:100%; overflow-x:hidden; }
+
+/* Nav collapses to the menu button well before the links can crowd or wrap.
+   Five links, an outline button and Donate stop fitting around 1100px, which
+   is every iPad in landscape. */
+@media (max-width:1100px){
+  .m-hide{ display:none !important }
+  .m-menu{ display:flex !important }
+  .m-logo{ height:40px !important }
+}
+
+/* Tablet-only section spacing: sits between the desktop values and the
+   tighter phone values set above, so it must not reach below 769px. */
+@media (min-width:769px) and (max-width:1100px){
+  .p-hero{ padding-top:80px !important; padding-bottom:44px !important }
+  .p-hero-t{ padding-top:80px !important }
+  .p-sec{ padding-top:56px !important; padding-bottom:56px !important }
+  .p-sec-t{ padding-top:56px !important }
+  .p-sec-b{ padding-bottom:56px !important }
+}
+
+/* Narrow tablets and large phones: side-by-side layouts stop working here.
+   iPad portrait at 1024 is deliberately above this line, because the two
+   column ask keeps the sign form beside the demands rather than below them.
+   The 768px block then tightens the same helpers again for phones. */
+@media (max-width:900px){
+  .m-col{ display:block !important }
+  .m-col > * + *{ margin-top:36px }
+  .m-col1{ grid-template-columns:1fr 1fr !important }
+  .m-pad{ padding-left:24px !important; padding-right:24px !important }
+  .m-static{ position:static !important }
+  .m-colrev{ display:flex !important; flex-direction:column-reverse !important; gap:36px !important }
+  .m-statsmini{ grid-template-columns:1fr 1fr !important }
+  .m-statsmini > div{ padding:24px 24px !important }
+  .m-statsmini > div > div:first-child{ font-size:34px !important }
+}
+
 /* Responsive helpers (carried from the design prototype) */
 @media (max-width:768px){
   .m-col{ display:block !important }

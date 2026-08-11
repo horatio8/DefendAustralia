@@ -33,13 +33,13 @@
       "permanent": false
     },
     {
-      "source": "/the-issue",
-      "destination": "/evidence",
+      "source": "/evidence",
+      "destination": "/the-issue",
       "permanent": false
     },
     {
       "source": "/issue",
-      "destination": "/evidence",
+      "destination": "/the-issue",
       "permanent": false
     }
   ],

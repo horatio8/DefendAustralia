@@ -72,6 +72,9 @@ function useToast() {
   return [toast, flash];
 }
 
+/* The displayed count is the Campaign Nucleus entry total for the petition
+ * form, nothing else. /api/signature-count reads it live; the fallback only
+ * covers the moment before that request lands. */
 function useSignatureCount(site) {
   const [count, setCount] = useState(site.org.signatureFallbackCount);
   useEffect(() => {
@@ -81,6 +84,13 @@ function useSignatureCount(site) {
       .catch(() => {});
   }, []);
   return [count, setCount];
+}
+
+/* The goal climbs in fixed steps: 15,000, then 30,000, then 45,000. It rolls
+ * over on its own the moment a step is reached, so nothing needs editing. */
+function nextGoal(count, site) {
+  const step = site.org.signatureGoalStep || 15000;
+  return (Math.floor(Math.max(0, count) / step) + 1) * step;
 }
 
 /* Hash deep links on JS-rendered pages: retry until the target exists,
@@ -160,7 +170,10 @@ function Banner({ site }) {
   return (
     <div className="topbar" style={{ background: C.red, color: C.cream, display: "flex", alignItems: "center", gap: 16, padding: "11px 28px", fontSize: 14 }}>
       <a href="/take-action/defend-sacred-ground" className="topbar-text" style={{ flex: 1, color: C.cream, textAlign: "center", lineHeight: 1.45 }}>
-        <span style={{ fontWeight: 700 }}>{fmt(count)}</span> {site.banner.text} <span style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{site.banner.cta}</span>
+        {count > 0
+          ? <span><span style={{ fontWeight: 700 }}>{fmt(count)}</span> {site.banner.text} </span>
+          : <span>{site.banner.zeroText} </span>}
+        <span style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{site.banner.cta}</span>
       </a>
       <button onClick={dismiss} aria-label="Dismiss announcement" className="hov-fg-cream topbar-close" style={{ background: "none", border: "none", color: C.rose, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "4px 6px", flex: "none" }}>×</button>
     </div>
@@ -238,7 +251,7 @@ function Footer({ site }) {
         <div>
           <div style={col}>The case</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
-            <a href="/evidence" className="hov-copy-red" style={link}>The evidence</a>
+            <a href="/the-issue" className="hov-copy-red" style={link}>The Issue</a>
             <a href="/take-action/defend-sacred-ground" className="hov-copy-red" style={link}>The petition</a>
             <a href="/" className="hov-copy-red" style={link}>What has happened</a>
           </div>
@@ -303,6 +316,46 @@ function ValueIcon({ name }) {
       <path d="M12 3.2l6.8 2.4v5c0 4.8-2.9 8.3-6.8 9.9-3.9-1.6-6.8-5.1-6.8-9.9v-5z" />
       <path d="M12 3.2v17.3" />
     </svg>
+  );
+}
+
+function SoldiersLine({ site }) {
+  return (
+    <div style={{ borderLeft: "3px solid " + C.red, padding: "6px 0 6px 22px", marginBottom: 30 }}>
+      <div style={{ fontFamily: SERIF, fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.25, color: C.navy, maxWidth: 900, textWrap: "pretty" }}>{site.soldiersLine}</div>
+    </div>
+  );
+}
+
+function StatsBand({ site }) {
+  return (
+    <div className="m-col2 m-statsmini" style={{ background: C.cream, border: "1px solid " + C.tanLine, boxShadow: "0 1px 0 " + C.tanLine, display: "grid", gridTemplateColumns: "repeat(4,1fr)" }}>
+      {site.stats.map((s, i) => (
+        <div key={i} style={{ padding: "36px 32px", borderLeft: i === 0 ? "none" : "1px solid " + C.line, background: s.accent ? C.statBg : "transparent", boxShadow: s.accent ? "inset 0 3px 0 " + C.red : "none" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 48, lineHeight: 1, color: s.accent ? C.red : C.navy }}>{s.n}</div>
+          <div style={{ fontSize: 13, letterSpacing: ".04em", color: C.mut, marginTop: 12, lineHeight: 1.5, textTransform: "uppercase" }}>{s.label} {s.em ? <span style={{ color: C.red, fontWeight: 700 }}>{s.em}</span> : null}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChangesGrid({ site }) {
+  return (
+    <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+      {site.changes.map((c, i) => (
+        <div key={i} style={{ background: C.cream }}>
+          <div style={{ height: 220, overflow: "hidden" }}>
+            <img src={c.img} alt={c.title} loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: c.pos }} />
+          </div>
+          <div style={{ padding: "28px 32px 32px" }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>{c.tag}</div>
+            <h3 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "14px 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{c.title}</h3>
+            <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{c.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -384,9 +437,9 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   const [signed, setSigned] = useState(false);
   const [error, setError] = useState("");
   const [toast, flash] = useToast();
-  const goal = site.org.signatureGoal, milestone = site.org.nextMilestone;
+  const goal = nextGoal(count, site);
   const pct = Math.min(100, Math.round((count / goal) * 100));
-  const remaining = fmt(Math.max(0, milestone - count));
+  const remaining = fmt(Math.max(0, goal - count));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   const partialBeacon = () => {
@@ -419,12 +472,18 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
       {!signed ? (
         <div>
           {formHeading && <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 8px", lineHeight: 1.1, fontWeight: 400 }}>{formHeading}</h3>}
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6, marginTop: formHeading ? 14 : 0 }}>
-            <div style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, lineHeight: 1 }}>{fmt(count)}</div>
-            <div style={{ fontFamily: MONO, fontSize: 11, color: C.faint }}>next milestone {fmt(milestone)}</div>
-          </div>
-          <div style={{ fontSize: 14, color: C.mut }}>have signed. {remaining} to go.</div>
-          <div style={{ margin: "16px 0 24px" }}><Progress pct={pct} /></div>
+          {/* Counter only once there is a count worth showing. */}
+          {count > 0 && (
+            <div>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6, marginTop: formHeading ? 14 : 0 }}>
+                <div style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, lineHeight: 1 }}>{fmt(count)}</div>
+                <div style={{ fontFamily: MONO, fontSize: 11, color: C.faint }}>goal {fmt(goal)}</div>
+              </div>
+              <div style={{ fontSize: 14, color: C.mut }}>have signed. {remaining} to go.</div>
+              <div style={{ margin: "16px 0 24px" }}><Progress pct={pct} /></div>
+            </div>
+          )}
+          {count <= 0 && <div style={{ height: formHeading ? 20 : 0 }}></div>}
           {formBody && formBody.map((t, i) => (
             <p key={i} style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, margin: "0 0 12px" }}>{t}</p>
           ))}
@@ -465,7 +524,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
           <p style={stepHead}><strong>2. Chip in.</strong> Ten per cent of Australians know this is happening. Advertising is how that changes.</p>
           <a href="/donate" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", marginBottom: 20, display: "inline-block" })}>Chip in</a>
           <p style={stepHead}><strong>3. Read what he actually said.</strong> It is worse in his own words than in ours.</p>
-          <a href="/evidence" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", display: "inline-block" })}>Read the evidence</a>
+          <a href="/the-issue" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", display: "inline-block" })}>Read the issue</a>
         </div>
       )}
     </div>
@@ -627,10 +686,12 @@ function PetitionPage({ site }) {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.5) 60%,rgba(10,18,34,.25) 100%)" }}></div>
         <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "96px 28px 36px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
           <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
-          <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "clamp(40px,7vw,64px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>Australians have signed</div>
-          </div>
+          {count > 0 && (
+            <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
+              <div style={{ fontFamily: SERIF, fontSize: "clamp(40px,7vw,64px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>Australians have signed</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1099,22 +1160,35 @@ function HeroDark({ img, alt, pos, opacity, kicker, heading, lede }) {
   );
 }
 
-function EvidencePage({ site }) {
-  const e = site.evidence;
+function IssuePage({ site }) {
+  const iss = site.issue;
   return (
     <div>
-      <HeroDark img="/assets/cranes.jpg" alt="Construction cranes over the Australian War Memorial" opacity={.55} kicker={e.kicker} heading={e.heading} lede={e.lede} />
-      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
-        {e.sections.map((sec, i) => (
-          <div key={i} style={{ marginBottom: i === e.sections.length - 1 ? 0 : 48 }}>
-            <h2 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 16px", lineHeight: 1.15, fontWeight: 400, borderTop: i ? "1px solid " + C.line : "none", paddingTop: i ? 40 : 0 }}>{sec.heading}</h2>
-            {sec.body.map((t, j) => (
-              <p key={j} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: j === sec.body.length - 1 ? 0 : "0 0 16px", textWrap: "pretty" }}>{t}</p>
-            ))}
-          </div>
+      <HeroDark img="/assets/cranes.jpg" alt="Construction cranes over the Australian War Memorial" opacity={.55} kicker={iss.kicker} heading={iss.heading} lede={iss.lede} />
+      <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{iss.proseHeading}</h2>
+        {iss.prose.map((t, i) => (
+          <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === iss.prose.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
-      <CtaBandDark title="The Memorial is not theirs to change." />
+      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
+        <SoldiersLine site={site} />
+        <StatsBand site={site} />
+      </div>
+      <div style={{ background: C.creamMid, borderTop: "1px solid " + C.line, borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px" }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: 40, lineHeight: 1.06, color: C.navy, margin: "0 0 36px", maxWidth: 760, fontWeight: 400 }}>{iss.changesHeading}</h2>
+          <ChangesGrid site={site} />
+          <div style={{ background: C.cream, borderLeft: "3px solid " + C.red, border: "1px solid " + C.tanLine, borderLeftWidth: 3, borderLeftColor: C.red, padding: "32px 36px", marginTop: 32 }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>{iss.notAWar.kicker}</div>
+            <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "14px 0 14px", lineHeight: 1.12, fontWeight: 400 }}>{iss.notAWar.heading}</h3>
+            {iss.notAWar.body.map((t, i) => (
+              <p key={i} style={{ fontSize: 16, lineHeight: 1.7, color: C.body, margin: i === iss.notAWar.body.length - 1 ? 0 : "0 0 14px", maxWidth: 820, textWrap: "pretty" }}>{t}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+      <CtaBandDark title="Do not let them get away with it." />
     </div>
   );
 }
@@ -1125,14 +1199,30 @@ function AboutPage({ site }) {
     <div>
       <HeroDark img="/assets/volunteers-stall.jpg" alt="Campaign volunteers at a weekend market stall" pos="center 35%" opacity={.6} kicker={a.kicker} heading={a.heading} lede={a.lede} />
       <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px 56px" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{a.whoHeading}</h2>
         {a.who.map((t, i) => (
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === a.who.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
+        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.directorsKicker}</div>
+        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 32 }}>
+          {a.directors.map((dr, i) => (
+            <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, padding: 32, background: C.cream }}>
+              {/* Photo slot: swap the placeholder for an <img> when portraits are supplied. */}
+              <div role="img" aria-label={dr.photoPlaceholder} style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{dr.photoPlaceholder}</span>
+              </div>
+              <h3 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 6px", lineHeight: 1.1, fontWeight: 400 }}>{dr.name}</h3>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{dr.role}</div>
+              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{dr.bio}</p>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 80px" }}>
-        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 24px", lineHeight: 1.15, fontWeight: 400 }}>{a.believeHeading}</h2>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, background: C.line, border: "1px solid " + C.line }}>
-          {a.believe.map((p, i) => (
+          {a.principles.map((p, i) => (
             <div key={i} style={{ background: C.cream, padding: 32 }}>
               <div style={{ fontFamily: SERIF, fontSize: 40, color: C.gold, lineHeight: 1 }}>{p.numeral}</div>
               <h3 style={{ fontSize: 16, margin: "14px 0 10px", color: C.navy, fontWeight: 600 }}>{p.title}</h3>
@@ -1311,7 +1401,7 @@ const PAGES = {
   donate: DonatePage,
   share: SharePage,
   news: NewsPage,
-  evidence: EvidencePage,
+  issue: IssuePage,
   about: AboutPage,
   volunteer: VolunteerPage,
   contact: ContactPage

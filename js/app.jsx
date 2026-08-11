@@ -390,40 +390,33 @@ function CtaBandDark({ title }) {
   );
 }
 
-function DemandList({ site, variant }) {
-  if (variant === "cards") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {site.demands.map((d, i) => (
-          <div key={i} style={{ background: C.cream, borderLeft: "2px solid " + C.red, padding: "20px 24px", display: "flex", gap: 20, alignItems: "baseline" }}>
-            <span style={{ fontFamily: SERIF, fontSize: 26, color: C.red, lineHeight: 1 }}>{i + 1}</span>
-            <span style={{ fontSize: 17, lineHeight: 1.55, color: C.ink }}>{d}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
+function DemandList({ site }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2, background: C.tanLine, border: "1px solid " + C.tanLine }}>
       {site.demands.map((d, i) => (
-        <div key={i} style={{ display: "flex", gap: 18, alignItems: "baseline", borderBottom: "1px solid " + C.tanLine, paddingBottom: 14 }}>
-          <span style={{ fontFamily: SERIF, fontSize: 22, color: C.red, lineHeight: 1, flex: "none" }}>{i + 1}</span>
-          <span style={{ fontSize: 16, lineHeight: 1.55, color: C.ink }}>{d}</span>
-        </div>
+        <li key={i} className="ask-row" style={{ background: "#FFFFFF", padding: "22px 24px", display: "flex", gap: 18, alignItems: "flex-start" }}>
+          {/* Fixed-width badge so every clause starts on the same left edge. */}
+          <span aria-hidden="true" style={{ fontFamily: SERIF, fontSize: 20, lineHeight: "34px", color: "#FFFFFF", background: C.red, width: 34, height: 34, flex: "none", textAlign: "center" }}>{i + 1}</span>
+          <span style={{ fontSize: 17, lineHeight: 1.6, color: C.ink, fontWeight: 500, textWrap: "pretty" }}>{d}</span>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
-/* The ask: kicker, heading, "we call on…" line and the demands.
-   Shared so the home page and the petition page are typographically identical. */
+/* The ask: kicker, heading, and the petition itself in a bordered panel.
+   Shared so the home page and the petition page are identical. This is the
+   text people are signing, so it is set apart from the page around it rather
+   than running on as body copy. */
 function AskBlock({ site, ask, showHeading }) {
   return (
     <div>
       <MonoKicker color={C.red}>{ask.kicker}</MonoKicker>
       {showHeading && <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{ask.heading}</h2>}
-      {ask.lede && <p style={{ fontFamily: SERIF, fontSize: "clamp(21px,1.9vw,26px)", lineHeight: 1.4, color: C.navy, margin: showHeading ? "0 0 28px" : "22px 0 28px", maxWidth: 560, textWrap: "pretty" }}>{ask.lede}</p>}
-      <DemandList site={site} />
+      <div className="ask-panel" style={{ marginTop: showHeading ? 0 : 22, background: C.creamCard, border: "1px solid " + C.tanLine, borderLeft: "4px solid " + C.red, padding: "28px 28px 28px 26px" }}>
+        {ask.lede && <p style={{ fontFamily: SERIF, fontSize: "clamp(20px,1.75vw,25px)", lineHeight: 1.38, color: C.navy, margin: "0 0 22px", textWrap: "balance" }}>{ask.lede}</p>}
+        <DemandList site={site} />
+      </div>
     </div>
   );
 }

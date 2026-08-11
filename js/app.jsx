@@ -392,7 +392,7 @@ function CtaBandDark({ title }) {
 
 function DemandList({ site }) {
   return (
-    <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+    <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2 }}>
       {site.demands.map((d, i) => (
         <li key={i} className="ask-row" style={{ background: "#FFFFFF", padding: "22px 24px", display: "flex", gap: 18, alignItems: "flex-start" }}>
           {/* Fixed-width badge so every clause starts on the same left edge. */}
@@ -413,8 +413,8 @@ function AskBlock({ site, ask, showHeading }) {
     <div>
       <MonoKicker color={C.red}>{ask.kicker}</MonoKicker>
       {showHeading && <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{ask.heading}</h2>}
-      <div className="ask-panel" style={{ marginTop: showHeading ? 0 : 22, background: C.creamCard, border: "1px solid " + C.tanLine, borderLeft: "4px solid " + C.red, padding: "28px 28px 28px 26px" }}>
-        {ask.lede && <p style={{ fontFamily: SERIF, fontSize: "clamp(20px,1.75vw,25px)", lineHeight: 1.38, color: C.navy, margin: "0 0 22px", textWrap: "balance" }}>{ask.lede}</p>}
+      <div className="ask-panel" style={{ marginTop: showHeading ? 0 : 22, background: C.navy, borderTop: "5px solid " + C.red, padding: "30px 28px 28px" }}>
+        {ask.lede && <p style={{ fontFamily: SERIF, fontSize: "clamp(20px,1.75vw,25px)", lineHeight: 1.38, color: "#FFFFFF", fontWeight: 700, margin: "0 0 22px", textWrap: "balance" }}>{ask.lede}</p>}
         <DemandList site={site} />
       </div>
     </div>

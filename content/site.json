@@ -185,12 +185,13 @@
     },
     "ask": {
       "kicker": "The petition",
-      "heading": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:",
-      "formHeading": "Add your name"
+      "heading": "Defend the Australian War Memorial. Sign the petition today.",
+      "formHeading": "Add your name",
+      "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
     },
     "donateBand": {
       "kicker": "Fund the campaign",
-      "heading": "Australians do not even know this is happening",
+      "heading": "Australians do not even know this is happening. You can make the difference.",
       "body": "We have no members of parliament, no public funding and no media arm. What we have is everyday Australians, and the ability to share the truth. Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
     },
     "quotes": {
@@ -223,13 +224,11 @@
   },
   "petition": {
     "badge": "Petition · to Kim Beazley",
-    "heading": "To Kim Beazley, Chair of the Council of the Australian War Memorial",
+    "heading": "Defend the Australian War Memorial. Sign the petition today.",
     "letter": [
       "Mr Beazley,",
       "The Australian War Memorial does not belong to its Council. It belongs to every Australian family that lost someone, and it is governed by an Act of Parliament that says what it is for: war and warlike operations by the Defence Force.",
-      "Your Council has decided to put the colonial frontier conflicts inside that building. You did it without an Act of Parliament, without consulting a single Australian, and without taking legal advice on whether you had the power at all.",
-      "You do not have that power. Only Parliament does.",
-      "You of all people know what that building is. You have been Minister for Defence. You have represented this country in Washington. You know that the Memorial is a shrine and not a lecture theatre, and that the names on those walls were put there by families, not by curators.",
+      "Your Council has decided to put the colonial frontier conflicts inside that building. You did it without an Act of Parliament, without consulting a single Australian, and without taking legal advice on whether you had the power at all. You do not have that power. Only Parliament does.",
       "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
     ],
     "letterDemands": [
@@ -243,16 +242,8 @@
       }
     ],
     "letterClose": [
-      "We do not deny what happened on the frontier. We say it belongs where the Memorial's own Director said it belonged in 2018: at the National Museum of Australia.",
       "This is not yours to change."
     ],
-    "sidebar": {
-      "heading": "Why this petition is addressed to one man",
-      "body": [
-        "Kim Beazley chairs the Council that made this decision and he has become its loudest public advocate. He has said the Memorial told Australians \"a fiction.\" He has said the frontier belongs there \"because it is by that means we established ourselves.\" He has said he will \"make sure the War Memorial makes all of us understand.\"",
-        "He can stop this. That is why the petition is his."
-      ]
-    },
     "privacyNote": "We will never sell your details. Unsubscribe any time."
   },
   "minister": {
@@ -275,9 +266,9 @@
   },
   "donate": {
     "kicker": "Fund the campaign",
-    "heading": "Australians do not even know this is happening",
+    "heading": "Australians do not even know this is happening. You can make the difference.",
     "body": [
-      "That is not an accident. It was done quietly, and quiet is how it stays unless someone pays to break the silence.",
+      "They did this quietly in secret, and quiet is how it stays unless you help break the silence.",
       "We do not have a member of parliament. We do not have a broadcaster. What we have is everyday Australians, and the ability to share the truth.",
       "Every dollar we receive goes to making more Australians aware that this is happening to our most sacred heritage."
     ],
@@ -307,7 +298,7 @@
         "265": "https://donate.stripe.com/9B6fZgeNCcw1364cwN3Ru03",
         "550": "https://donate.stripe.com/eVq7sK8pe0Nj4a8eEV3Ru04",
         "1500": "https://donate.stripe.com/eVqfZg48YeE93641S93Ru05",
-        "custom": "https://donate.stripe.com/eVq5kC7ladA5bCA0O53Ru0c"
+        "custom": "https://donate.stripe.com/28EeVc8pefId0XW2Wd3Ru0d"
       },
       "monthly": {
         "35": "https://donate.stripe.com/aFa6oG7lacw1fSQdAR3Ru06",

@@ -483,7 +483,7 @@ function HomePage({ site }) {
         </div>
         <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
-            <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;→</a>
+            <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;↓</a>
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
           <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{h.hero.ledeEm}</span></p>
@@ -495,6 +495,19 @@ function HomePage({ site }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* demands + petition form */}
+      <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
+          <div>
+            <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
+            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{h.ask.heading}</h2>
+            {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
+            <DemandList site={site} />
+          </div>
+          <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
         </div>
       </div>
 
@@ -559,19 +572,6 @@ function HomePage({ site }) {
         </div>
       </div>
 
-      {/* demands + petition form */}
-      <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
-          <div>
-            <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
-            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{h.ask.heading}</h2>
-            {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
-            <DemandList site={site} />
-          </div>
-          <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
-        </div>
-      </div>
-
       {/* donate band */}
       <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
         <div>
@@ -613,10 +613,10 @@ function PetitionPage({ site }) {
   return (
     <div>
       {/* hero panel */}
-      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 420, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 300, display: "flex", alignItems: "flex-end" }}>
         <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.4) 55%,rgba(10,18,34,.2) 100%)" }}></div>
-        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "150px 28px 56px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
+        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "110px 28px 44px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: "clamp(32px,4.4vw,58px)", lineHeight: 1.08, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 860, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
@@ -652,16 +652,6 @@ function PetitionPage({ site }) {
         </div>
       </div>
 
-      {/* sidebar: why one man */}
-      <div style={{ background: C.creamMid }}>
-        <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "72px 28px" }}>
-          <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 20px", lineHeight: 1.15, fontWeight: 400 }}>{p.sidebar.heading}</h2>
-          {p.sidebar.body.map((t, i) => (
-            <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 18px", textWrap: "pretty" }}>{t}</p>
-          ))}
-          <button onClick={scrollToSign} className="hov-red" style={btnRed({ fontSize: 14, padding: "17px 30px", marginTop: 8 })}>Sign the petition</button>
-        </div>
-      </div>
     </div>
   );
 }

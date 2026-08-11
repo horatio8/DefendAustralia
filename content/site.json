@@ -225,26 +225,11 @@
   "petition": {
     "badge": "Petition · to Kim Beazley",
     "heading": "Defend the Australian War Memorial. Sign the petition today.",
-    "letter": [
-      "Mr Beazley,",
-      "The Australian War Memorial does not belong to its Council. It belongs to every Australian family that lost someone, and it is governed by an Act of Parliament that says what it is for: war and warlike operations by the Defence Force.",
-      "Your Council has decided to put the colonial frontier conflicts inside that building. You did it without an Act of Parliament, without consulting a single Australian, and without taking legal advice on whether you had the power at all. You do not have that power. Only Parliament does.",
-      "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
-    ],
-    "letterDemands": [
-      {
-        "lead": "Halting and removing",
-        "text": "the frontier conflicts and other contested history that contravene the War Memorial's governing Act."
-      },
-      {
-        "lead": "Abstaining",
-        "text": "from further historical revisions without approval from the Parliament of Australia."
-      }
-    ],
     "letterClose": [
       "This is not yours to change."
     ],
-    "privacyNote": "We will never sell your details. Unsubscribe any time."
+    "privacyNote": "We will never sell your details. Unsubscribe any time.",
+    "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
   },
   "minister": {
     "kicker": "Direct action · the Minister",

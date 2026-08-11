@@ -632,19 +632,10 @@ function PetitionPage({ site }) {
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 64, alignItems: "start" }}>
           <div>
-            {p.letter.map((t, i) => (
-              <p key={i} style={{ fontSize: i === 0 ? 20 : 17, fontFamily: i === 0 ? SERIF : "inherit", lineHeight: 1.7, color: i === 0 ? C.navy : C.body, margin: "0 0 18px", textWrap: "pretty" }}>{t}</p>
-            ))}
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, margin: "24px 0" }}>
-              {p.letterDemands.map((d, i) => (
-                <div key={i} style={{ background: C.cream, borderLeft: "2px solid " + C.red, padding: "18px 22px", display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: 24, color: C.red, lineHeight: 1, flex: "none" }}>{i + 1}</span>
-                  <span style={{ fontSize: 16, lineHeight: 1.55, color: C.ink }}><strong>{d.lead}</strong> {d.text}</span>
-                </div>
-              ))}
-            </div>
+            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{p.lede}</p>
+            <DemandList site={site} />
             {p.letterClose.map((t, i) => (
-              <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 18px", fontWeight: i === p.letterClose.length - 1 ? 600 : 400, textWrap: "pretty" }}>{t}</p>
+              <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "24px 0 0", fontWeight: 600, textWrap: "pretty" }}>{t}</p>
             ))}
             <div style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, marginTop: 26, borderTop: "1px solid " + C.line, paddingTop: 20 }}>{fmt(count)} Australians</div>
           </div>

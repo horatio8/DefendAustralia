@@ -362,6 +362,20 @@ function DemandList({ site, variant }) {
   );
 }
 
+/* The ask: kicker, heading, "we call on…" line and the demands.
+   Shared so the home page and the petition page are typographically identical. */
+function AskBlock({ site, ask, heading }) {
+  const H = heading === "h1" ? "h1" : "h2";
+  return (
+    <div>
+      <MonoKicker color={C.red}>{ask.kicker}</MonoKicker>
+      <H style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{ask.heading}</H>
+      {ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{ask.lede}</p>}
+      <DemandList site={site} />
+    </div>
+  );
+}
+
 /* Petition sign form card (home + petition pages). */
 function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote }) {
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
@@ -501,12 +515,7 @@ function HomePage({ site }) {
       {/* demands + petition form */}
       <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
-          <div>
-            <MonoKicker color={C.red}>{h.ask.kicker}</MonoKicker>
-            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{h.ask.heading}</h2>
-            {h.ask.lede && <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{h.ask.lede}</p>}
-            <DemandList site={site} />
-          </div>
+          <AskBlock site={site} ask={h.ask} />
           <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
         </div>
       </div>
@@ -612,34 +621,45 @@ function PetitionPage({ site }) {
   };
   return (
     <div>
-      {/* hero panel */}
-      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 300, display: "flex", alignItems: "flex-end" }}>
+      {/* hero band: the count carries it, the ask below carries the headline */}
+      <div style={{ position: "relative", background: C.deepest, overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
         <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.4) 55%,rgba(10,18,34,.2) 100%)" }}></div>
-        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "110px 28px 44px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
-          <div>
-            <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
-            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(32px,4.4vw,58px)", lineHeight: 1.08, color: "#FFFFFF", margin: "20px 0 0", maxWidth: 860, textShadow: "0 2px 32px rgba(0,0,0,.55)", fontWeight: 400 }}>{p.heading}</h1>
-          </div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.5) 60%,rgba(10,18,34,.25) 100%)" }}></div>
+        <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "96px 28px 36px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+          <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>
           <div style={{ borderRight: "2px solid " + C.red, paddingRight: 24, textAlign: "right", flex: "none" }}>
-            <div style={{ fontFamily: SERIF, fontSize: "clamp(44px,9vw,72px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
+            <div style={{ fontFamily: SERIF, fontSize: "clamp(40px,7vw,64px)", lineHeight: .95, color: C.cream, letterSpacing: "-.01em", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{fmt(count)}</div>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: "#E6DFD2", marginTop: 10 }}>Australians have signed</div>
           </div>
         </div>
       </div>
 
-      {/* letter + form */}
+      {/* the ask + form: identical treatment to the home page */}
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 64, alignItems: "start" }}>
-          <div>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 520 }}>{p.lede}</p>
-            <DemandList site={site} />
-            {p.letterClose.map((t, i) => (
-              <p key={i} style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "24px 0 0", fontWeight: 600, textWrap: "pretty" }}>{t}</p>
+        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
+          <AskBlock site={site} ask={p} heading="h1" />
+          <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading={p.formHeading} privacyNote={p.privacyNote} />
+        </div>
+      </div>
+
+      {/* why this must stop: the case for signing, kept tight */}
+      <div style={{ background: C.creamMid, borderBottom: "1px solid " + C.line }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px" }}>
+          <MonoKicker color={C.red}>{p.why.kicker}</MonoKicker>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 34px", fontWeight: 400 }}>{p.why.heading}</h2>
+          <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+            {p.why.items.map((it, i) => (
+              <div key={i} style={{ background: C.cream, padding: "26px 30px 30px" }}>
+                <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", color: C.red, marginBottom: 12 }}>{"0" + (i + 1)}</div>
+                <h3 style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, margin: "0 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{it.title}</h3>
+                <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{it.body}</p>
+              </div>
             ))}
-            <div style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, marginTop: 26, borderTop: "1px solid " + C.line, paddingTop: 20 }}>{fmt(count)} Australians</div>
           </div>
-          <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading="Add your name" privacyNote={p.privacyNote} />
+          <div className="m-col" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 24, marginTop: 36 }}>
+            <p style={{ fontFamily: SERIF, fontSize: 30, lineHeight: 1.2, color: C.navy, margin: 0, textWrap: "pretty" }}>{p.why.close}</p>
+            <button type="button" onClick={scrollToSign} className="hov-red" style={btnRed({ padding: "18px 30px", flex: "none" })}>{p.why.cta}</button>
+          </div>
         </div>
       </div>
 

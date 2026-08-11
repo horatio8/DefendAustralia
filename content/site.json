@@ -224,12 +224,35 @@
   },
   "petition": {
     "badge": "Petition · to Kim Beazley",
+    "kicker": "The petition",
     "heading": "Defend the Australian War Memorial. Sign the petition today.",
-    "letterClose": [
-      "This is not yours to change."
-    ],
+    "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:",
+    "formHeading": "Add your name",
     "privacyNote": "We will never sell your details. Unsubscribe any time.",
-    "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial board to maintain the sanctity of our Australian War Memorial by:"
+    "why": {
+      "kicker": "Why it matters",
+      "heading": "Four reasons this must stop",
+      "items": [
+        {
+          "title": "It is sacred, not a museum.",
+          "body": "The Memorial bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
+        },
+        {
+          "title": "It was done by stealth.",
+          "body": "No Act of Parliament. No consultation. No legal advice. One paragraph in a Council minute, nine months to release it, and an FOI answer that said no documents existed until it was challenged."
+        },
+        {
+          "title": "It redefined what Australia is.",
+          "body": "The historians behind it have proposed a second tomb beside the Tomb of the Unknown Australian Soldier, and names added to the Roll of Honour. That is not an addition to Anzac. It is a replacement for it."
+        },
+        {
+          "title": "It is costing $550 million.",
+          "body": "The redevelopment has been funded at $548.7 million of public money. Three in four Australians say it would be better spent on health, education and veterans. Fewer than one in five support putting frontier conflict in the Memorial at all."
+        }
+      ],
+      "close": "This is not yours to change.",
+      "cta": "Sign the petition"
+    }
   },
   "minister": {
     "kicker": "Direct action · the Minister",

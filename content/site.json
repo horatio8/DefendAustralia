@@ -402,8 +402,9 @@
     "signedSkip": "Not now, help me share it instead"
   },
   "share": {
-    "heading": "Sharing this with 3 people helps reach thousands...",
     "kicker": "Share it",
+    "heading": "Share this with 3 people. It takes 10 seconds and helps reach thousands of Australians...",
+    "headingNamed": "{name}, share this with 3 people. It takes 10 seconds and helps reach thousands of Australians...",
     "linkNote": "This link is yours. Every signature that comes through it is counted to you."
   },
   "news": {
@@ -639,9 +640,10 @@
     "legalLine": "Lest we forget"
   },
   "shareTexts": {
-    "long": "The Australian War Memorial is being changed into something it was never meant to be, and no Australian was asked. Kim Beazley's Council did it without an Act of Parliament and without taking legal advice. I have signed the petition.",
-    "sms": "They're changing the War Memorial and nobody asked us. I've signed this. Takes 20 seconds.",
-    "x": "No Act of Parliament. No consultation. No legal advice. Kim Beazley's Council is changing what the Australian War Memorial is for. Sign:"
+    "long": "Stop activists hijacking the Australian War Memorial. It is sacred ground, not a soapbox. Kim Beazley's Council decided to put contested history inside our national shrine without an Act of Parliament, without consultation and without taking legal advice. I have signed the petition. Please sign it today.",
+    "sms": "Stop activists hijacking the Australian War Memorial. It's sacred ground, not a soapbox. Sign this today:",
+    "x": "Stop activists hijacking the Australian War Memorial. It's sacred ground, not a soapbox. Sign this today:",
+    "emailSubject": "Stop activists hijacking the Australian War Memorial"
   },
   "thankYou": {
     "badge": "Thank you",

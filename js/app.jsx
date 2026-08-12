@@ -542,7 +542,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
             <button onClick={() => { copyText(link); flash("Link copied to your clipboard."); issueShare("copy"); }} className="hov-chip" style={chipStyle}>Copy link</button>
             <a href={"https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link)} target="_blank" rel="noopener noreferrer" onClick={() => issueShare("facebook")} className="hov-chip" style={chipStyle}>Share to Facebook</a>
-            <a href={"mailto:?subject=" + encodeURIComponent("The War Memorial is not theirs to change") + "&body=" + encodeURIComponent(st.long + "\n\n" + link)} onClick={() => issueShare("email")} className="hov-chip" style={chipStyle}>Share by email</a>
+            <a href={"mailto:?subject=" + encodeURIComponent(st.emailSubject) + "&body=" + encodeURIComponent(st.long + "\n\n" + link)} onClick={() => issueShare("email")} className="hov-chip" style={chipStyle}>Share by email</a>
             <a href={"sms:?&body=" + encodeURIComponent(st.sms + " " + link)} onClick={() => issueShare("sms")} className="hov-chip" style={chipStyle}>Share by SMS</a>
           </div>
           {toast && <div style={{ fontSize: 13, color: C.green, margin: "-8px 0 16px" }}>{toast}</div>}
@@ -1138,6 +1138,13 @@ function SharePage({ site }) {
   const s = site.share;
   const st = site.shareTexts;
   const [toast, flash] = useToast();
+  // Their first name, kept from the moment they signed. Absent for anyone who
+  // arrives here cold, so the heading has an unnamed form too.
+  const [name, setName] = useState("");
+  useEffect(() => {
+    try { setName((localStorage.getItem("dsg_signed_name") || "").trim()); } catch (e) {}
+  }, []);
+  const heading = name && s.headingNamed ? s.headingNamed.replace("{name}", name) : s.heading;
   const link = shareUrl(site);
   const enc = encodeURIComponent;
   const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
@@ -1149,7 +1156,7 @@ function SharePage({ site }) {
     { label: "Share on X", bg: "#000000", fg: "#FFFFFF", icon: "x", href: "https://twitter.com/intent/tweet?url=" + enc(link) + "&text=" + enc(st.x) },
     { label: "Share on LinkedIn", bg: "#0A66C2", fg: "#FFFFFF", icon: "linkedin", href: "https://www.linkedin.com/sharing/share-offsite/?url=" + enc(link) },
     { label: "Share on TikTok", bg: "#010101", fg: "#FFFFFF", icon: "tiktok", copy: true },
-    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc("The War Memorial is not theirs to change") + "&body=" + enc(st.long + "\n\n" + link) },
+    { label: "Share by email", bg: C.navy, fg: "#FFFFFF", icon: "email", href: "mailto:?subject=" + enc(st.emailSubject) + "&body=" + enc(st.long + "\n\n" + link) },
     { label: "Share by SMS", bg: C.green, fg: "#FFFFFF", icon: "sms", href: "sms:?&body=" + enc(st.sms + " " + link) },
     { label: "Copy your link", bg: "transparent", fg: C.navy, border: "2px solid " + C.navy, icon: "link", copy: true }
   ];
@@ -1168,7 +1175,7 @@ function SharePage({ site }) {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.9) 0%,rgba(10,18,34,.3) 60%,rgba(10,18,34,.15) 100%)" }}></div>
         <div className="m-pad p-hero" style={{ position: "relative", maxWidth: 820, margin: "0 auto", padding: "120px 28px 64px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>Thank you</div>
-          <h1 style={{ fontFamily: SERIF, fontSize: 52, lineHeight: 1.05, color: C.cream, margin: "18px 0 0", fontWeight: 400 }}>{s.heading}</h1>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(30px,3.8vw,48px)", lineHeight: 1.12, color: C.cream, margin: "18px 0 0", fontWeight: 400, textWrap: "balance" }}>{heading}</h1>
         </div>
       </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>

@@ -16,6 +16,8 @@
 // ever lost. If those form fields are added later, delete the workarounds in
 // api/event-log.js and pass the values straight through.
 
+const { withRetry } = require("./retry");
+
 const FORMS = {
   petition: process.env.CN_PETITION_FORM_ID || "0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28",
   contact: process.env.CN_CONTACT_FORM_ID || "e3a6dff2-91d1-4a3a-87e6-259116d840d7",
@@ -38,7 +40,12 @@ async function call(method, path, body) {
     "Content-Type": "application/json"
   };
   if (process.env.CN_ACCOUNT_SLUG) headers["X-Account"] = process.env.CN_ACCOUNT_SLUG;
-  const r = await fetch(base() + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  // Nucleus is the system of record and is written first on every submission,
+  // so a throttle here must be waited out rather than dropped.
+  const r = await withRetry(
+    () => fetch(base() + path, { method, headers, body: body ? JSON.stringify(body) : undefined }),
+    { label: method + " " + path }
+  );
   const text = await r.text();
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON error body */ }

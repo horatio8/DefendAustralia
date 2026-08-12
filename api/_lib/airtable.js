@@ -10,6 +10,8 @@
 //
 // Env: AIRTABLE_TOKEN, AIRTABLE_BASE_ID.
 
+const { withRetry } = require("./retry");
+
 const T = {
   contacts: "Contacts",
   events: "Events",
@@ -18,7 +20,8 @@ const T = {
   submissions: "Form Submissions",
   signups: "Signups",
   lapse: "Lapse Queue",
-  stats: "Site Stats"
+  stats: "Site Stats",
+  queue: "Ingest Queue"
 };
 
 function configured() {
@@ -30,17 +33,24 @@ function url(table, qs) {
     "/" + encodeURIComponent(table) + (qs ? "?" + qs : "");
 }
 
+// Every call goes through withRetry: Airtable allows five requests per second
+// per base and answers 429 with a Retry-After, which a burst will hit.
 async function call(method, table, qs, body) {
   if (!configured()) throw new Error("Airtable not configured");
-  const r = await fetch(url(table, qs), {
+  const r = await withRetry(() => fetch(url(table, qs), {
     method,
     headers: { Authorization: "Bearer " + process.env.AIRTABLE_TOKEN, "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined
-  });
+  }), { label: method + " " + table });
+
   const text = await r.text();
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON */ }
-  if (!r.ok) throw new Error("airtable " + r.status + ": " + (text || "").slice(0, 300));
+  if (!r.ok) {
+    const err = new Error("airtable " + r.status + ": " + (text || "").slice(0, 300));
+    err.status = r.status;
+    throw err;
+  }
   return json;
 }
 

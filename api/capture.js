@@ -1,70 +1,55 @@
-// POST /api/capture — minister email-action page, and
-// POST /api/partial     — half-filled petition forms (same handler, see below).
+// POST /api/capture — minister email-action page session captures.
 //
-// Both exist so that a person who types their email and then leaves is still a
-// lead. Captures are upserted on session_id and guarded by a monotonic `seq`,
-// because beacons sent with keepalive can arrive out of order.
-const at = require("./_lib/airtable");
+// Exists so a person who types their email and then leaves is still a lead.
+// Captures are keyed on session_id and guarded by a monotonic seq, because
+// beacons sent with keepalive can arrive out of order.
+//
+// A completed send is a real supporter: Nucleus first, then the queue. An
+// earlier keystroke capture is not, and only goes to the queue.
 const nucleus = require("./_lib/nucleus");
+const queue = require("./_lib/queue");
+const at = require("./_lib/airtable");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
   const b = req.body && typeof req.body === "object" ? req.body : safeParse(req.body);
-  if (!b) return res.status(400).json({ error: "bad payload" });
-  // Fire and forget from the browser's point of view: never block a beacon.
-  res.status(200).json({ ok: true });
-  try { await record(b); } catch (err) { console.error("CAPTURE_FAIL", err.message); }
-};
+  if (!b || !str(b.session_id)) return res.status(200).json({ ok: true });
 
-async function record(b) {
-  if (!at.configured()) return;
-  const sid = str(b.session_id);
-  if (!sid) return;
   const email = at.normEmail(b.email);
   const status = str(b.status) || (email ? "partial" : "started");
-  const seq = Number(b.seq) || 0;
-
-  const existing = await at.findOne(at.T.signups, "{session_id}='" + at.esc(sid) + "'");
-  if (existing && Number(existing.fields.seq || 0) > seq) return; // stale beacon
-
-  const fields = {
-    session_id: sid,
+  const p = {
+    session_id: str(b.session_id),
     first_name: str(b.first), last_name: str(b.last),
-    email: email || "", mobile: str(b.mobile),
-    status, seq,
-    send_clicked: status === "send_clicked",
-    updated_at: at.nowIso()
+    email, mobile: str(b.mobile),
+    status, seq: Number(b.seq) || 0,
+    sent_subject: b.sent_subject ? String(b.sent_subject).slice(0, 250) : "",
+    sent_body: b.sent_body ? String(b.sent_body) : "",
+    variation_shown: b.variation_shown != null ? Number(b.variation_shown) : null,
+    ai_rewrite_count: b.ai_rewrite_count != null ? Number(b.ai_rewrite_count) : null
   };
-  if (b.sent_subject) fields.sent_subject = String(b.sent_subject).slice(0, 250);
-  if (b.sent_body) fields.sent_body = String(b.sent_body);
-  if (b.variation_shown != null) fields.variation_shown = Number(b.variation_shown);
-  if (b.ai_rewrite_count != null) fields.ai_rewrite_count = Number(b.ai_rewrite_count);
 
-  if (existing) await at.update(at.T.signups, existing.id, fields);
-  else await at.create(at.T.signups, { ...fields, created_at: at.nowIso() });
+  // Only a completed send is worth a Nucleus profile. Everything earlier is a
+  // keystroke and would put half-typed addresses into the CRM.
+  let cnError = "";
+  if (status === "send_clicked" && email) {
+    try {
+      await nucleus.upsertProfile({
+        email, first_name: p.first_name, last_name: p.last_name, mobile: p.mobile,
+        tags: ["Defend Sacred Ground", "Contacted the Minister"]
+      });
+    } catch (err) {
+      cnError = String(err.message || err);
+      console.error("CN_MINISTER_FAIL", cnError);
+    }
+  }
 
-  // Only a completed send is a real person worth pushing to the CRM and
-  // logging as an event. Everything earlier stays a capture.
-  if (status !== "send_clicked" || !email) return;
+  let queued = { queued: false };
+  try { queued = await queue.enqueue("minister", p, { entryId: null, error: cnError }); }
+  catch (err) { console.error("QUEUE_CAPTURE_FAIL", err.message); }
+  if (!queued.queued) console.error("CAPTURE_UNSTORED", JSON.stringify(p));
 
-  const contact = await at.upsertContact({
-    first_name: fields.first_name, last_name: fields.last_name, email,
-    mobile: fields.mobile, consent: true,
-    source_channel: "Minister email", status: "Lead"
-  });
-  await at.logEvent({
-    contactRecId: contact.id, event_type: "Minister Email Sent",
-    source_channel: "Minister page", payload: { session_id: sid, subject: b.sent_subject }
-  });
-  try {
-    await nucleus.upsertProfile({
-      email, first_name: fields.first_name, last_name: fields.last_name,
-      mobile: fields.mobile, tags: ["Defend Sacred Ground", "Contacted the Minister"]
-    });
-    await at.update(at.T.signups, (existing && existing.id) ||
-      (await at.findOne(at.T.signups, "{session_id}='" + at.esc(sid) + "'")).id, { cn_synced: true });
-  } catch (err) { console.error("CN_MINISTER_FAIL", err.message); }
-}
+  return res.status(200).json({ ok: true });
+};
 
 function str(v) { return v == null ? "" : String(v).trim(); }
 function safeParse(v) { try { return JSON.parse(v); } catch (e) { return null; } }

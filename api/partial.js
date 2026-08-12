@@ -1,37 +1,40 @@
-// POST /api/partial — a petition form someone started and did not finish.
+// POST /api/partial — someone typed their details and did not finish.
 //
-// Dropped into the Lapse Queue keyed on email. A sweep later checks whether a
-// signature arrived and, if not, the person is worth one follow-up. Waiting
-// rows are replaced rather than stacked, so one hesitant supporter is one row.
+// A partial is a real lead. The browser fires this on blur of the name and
+// email fields, so a person who fills half the petition and leaves is still
+// captured. Nothing here is treated as a signature: it never touches the
+// petition form in Nucleus and never moves the counter. The drain worker
+// creates a Nucleus profile tagged as an unfinished starter, which is what
+// makes the follow-up possible.
+//
+// Rows are keyed on email and replaced rather than stacked, so one hesitant
+// supporter is one row no matter how many times the beacon fires.
+const queue = require("./_lib/queue");
 const at = require("./_lib/airtable");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
   const b = req.body && typeof req.body === "object" ? req.body : safeParse(req.body);
-  res.status(200).json({ ok: true });
-  if (!b) return;
-  try { await queue(b); } catch (err) { console.error("PARTIAL_FAIL", err.message); }
-};
+  if (!b) return res.status(200).json({ ok: true });
 
-async function queue(b) {
-  if (!at.configured()) return;
   const email = at.normEmail(b.email);
-  if (!email) return; // nothing to follow up
+  // Without an email there is no one to follow up and nothing to dedupe on.
+  if (!email) return res.status(200).json({ ok: true, captured: false });
 
-  // Already signed? Then this was just a keystroke on the way to finishing.
-  const signed = await at.findOne(at.T.signatures, "LOWER({email})='" + at.esc(email) + "'");
-  if (signed) return;
-
-  const fields = {
+  const p = {
     form: b.form === "donation" ? "Donation" : "Petition",
     first_name: str(b.first), last_name: str(b.last), email,
-    mobile: str(b.mobile), status: "Waiting", created_at: at.nowIso()
+    mobile: str(b.mobile), postcode: str(b.postcode),
+    source_url: str(b.source_url)
   };
-  const existing = await at.findOne(at.T.lapse,
-    "AND(LOWER({email})='" + at.esc(email) + "',{status}='Waiting')");
-  if (existing) await at.update(at.T.lapse, existing.id, fields);
-  else await at.create(at.T.lapse, { ...fields, lapse_id: at.uuid() });
-}
+
+  let queued = { queued: false };
+  try { queued = await queue.enqueue("partial", p, null); }
+  catch (err) { console.error("QUEUE_PARTIAL_FAIL", err.message); }
+  if (!queued.queued) console.error("PARTIAL_UNSTORED", JSON.stringify(p));
+
+  return res.status(200).json({ ok: true, captured: !!queued.queued });
+};
 
 function str(v) { return v == null ? "" : String(v).trim(); }
 function safeParse(v) { try { return JSON.parse(v); } catch (e) { return null; } }

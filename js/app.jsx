@@ -278,7 +278,6 @@ function Footer({ site }) {
       <div style={{ background: C.deep }}>
         <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "20px 28px", display: "flex", justifyContent: "space-between", gap: 24, flexWrap: "wrap", fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.cream }}>
           <span>{site.footer.legalLine}</span>
-          <a href="/take-action/save-anzac-hall?utm_source=footer" className="hov-fg-cream" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.steel }}>View 404 state</a>
         </div>
       </div>
     </div>

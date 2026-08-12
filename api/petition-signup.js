@@ -1,14 +1,17 @@
 // POST /api/petition-signup — a signature.
 //
-// Order matters. Campaign Nucleus is written first and its result is recorded,
-// because the count on the site is the CN entry total: if CN rejects the
-// signature the site must not act as though it holds one. Airtable is written
-// either way, with cn_synced false and the error on the row, so a broken sync
-// is visible in the base instead of silently losing people.
+// Campaign Nucleus is written first and always. It is the system of record,
+// the site's counter reads from it, and it is the only place a signature has
+// to be for the campaign to have it. Only once Nucleus has answered does the
+// submission go to Airtable, and it goes as a single queued row rather than
+// five relational writes, because Airtable allows five requests a second per
+// base and a launch surge is far faster than that.
 //
-// The response is deliberately forgiving. A supporter who has already signed
-// gets the same success state rather than an error.
+// The supporter is told they signed when at least one durable store accepted
+// them. If neither did, the payload is logged in full for replay and the form
+// says so rather than thanking them for nothing.
 const nucleus = require("./_lib/nucleus");
+const queue = require("./_lib/queue");
 const at = require("./_lib/airtable");
 
 module.exports = async function handler(req, res) {
@@ -19,19 +22,18 @@ module.exports = async function handler(req, res) {
   const first = str(b.first), last = str(b.last), email = at.normEmail(b.email);
   if (!first || !last || !email) return res.status(400).json({ error: "name and email required" });
 
+  const utm = utmsFrom(str(b.source_url));
   const p = {
-    first_name: first,
-    last_name: last,
-    email,
-    mobile: str(b.mobile),
-    postcode: str(b.postcode),
+    first_name: first, last_name: last, email,
+    mobile: str(b.mobile), postcode: str(b.postcode),
     campaign: str(b.campaign) || "defend-sacred-ground",
     consent: b.consent !== false,
-    ref: str(b.ref),
-    source_url: str(b.source_url)
+    ref: str(b.ref), source_url: str(b.source_url),
+    referral_code: makeRefCode(email),
+    ...utm
   };
-  const utm = utmsFrom(p.source_url);
 
+  // 1. Nucleus, first and foremost.
   let cnEntryId = null, cnError = "";
   try {
     cnEntryId = await nucleus.submitEntry("petition", {
@@ -45,58 +47,25 @@ module.exports = async function handler(req, res) {
     cnError = err.status === 422 ? "" : String(err.message || err);
     if (cnError) console.error("CN_PETITION_FAIL", cnError);
   }
+  const cnOk = !!cnEntryId || (!cnError && nucleus.configured());
 
-  const referral_code = makeRefCode(p.email);
-  let stored = !!cnEntryId;
-  try {
-    await writeAirtable(p, utm, cnEntryId, cnError, referral_code);
-    if (at.configured()) stored = true;
-  } catch (err) { console.error("AIRTABLE_PETITION_FAIL", err.message); }
+  // 2. Airtable, one queued row, expanded later by the drain worker.
+  let queued = { queued: false };
+  try { queued = await queue.enqueue("petition", p, { entryId: cnEntryId, error: cnError }); }
+  catch (err) { console.error("QUEUE_PETITION_FAIL", err.message); }
 
-  // Last line of defence. If neither store accepted the signature it is still
-  // in the runtime log and can be replayed by hand, so a misconfigured
-  // deployment costs effort rather than the person.
+  const stored = cnOk || queued.queued;
   if (!stored) console.error("PETITION_UNSTORED", JSON.stringify(p));
 
-  // Never claim a signature we did not record. The client shows a confirm step
-  // pointing at the hosted Nucleus form when stored is false, so the supporter
-  // gets a way through instead of a success screen over a lost submission.
-  return res.status(200).json({ ok: true, stored, referral_code, cn: !!cnEntryId, fallback: HOSTED_FORM });
+  return res.status(200).json({
+    ok: true, stored,
+    referral_code: p.referral_code,
+    cn: !!cnEntryId,
+    fallback: HOSTED_FORM
+  });
 };
 
 const HOSTED_FORM = process.env.CN_HOSTED_PETITION_URL || "https://teller.nucleuspages.com/landing/dsg-beazley";
-
-async function writeAirtable(p, utm, cnEntryId, cnError, referral_code) {
-  if (!at.configured()) return;
-  const contact = await at.upsertContact({
-    first_name: p.first_name, last_name: p.last_name, email: p.email,
-    mobile: p.mobile, postcode: p.postcode, consent: p.consent,
-    referral_code, source_channel: "Petition", status: "Signed"
-  });
-  const ev = await at.logEvent({
-    contactRecId: contact.id, event_type: "Petition Signed",
-    source_channel: p.source_url && p.source_url.indexOf("/take-action/") > -1 ? "Petition page" : "Home page",
-    source_url: p.source_url, referral_code_used: p.ref, payload: p
-  });
-  try {
-    await at.create(at.T.signatures, {
-      signature_id: at.uuid(),
-      contact: [contact.id], event: [ev.id],
-      first_name: p.first_name, last_name: p.last_name, email: p.email,
-      mobile: p.mobile, postcode: p.postcode, campaign: p.campaign,
-      consent: !!p.consent,
-      cn_synced: !!cnEntryId, cn_entry_id: cnEntryId || "", cn_error: cnError,
-      ref_used: p.ref, source_url: p.source_url,
-      utm_source: utm.utm_source, utm_medium: utm.utm_medium, utm_campaign: utm.utm_campaign,
-      utm_term: utm.utm_term, utm_content: utm.utm_content,
-      timestamp: at.nowIso(), payload: JSON.stringify(p, null, 1)
-    });
-    await at.markFanout(ev.id, true);
-  } catch (err) {
-    await at.markFanout(ev.id, false, err.message);
-    throw err;
-  }
-}
 
 function str(v) { return v == null ? "" : String(v).trim(); }
 function safeParse(v) { try { return JSON.parse(v); } catch (e) { return null; } }

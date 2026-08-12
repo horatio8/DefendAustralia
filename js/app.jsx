@@ -438,6 +438,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
   const [hp, setHp] = useState("");
   const [signed, setSigned] = useState(false);
+  const [unstored, setUnstored] = useState("");
   const [error, setError] = useState("");
   const [toast, flash] = useToast();
   const goal = nextGoal(count, site);
@@ -463,14 +464,18 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
     // to read: consent is implied by signing and stated in the privacy note.
     // The ask goes out before the redirect, and keepalive keeps it alive
     // across the navigation, so a signature is never lost to leaving the page.
-    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href }, true)
-      .then((d) => { if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {} })
-      .catch(() => {});
-    // A fresh signatory is the warmest a supporter ever gets: send them
-    // straight to the focused donation screen. Brief pause so the success
-    // state registers before the page changes.
     try { localStorage.setItem("dsg_signed_name", f.first.trim()); } catch (e) {}
-    setTimeout(() => { location.href = "/donate?signed=1"; }, 900);
+    // A fresh signatory is the warmest a supporter ever gets, so the focused
+    // donation screen follows. It only follows a signature we actually stored:
+    // if the backend could not record it, hold the supporter here and hand
+    // them the hosted form rather than thank them for nothing.
+    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
+      .then((d) => {
+        if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {}
+        if (d && d.stored === false) { setUnstored(d.fallback || ""); setCount(count); return; }
+        location.href = "/donate?signed=1";
+      })
+      .catch(() => setUnstored(""));
   };
 
   const link = shareUrl(site);
@@ -514,6 +519,19 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
           {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
           <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px" })}>Sign the petition</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
+        </div>
+      ) : unstored !== "" ? (
+        /* The backend could not record it. Say so plainly and hand over a
+           route that works, rather than thanking them for a lost signature. */
+        <div style={{ animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>One more step</div>
+          <div style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1.15, color: C.navy, margin: "16px 0 12px" }}>We could not record your signature just then.</div>
+          <p style={{ fontSize: 15, lineHeight: 1.65, color: C.body, margin: "0 0 20px" }}>That is our fault, not yours, and we would rather tell you than pretend. Add your name on our petition form and it will be counted straight away.</p>
+          {unstored ? (
+            <a href={unstored} className="hov-red" style={btnRed({ display: "block", textAlign: "center", padding: "18px 24px" })}>Add your name here</a>
+          ) : (
+            <button onClick={() => { setSigned(false); setUnstored(""); }} className="hov-red" style={btnRed({ width: "100%", padding: "18px 24px" })}>Try again</button>
+          )}
         </div>
       ) : (
         <div style={{ animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>

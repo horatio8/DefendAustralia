@@ -47,12 +47,24 @@ module.exports = async function handler(req, res) {
   }
 
   const referral_code = makeRefCode(p.email);
-  try { await writeAirtable(p, utm, cnEntryId, cnError, referral_code); }
-  catch (err) { console.error("AIRTABLE_PETITION_FAIL", err.message); }
+  let stored = !!cnEntryId;
+  try {
+    await writeAirtable(p, utm, cnEntryId, cnError, referral_code);
+    if (at.configured()) stored = true;
+  } catch (err) { console.error("AIRTABLE_PETITION_FAIL", err.message); }
 
-  // Signed is signed as far as the supporter is concerned.
-  return res.status(200).json({ ok: true, referral_code, cn: !!cnEntryId });
+  // Last line of defence. If neither store accepted the signature it is still
+  // in the runtime log and can be replayed by hand, so a misconfigured
+  // deployment costs effort rather than the person.
+  if (!stored) console.error("PETITION_UNSTORED", JSON.stringify(p));
+
+  // Never claim a signature we did not record. The client shows a confirm step
+  // pointing at the hosted Nucleus form when stored is false, so the supporter
+  // gets a way through instead of a success screen over a lost submission.
+  return res.status(200).json({ ok: true, stored, referral_code, cn: !!cnEntryId, fallback: HOSTED_FORM });
 };
+
+const HOSTED_FORM = process.env.CN_HOSTED_PETITION_URL || "https://teller.nucleuspages.com/landing/dsg-beazley";
 
 async function writeAirtable(p, utm, cnEntryId, cnError, referral_code) {
   if (!at.configured()) return;

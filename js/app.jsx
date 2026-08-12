@@ -359,7 +359,7 @@ function ChangesGrid({ site }) {
           <div style={{ height: 220, overflow: "hidden" }}>
             <img src={c.img} alt={c.title} loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: c.pos }} />
           </div>
-          <div style={{ padding: "28px 32px 32px" }}>
+          <div className="pad-tile" style={{ padding: "28px 32px 32px" }}>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>{c.tag}</div>
             <h3 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "14px 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{c.title}</h3>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{c.body}</p>
@@ -484,7 +484,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   const stepHead = { fontSize: 15, lineHeight: 1.6, color: C.body, margin: "0 0 10px" };
 
   return (
-    <div id={idp === "h" ? undefined : "sign"} style={{ background: C.cream, border: "1px solid " + C.tan, padding: 36, position: "relative" }}>
+    <div id={idp === "h" ? undefined : "sign"} className="pad-card" style={{ background: C.cream, border: "1px solid " + C.tan, padding: 36, position: "relative" }}>
       {!signed ? (
         <div>
           {formHeading && <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 8px", lineHeight: 1.1, fontWeight: 400 }}>{formHeading}</h3>}
@@ -579,13 +579,13 @@ function HomePage({ site }) {
             </div>
           </div>
         </div>
-        <div className="m-pad" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
+        <div className="m-pad hero-pull" style={{ position: "relative", maxWidth: 1280, margin: "clamp(-190px,-13vw,-60px) auto 0", padding: "0 28px", boxSizing: "border-box" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
             <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;↓</a>
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in minutes.</h1>
           <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{h.hero.ledeEm}</span></p>
-          <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
+          <div className="m-col2 vp-band" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
             {h.valueProps.map((v, i) => (
               <div key={i} className="vp-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, borderLeft: i ? "1px solid " + C.line : "none", padding: "4px 16px" }}>
                 <ValueIcon name={v.icon} />
@@ -744,7 +744,7 @@ function PetitionPage({ site }) {
                     <img src={it.img} alt="" loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: it.pos || "center" }} />
                   </div>
                 )}
-                <div style={{ padding: "26px 30px 30px" }}>
+                <div className="pad-tile" style={{ padding: "26px 30px 30px" }}>
                   <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", color: C.red, marginBottom: 12 }}>{"0" + (i + 1)}</div>
                   <h3 style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, margin: "0 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{it.title}</h3>
                   <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{it.body}</p>
@@ -940,7 +940,7 @@ function DonatePanel({ site, innerRef }) {
   const chip = { padding: "22px 10px", textAlign: "center", border: "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer", textDecoration: "none", display: "block", boxSizing: "border-box" };
 
   return (
-    <div style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={innerRef}>
+    <div className="pad-card" style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={innerRef}>
       <div style={{ display: "flex", border: "1px solid " + C.tan, marginBottom: 24 }}>
         <button onClick={() => { setFreq("once"); setShowOther(false); setOther(""); }} style={toggle("once")}>One off</button>
         <button onClick={() => { setFreq("monthly"); setShowOther(false); setOther(""); }} style={toggle("monthly")}>Monthly</button>
@@ -1179,7 +1179,7 @@ function SharePage({ site }) {
         </div>
       </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
-        <div style={{ border: "1px solid " + C.line, padding: 32, margin: "8px 0 32px" }}>
+        <div className="pad-card" style={{ border: "1px solid " + C.line, padding: 32, margin: "8px 0 32px" }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>Your link</div>
           {s.linkNote && <div style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, marginBottom: 18 }}>{s.linkNote}</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>

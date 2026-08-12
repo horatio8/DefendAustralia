@@ -54,11 +54,11 @@ img { max-width:100%; }
 
 /* Tighter section spacing on small screens */
 @media (max-width:768px){
-  .p-hero{ padding-top:64px !important; padding-bottom:40px !important; }
-  .p-hero-t{ padding-top:64px !important; }
-  .p-sec{ padding-top:44px !important; padding-bottom:44px !important; }
-  .p-sec-t{ padding-top:44px !important; }
-  .p-sec-b{ padding-bottom:44px !important; }
+  .p-hero{ padding-top:40px !important; padding-bottom:26px !important; }
+  .p-hero-t{ padding-top:40px !important; }
+  .p-sec{ padding-top:30px !important; padding-bottom:30px !important; }
+  .p-sec-t{ padding-top:30px !important; }
+  .p-sec-b{ padding-bottom:30px !important; }
 }
 
 /* Nothing may push the page sideways: an overflowing row on a tablet reads as
@@ -107,16 +107,29 @@ html, body { max-width:100%; overflow-x:hidden; }
   .ask-row{ padding:16px 15px !important; gap:13px !important }
 }
 
+/* Phone: vertical compression. Screen height is the scarcest resource on a
+   phone, so headings, section padding and card padding all step down and the
+   hero text rides further up over its image. Every value here exists to put
+   more of the argument above the fold. */
+@media (max-width:768px){
+  .mob-only{ max-height:46vh !important; object-fit:cover !important; object-position:center 28% !important }
+  .hero-pull{ margin-top:-96px !important }
+  .vp-band{ margin-top:22px !important; padding:14px 0 18px !important }
+  .pad-card{ padding:20px 18px !important }
+  .pad-tile{ padding:18px 18px 22px !important }
+  .m-col1 > * + *{ margin-top:1px }
+}
+
 /* Responsive helpers (carried from the design prototype) */
 @media (max-width:768px){
   .m-col{ display:block !important }
-  .m-col > * + *{ margin-top:28px }
+  .m-col > * + *{ margin-top:20px }
   .m-col1{ display:block !important }
   .m-col1 > * + *{ margin-top:1px }
   .m-col2{ grid-template-columns:1fr 1fr !important }
   .m-pad{ padding-left:20px !important; padding-right:20px !important }
-  .m-pad h1{ font-size:40px !important; line-height:1.06 !important }
-  .m-pad h2{ font-size:31px !important }
+  .m-pad h1{ font-size:33px !important; line-height:1.08 !important }
+  .m-pad h2{ font-size:26px !important }
   .m-hide{ display:none !important }
   .m-logo{ height:36px !important }
   .m-static{ position:static !important; text-align:left !important; padding:24px 20px 0 !important }

@@ -992,6 +992,71 @@ function DonatePage({ site }) {
   );
 }
 
+/* Post-donation thank you and the one ask worth making here: convert the
+   one-off into a monthly gift. The amount comes back from Stripe so the ask is
+   for the sum they actually just gave, not a generic number. */
+function ThankYouPage({ site }) {
+  const t = site.thankYou;
+  const d = site.donate;
+  const [gift, setGift] = useState(null);
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("session_id");
+    if (!id) return;
+    fetch("/api/donation-status?session_id=" + encodeURIComponent(id))
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((g) => { if (g && g.paid) setGift(g); })
+      .catch(() => {});
+  }, []);
+
+  // Offer the monthly link for the largest preset at or below what they gave,
+  // so the ask is never larger than the gift they have already made.
+  const monthly = (d.stripeLinks && d.stripeLinks.monthly) || {};
+  const presets = (d.presets || []).slice().sort((a, b) => a - b);
+  const amount = gift && gift.amount;
+  const step = amount ? presets.filter((v) => v <= amount).pop() || presets[0] : null;
+  const upsellHref = step && monthly[String(step)];
+  const showUpsell = gift && !gift.monthly && upsellHref;
+
+  return (
+    <div>
+      <div style={{ background: C.deepest, color: C.cream }}>
+        <div className="m-pad p-hero" style={{ maxWidth: 900, margin: "0 auto", padding: "96px 28px 64px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", background: C.red, color: "#FFFFFF", display: "inline-block", padding: "7px 12px" }}>{t.badge}</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(32px,4.2vw,54px)", lineHeight: 1.08, margin: "22px 0 0", fontWeight: 400 }}>
+            {gift && gift.first_name ? "Thank you, " + gift.first_name + "." : t.heading}
+          </h1>
+          <p style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: "20px 0 0", maxWidth: 640 }}>
+            {gift ? "Your " + (gift.monthly ? "monthly " : "") + "gift of $" + fmt(gift.amount) + " is with us and a receipt is on its way to your inbox." : t.lede}
+          </p>
+        </div>
+      </div>
+
+      {showUpsell && (
+        <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
+          <div className="m-pad p-sec" style={{ maxWidth: 900, margin: "0 auto", padding: "64px 28px" }}>
+            <MonoKicker color={C.red}>{t.upsellKicker}</MonoKicker>
+            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 20px", fontWeight: 400 }}>{t.upsellHeading}</h2>
+            <p style={{ fontSize: 17, lineHeight: 1.7, color: C.body, margin: "0 0 28px", maxWidth: 620, textWrap: "pretty" }}>{t.upsellBody}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20 }}>
+              <a href={upsellHref} className="hov-red" style={btnRed({ padding: "19px 32px" })}>{t.upsellCta.replace("{amount}", fmt(step))}</a>
+              <a href="/share" className="hov-copy-red" style={{ fontSize: 15, color: C.mut, borderBottom: "1px solid " + C.tanLine, paddingBottom: 2 }}>{t.declineCta}</a>
+            </div>
+            <div style={{ fontSize: 12, color: C.faint, marginTop: 18 }}>{d.panelNote}</div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: C.creamMid }}>
+        <div className="m-pad p-sec" style={{ maxWidth: 900, margin: "0 auto", padding: "56px 28px" }}>
+          <MonoKicker color={C.red}>{t.shareKicker}</MonoKicker>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(24px,2.4vw,32px)", lineHeight: 1.25, color: C.navy, margin: "20px 0 24px", fontWeight: 400, textWrap: "pretty" }}>{t.shareHeading}</h2>
+          <a href="/share" className="hov-navy-fill" style={btnNavyOutline({ padding: "16px 28px", display: "inline-block" })}>{t.shareCta}</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SharePage({ site }) {
   const s = site.share;
   const st = site.shareTexts;
@@ -1410,6 +1475,7 @@ const PAGES = {
   petition: PetitionPage,
   minister: MinisterPage,
   donate: DonatePage,
+  thankyou: ThankYouPage,
   share: SharePage,
   news: NewsPage,
   issue: IssuePage,

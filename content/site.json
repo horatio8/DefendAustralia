@@ -643,5 +643,18 @@
     "long": "The Australian War Memorial is being changed into something it was never meant to be, and no Australian was asked. Kim Beazley's Council did it without an Act of Parliament and without taking legal advice. I have signed the petition.",
     "sms": "They're changing the War Memorial and nobody asked us. I've signed this. Takes 20 seconds.",
     "x": "No Act of Parliament. No consultation. No legal advice. Kim Beazley's Council is changing what the Australian War Memorial is for. Sign:"
+  },
+  "thankYou": {
+    "badge": "Thank you",
+    "heading": "Thank you. That money goes straight to work.",
+    "lede": "Your gift is with us and a receipt is on its way to your inbox. Here is the one thing that would make it count for more.",
+    "upsellKicker": "Make it monthly",
+    "upsellHeading": "A gift every month is what lets us plan.",
+    "upsellBody": "A one off gift buys one ad. A monthly gift lets us book the next one before we know whether the money will be there. That is the difference between reacting to them and getting ahead of them. You can stop any time, in one click, from the receipt in your inbox.",
+    "upsellCta": "Make it ${amount} a month",
+    "declineCta": "No thanks, I would rather share it",
+    "shareKicker": "Either way",
+    "shareHeading": "Tell someone. Only one Australian in ten knows this is happening.",
+    "shareCta": "Get your share link"
   }
 }

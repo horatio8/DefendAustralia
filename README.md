@@ -31,6 +31,7 @@ campaign platform specification.
 | `/about-us` | `about-us.html` | `about` |
 | `/volunteer` | `volunteer.html` | `volunteer` |
 | `/contact` | `contact.html` | `contact` |
+| `/thank-you` | `thank-you.html` | `thankyou` (post-donation, noindex) |
 | any unmatched URL | `404.html` | self-contained real 404 |
 
 Vanity redirects (302, repointable) live in `vercel.json`: `/petition`,
@@ -103,7 +104,7 @@ Clicking any chip in the DonatePanel navigates straight to
 - 6 one-off + 6 monthly links ($35/$65/$135/$265/$550/$1500 AUD) plus a
   one-off "customer chooses what to pay" link ($5–$10,000)
 - Every link carries `metadata.campaign = defend-sacred-ground`, a
-  `DSG DONATION` statement-descriptor suffix, and redirects to `/share`
+  `DSG DONATION` statement-descriptor suffix, and redirects to `/thank-you`
 - Payment methods are dynamic (dashboard-controlled), so PayPal / Apple Pay /
   Google Pay appear automatically once enabled in Dashboard settings
 
@@ -113,9 +114,11 @@ amount" control collects the amount and posts to `api/checkout.js`, which
 creates a subscription Checkout Session. That path needs the env vars below;
 every other amount works with no backend at all.
 
-`api/checkout.js` / `api/stripe-webhook.js` env (Vercel):
+Env (Vercel):
 
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`
+- `CN_API_TOKEN`, optionally `CN_ACCOUNT_SLUG` (`teller`) and `CN_API_BASE`
+- `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID` (`appVVWhWpNfImwxH9`)
 - Webhook endpoint `https://<domain>/api/stripe-webhook`, events
   `checkout.session.completed` and `invoice.paid`
 
@@ -132,6 +135,68 @@ every other amount works with no backend at all.
    notifications).
 4. **Public details** — Settings → Business: set the public business name,
    support email and statement descriptor so donors recognise the charge.
+
+## Data pipeline
+
+Every public form writes to two places. Campaign Nucleus is the system of
+record for people; Airtable is the operational base, modelled on Farmers
+Fightback: an append-only `Events` log with typed projections beside it.
+
+Base **Defend Sacred Ground** (`appVVWhWpNfImwxH9`), tables:
+
+| Table | What lands in it |
+|---|---|
+| `Contacts` | one row per person, matched on email then mobile |
+| `Events` | append-only log, `dedup_key` makes webhook re-delivery a no-op |
+| `Petition Signatures` | one row per signature, with `cn_synced` / `cn_error` |
+| `Donations` | one row per charge, plus the `upsell_*` columns |
+| `Form Submissions` | contact-us and volunteer messages |
+| `Signups` | minister email-action session captures, upserted on `session_id` |
+| `Lapse Queue` | started-but-unfinished forms, for one follow-up |
+| `Site Stats` | key-value for numbers the site serves |
+
+Endpoints: `petition-signup`, `event-log` (contact + volunteer), `capture`
+(minister), `partial`, `share-issued`, `signature-count`, `donation-status`,
+`stripe-webhook`. Shared clients live in `api/_lib/`.
+
+Nucleus failures never cost a submission: the supporter always gets the
+success state, and the failure is recorded on the Airtable row as `cn_error`
+so a broken sync is visible in the base rather than silent. Filter any typed
+table on `cn_synced` unchecked to find them.
+
+### Campaign Nucleus forms (account `teller`, group "Defend Sacred Ground")
+
+| Form | Slug | Id |
+|---|---|---|
+| Petition to Kim Beazley | `dsg-beazley` | `0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28` |
+| Contact | `dsg-contact` | `e3a6dff2-91d1-4a3a-87e6-259116d840d7` |
+| Volunteer | `dsg-volunteer` | `b2efb75b-d4b1-48e8-b84d-5149e0aea4df` |
+
+Three site fields have no column on their CN form, because the form builder
+rejected them at creation. They are carried instead of dropped:
+
+- contact `topic` is prefixed onto the message body
+- volunteer `postcode` and `roles` ride on the CN profile as a note and tags
+
+All three are always written in full to Airtable. If the columns are added to
+CN later, drop the workarounds in `api/event-log.js` and pass them straight
+through.
+
+## Donations and the monthly upsell
+
+All 13 payment links now redirect to
+`/thank-you?session_id={CHECKOUT_SESSION_ID}` instead of `/share`.
+
+1. `/thank-you` reads the session through `api/donation-status.js` and greets
+   the donor by name with the amount they actually gave.
+2. For a one-off gift it offers the monthly link for the largest preset at or
+   below that amount, so the ask is never bigger than the gift already made.
+   A monthly donor is never asked again.
+3. `stripe-webhook` writes the Donation row with `upsell_outcome = Offered`.
+4. When a monthly subscription starts for the same email within seven days,
+   the earlier one-off row flips to `Accepted` and records the subscription id.
+
+Conversion is therefore measured from money, not from clicks.
 
 ## Not yet implemented (backend, spec §5–§12)
 

@@ -432,14 +432,24 @@ function AskBlock({ site, ask, showHeading }) {
   );
 }
 
+/* Referral code for a supporter, derived from their email. This is the twin of
+   makeRefCode in api/petition-signup.js and must stay identical to it: the
+   client uses it to build the share link without waiting for the server, and
+   the server uses it to stamp the same code on the Airtable row. */
+function refCodeFor(email) {
+  let h = 5381;
+  for (let i = 0; i < email.length; i++) h = ((h * 33) ^ email.charCodeAt(i)) >>> 0;
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) { code += alphabet[h % alphabet.length]; h = Math.floor(h / alphabet.length) + 7919; }
+  return code;
+}
+
 /* Petition sign form card (home + petition pages). */
 function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote }) {
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
   const [hp, setHp] = useState("");
-  const [signed, setSigned] = useState(false);
-  const [unstored, setUnstored] = useState("");
   const [error, setError] = useState("");
-  const [toast, flash] = useToast();
   const goal = nextGoal(count, site);
   const pct = Math.min(100, Math.round((count / goal) * 100));
   const remaining = fmt(Math.max(0, goal - count));
@@ -451,41 +461,35 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   };
 
   const submit = () => {
-    if (hp) { setSigned(true); return; } // honeypot: silently accept and discard
+    if (hp) { location.href = "/donate?signed=1"; return; } // honeypot: accept and discard
     if (!f.first.trim() || !f.last.trim()) return setError("Please enter your first and last name.");
     if (!validEmail(f.email)) return setError("Please enter a valid email address.");
     if (f.mobile.trim() && f.mobile.replace(/\D/g, "").length < 9) return setError("That mobile number looks incomplete. Correct it or clear the field.");
     setError("");
-    setSigned(true);
-    setCount(count + 1);
-    try { localStorage.setItem("ff_last_petition_url", location.pathname); } catch (e) {}
-    // Campaign updates are the default for signatories, so there is no tickbox
-    // to read: consent is implied by signing and stated in the privacy note.
-    // The ask goes out before the redirect, and keepalive keeps it alive
-    // across the navigation, so a signature is never lost to leaving the page.
-    try { localStorage.setItem("dsg_signed_name", f.first.trim()); } catch (e) {}
-    // A fresh signatory is the warmest a supporter ever gets, so the focused
-    // donation screen follows. It only follows a signature we actually stored:
-    // if the backend could not record it, hold the supporter here and hand
-    // them the hosted form rather than thank them for nothing.
-    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
-      .then((d) => {
-        if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {}
-        if (d && d.stored === false) { setUnstored(d.fallback || ""); setCount(count); return; }
-        location.href = "/donate?signed=1";
-      })
-      .catch(() => setUnstored(""));
+
+    // Everything the next two screens need is derived here, before leaving:
+    // the referral code is a pure function of the email and the server derives
+    // the identical code, so no round trip is required to know it.
+    const email = f.email.trim().toLowerCase();
+    try {
+      localStorage.setItem("dsg_signed_name", f.first.trim());
+      localStorage.setItem("dsg_ref_code", refCodeFor(email));
+      localStorage.setItem("ff_last_petition_url", location.pathname);
+    } catch (e) {}
+
+    // Consent is implied by signing and stated in the privacy note, so there is
+    // no tickbox to read. keepalive keeps the request alive across the
+    // navigation that follows, so leaving immediately cannot lose a signature.
+    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href }, true).catch(() => {});
+
+    // Straight to the ask. No interstitial: a supporter who has just signed is
+    // the warmest they will ever be, and a thank-you card spends that warmth.
+    location.href = "/donate?signed=1";
   };
 
-  const link = shareUrl(site);
-  const st = site.shareTexts;
-  const issueShare = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
-  const chipStyle = { ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "12px 16px" };
-  const stepHead = { fontSize: 15, lineHeight: 1.6, color: C.body, margin: "0 0 10px" };
 
   return (
     <div id={idp === "h" ? undefined : "sign"} className="pad-card" style={{ background: C.cream, border: "1px solid " + C.tan, padding: 36, position: "relative" }}>
-      {!signed ? (
         <div>
           {formHeading && <h3 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 8px", lineHeight: 1.1, fontWeight: 400 }}>{formHeading}</h3>}
           {/* Counter only once there is a count worth showing. */}
@@ -519,39 +523,6 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
           <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px" })}>Sign the petition</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
         </div>
-      ) : unstored !== "" ? (
-        /* The backend could not record it. Say so plainly and hand over a
-           route that works, rather than thanking them for a lost signature. */
-        <div style={{ animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>One more step</div>
-          <div style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1.15, color: C.navy, margin: "16px 0 12px" }}>We could not record your signature just then.</div>
-          <p style={{ fontSize: 15, lineHeight: 1.65, color: C.body, margin: "0 0 20px" }}>That is our fault, not yours, and we would rather tell you than pretend. Add your name on our petition form and it will be counted straight away.</p>
-          {unstored ? (
-            <a href={unstored} className="hov-red" style={btnRed({ display: "block", textAlign: "center", padding: "18px 24px" })}>Add your name here</a>
-          ) : (
-            <button onClick={() => { setSigned(false); setUnstored(""); }} className="hov-red" style={btnRed({ width: "100%", padding: "18px 24px" })}>Try again</button>
-          )}
-        </div>
-      ) : (
-        <div style={{ animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green }}>Signed · {fmt(count)} Australians</div>
-          <div style={{ fontFamily: SERIF, fontSize: 30, lineHeight: 1.12, color: C.navy, margin: "16px 0 12px" }}>Thank you. Now do the part that actually matters.</div>
-          <p style={{ fontSize: 15, lineHeight: 1.65, color: C.body, margin: "0 0 20px" }}>Your name is on it. But a petition with ten thousand names is an opinion, and a list of a hundred thousand Australians is a constituency. The difference is you.</p>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, borderTop: "1px solid " + C.line, paddingTop: 18, marginBottom: 16 }}>Three things, two minutes</div>
-          <p style={stepHead}><strong>1. Send this to three people.</strong> Not a hundred. Three. People who had family in a war.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
-            <button onClick={() => { copyText(link); flash("Link copied to your clipboard."); issueShare("copy"); }} className="hov-chip" style={chipStyle}>Copy link</button>
-            <a href={"https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(link)} target="_blank" rel="noopener noreferrer" onClick={() => issueShare("facebook")} className="hov-chip" style={chipStyle}>Share to Facebook</a>
-            <a href={"mailto:?subject=" + encodeURIComponent(st.emailSubject) + "&body=" + encodeURIComponent(st.long + "\n\n" + link)} onClick={() => issueShare("email")} className="hov-chip" style={chipStyle}>Share by email</a>
-            <a href={"sms:?&body=" + encodeURIComponent(st.sms + " " + link)} onClick={() => issueShare("sms")} className="hov-chip" style={chipStyle}>Share by SMS</a>
-          </div>
-          {toast && <div style={{ fontSize: 13, color: C.green, margin: "-8px 0 16px" }}>{toast}</div>}
-          <p style={stepHead}><strong>2. Chip in.</strong> Ten per cent of Australians know this is happening. Advertising is how that changes.</p>
-          <a href="/donate" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", marginBottom: 20, display: "inline-block" })}>Chip in</a>
-          <p style={stepHead}><strong>3. Read what he actually said.</strong> It is worse in his own words than in ours.</p>
-          <a href="/the-issue" className="hov-navy-fill" style={btnNavyOutline({ padding: "13px 22px", display: "inline-block" })}>Read the issue</a>
-        </div>
-      )}
     </div>
   );
 }

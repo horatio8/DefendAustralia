@@ -45,12 +45,37 @@ module.exports = async function handler(req, res) {
       }
     }
     out.remaining = rows.length >= SLICE ? "more" : "none";
+    out.lapsed_cleared = await clearCompletedLapses();
   } catch (err) {
     console.error("DRAIN_FAIL", err.message);
     return res.status(500).json({ error: String(err.message || err), ...out });
   }
   return res.status(200).json({ ok: true, ms: Date.now() - started, ...out });
 };
+
+// A partial fires before the signature, so someone who hesitates for ten
+// seconds and then signs leaves a Waiting lapse row behind them. Sweep those
+// out on every pass: chasing a supporter who already signed is worse than not
+// chasing at all.
+async function clearCompletedLapses() {
+  let cleared = 0;
+  try {
+    const res = await at.call("GET", at.T.lapse,
+      "filterByFormula=" + encodeURIComponent("{status}='Waiting'") + "&maxRecords=50");
+    const rows = (res && res.records) || [];
+    for (const row of rows) {
+      const email = at.normEmail(row.fields.email);
+      if (!email) continue;
+      const signed = await at.findOne(at.T.signatures, "LOWER({email})='" + at.esc(email) + "'");
+      if (!signed) continue;
+      await at.update(at.T.lapse, row.id, {
+        status: "Completed", note: "Signed after the partial fired", triggered_at: at.nowIso()
+      });
+      cleared++;
+    }
+  } catch (err) { console.error("LAPSE_SWEEP_FAIL", err.message); }
+  return cleared;
+}
 
 async function waiting(limit) {
   const res = await at.call("GET", at.T.queue,

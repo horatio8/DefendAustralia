@@ -1,7 +1,7 @@
 {
   "org": {
     "name": "Defend Sacred Ground",
-    "domain": "defendsacredground.au",
+    "domain": "www.defendsacredground.com",
     "locale": "en-AU",
     "currency": "AUD",
     "petitionSlug": "defend-sacred-ground",
@@ -339,8 +339,8 @@
     "recipientName": "The Hon. Minister for Veterans' Affairs",
     "recipientDisplay": "minister@…gov.au",
     "toEmail": "",
-    "correspondenceEmail": "correspondence@defendsacredground.au",
-    "goesToNote": "Copied to the shadow minister and to correspondence@defendsacredground.au",
+    "correspondenceEmail": "correspondence@defendsacredground.com",
+    "goesToNote": "Copied to the shadow minister and to correspondence@defendsacredground.com",
     "variations": [
       {
         "subject": "The War Memorial is not the Council's to change",

@@ -714,10 +714,17 @@ function PetitionPage({ site }) {
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(26px,2.7vw,36px)", lineHeight: 1.28, color: C.navy, margin: "20px 0 34px", fontWeight: 400 }}>{p.why.heading}</h2>
           <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
             {p.why.items.map((it, i) => (
-              <div key={i} style={{ background: C.cream, padding: "26px 30px 30px" }}>
-                <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", color: C.red, marginBottom: 12 }}>{"0" + (i + 1)}</div>
-                <h3 style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, margin: "0 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{it.title}</h3>
-                <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{it.body}</p>
+              <div key={i} style={{ background: C.cream }}>
+                {it.img && (
+                  <div style={{ height: 200, overflow: "hidden" }}>
+                    <img src={it.img} alt="" loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: it.pos || "center" }} />
+                  </div>
+                )}
+                <div style={{ padding: "26px 30px 30px" }}>
+                  <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", color: C.red, marginBottom: 12 }}>{"0" + (i + 1)}</div>
+                  <h3 style={{ fontFamily: SERIF, fontSize: 24, color: C.navy, margin: "0 0 10px", lineHeight: 1.15, fontWeight: 400 }}>{it.title}</h3>
+                  <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{it.body}</p>
+                </div>
               </div>
             ))}
           </div>

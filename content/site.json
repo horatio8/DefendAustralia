@@ -305,18 +305,26 @@
       "items": [
         {
           "title": "It is sacred, not a museum.",
+          "img": "/assets/poppy-wall.jpg",
+          "pos": "center 40%",
           "body": "The Memorial bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
         },
         {
           "title": "It was done by stealth.",
+          "img": "/assets/change-documents.jpg",
+          "pos": "center center",
           "body": "No Act of Parliament. No consultation. No legal advice. One paragraph in a Council minute, nine months to release it, and an FOI answer that said no documents existed until it was challenged."
         },
         {
           "title": "It redefined what Australia is.",
+          "img": "/assets/change-curation.jpg",
+          "pos": "center center",
           "body": "The historians behind it have proposed a second tomb beside the Tomb of the Unknown Australian Soldier, and names added to the Roll of Honour. That is not an addition to Anzac. It is a replacement for it."
         },
         {
           "title": "It is being built into a $548 million job.",
+          "img": "/assets/cranes.jpg",
+          "pos": "center 40%",
           "body": "The redevelopment has been funded at $548.7 million of public money. The frontier galleries are one part of that spend, and the part that changes what the building says. Three in four Australians say the money would be better spent on health, education and veterans. Fewer than one in five support putting frontier conflict in the Memorial at all."
         }
       ],

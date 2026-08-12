@@ -1,4 +1,4 @@
-// GET /api/_diag?key=dsg-diag — TEMPORARY. Delete once the pipeline is green.
+// GET /api/diag?key=dsg-diag — TEMPORARY. Delete once the pipeline is green.
 //
 // Reports whether the runtime has the credentials the form handlers need, and
 // probes Campaign Nucleus both with and without auth so we know whether a

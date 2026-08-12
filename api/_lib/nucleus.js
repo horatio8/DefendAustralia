@@ -90,7 +90,9 @@ async function upsertProfile(p) {
   if (p.tags && p.tags.length) body.tags = p.tags;
   if (p.note) body.notes = p.note;
   Object.keys(body).forEach((k) => body[k] === undefined && delete body[k]);
-  const res = await call("POST", "/profiles/match-or-create", body);
+  // match-or-create is a PUT: it is an upsert, not a create, and Nucleus 405s
+  // on POST.
+  const res = await call("PUT", "/profiles/match-or-create", body);
   return (res && res.data && res.data.id) || null;
 }
 

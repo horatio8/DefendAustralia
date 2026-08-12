@@ -180,10 +180,34 @@ function Banner({ site }) {
   );
 }
 
+/* A top-level nav item: a plain link, or a button that drops its children. */
+function NavItem({ item, page, open, setOpen }) {
+  const style = (active) => ({ padding: "6px 0", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: active ? C.red : C.body, borderBottom: "2px solid " + (active ? C.red : "transparent") });
+  if (!item.children) {
+    return <a href={item.href} className="hov-link" style={style(page === item.page)}>{item.label}</a>;
+  }
+  const active = item.children.some((c) => c.page === page);
+  return (
+    <div style={{ position: "relative" }}>
+      <button onClick={() => setOpen(open ? null : item.label)} className="hov-link" aria-expanded={open ? "true" : "false"} style={{ ...style(active), background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+        {item.label} <span style={{ fontSize: 10 }}>▾</span>
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 10px)", left: -16, minWidth: 230, background: "#FFFFFF", border: "1px solid " + C.line, boxShadow: "0 12px 24px rgba(21,35,64,.1)", zIndex: 60, animation: "dsgRise .16s cubic-bezier(.2,.6,.2,1) both" }}>
+          <div style={{ display: "flex", flexDirection: "column", padding: "6px 0" }}>
+            {item.children.map((c) => (
+              <a key={c.page} href={c.href} className="hov-tile" style={{ padding: "13px 20px", fontSize: 14, fontWeight: 500, color: c.page === page ? C.red : C.navy, textAlign: "left" }}>{c.label}</a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Nav({ site, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [taOpen, setTaOpen] = useState(false);
-  const taActive = site.nav.takeAction.some((i) => i.page === page);
+  const [openMenu, setOpenMenu] = useState(null); // label of the open dropdown
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 50, background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
       <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
@@ -192,20 +216,8 @@ function Nav({ site, page }) {
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div className="m-hide" style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            <div style={{ position: "relative" }}>
-              <button onClick={() => setTaOpen(!taOpen)} className="hov-link" style={{ background: "none", border: "none", padding: "6px 0", cursor: "pointer", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: taActive ? C.red : C.body, borderBottom: "2px solid " + (taActive ? C.red : "transparent"), display: "flex", alignItems: "center", gap: 6 }}>Take action <span style={{ fontSize: 10 }}>▾</span></button>
-              {taOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 10px)", left: -16, minWidth: 230, background: "#FFFFFF", border: "1px solid " + C.line, boxShadow: "0 12px 24px rgba(21,35,64,.1)", zIndex: 60, animation: "dsgRise .16s cubic-bezier(.2,.6,.2,1) both" }}>
-                  <div style={{ display: "flex", flexDirection: "column", padding: "6px 0" }}>
-                    {site.nav.takeAction.map((ta) => (
-                      <a key={ta.page} href={ta.href} className="hov-tile" style={{ padding: "13px 20px", fontSize: 14, fontWeight: 500, color: C.navy, textAlign: "left" }}>{ta.label}</a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
             {site.nav.links.map((item) => (
-              <a key={item.page} href={item.href} className="hov-link" style={{ padding: "6px 0", fontSize: 14, fontWeight: 500, letterSpacing: ".02em", color: page === item.page ? C.red : C.body, borderBottom: "2px solid " + (page === item.page ? C.red : "transparent") }}>{item.label}</a>
+              <NavItem key={item.label} item={item} page={page} open={openMenu === item.label} setOpen={setOpenMenu} />
             ))}
             <a href="/take-action/defend-sacred-ground" className="hov-navy-fill" style={{ ...btnBase, fontSize: 13, letterSpacing: ".08em", color: C.navy, background: "transparent", border: "2px solid " + C.navy, padding: "12px 22px" }}>Sign the petition</a>
           </div>
@@ -547,7 +559,7 @@ function HomePage({ site }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 28 }}>
             <a href="#home-sign" onClick={scrollToSign} className="hov-red" style={btnRed()}>{h.hero.cta}&nbsp;&nbsp;↓</a>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in four years.</h1>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(42px,6.6vw,96px)", lineHeight: 1.02, margin: 0, maxWidth: 1050, letterSpacing: "-.008em", fontWeight: 400, color: C.navy }}>A century of honour,<br /><span style={{ color: C.red, fontStyle: "italic" }}>undone</span> in minutes.</h1>
           <p style={{ fontSize: "clamp(17px,1.6vw,20px)", lineHeight: 1.6, maxWidth: 680, color: C.mut, margin: "26px 0 0", textWrap: "pretty" }}>{h.hero.lede} <span style={{ color: C.red, fontWeight: 600 }}>{h.hero.ledeEm}</span></p>
           <div className="m-col2" style={{ borderTop: "1px solid " + C.line, marginTop: 40, padding: "24px 0 36px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "18px 0" }}>
             {h.valueProps.map((v, i) => (

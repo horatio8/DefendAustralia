@@ -17,6 +17,26 @@
   "nav": {
     "links": [
       {
+        "label": "Take action",
+        "children": [
+          {
+            "label": "Sign the petition",
+            "href": "/take-action/defend-sacred-ground",
+            "page": "petition"
+          },
+          {
+            "label": "Contact the Minister",
+            "href": "/minister",
+            "page": "minister"
+          },
+          {
+            "label": "Volunteer",
+            "href": "/volunteer",
+            "page": "volunteer"
+          }
+        ]
+      },
+      {
         "label": "The Issue",
         "href": "/the-issue",
         "page": "issue"
@@ -28,25 +48,18 @@
       },
       {
         "label": "About us",
-        "href": "/about-us",
-        "page": "about"
-      },
-      {
-        "label": "Contact us",
-        "href": "/contact",
-        "page": "contact"
-      }
-    ],
-    "takeAction": [
-      {
-        "label": "Volunteer",
-        "href": "/volunteer",
-        "page": "volunteer"
-      },
-      {
-        "label": "Contact the Minister",
-        "href": "/minister",
-        "page": "minister"
+        "children": [
+          {
+            "label": "About us",
+            "href": "/about-us",
+            "page": "about"
+          },
+          {
+            "label": "Contact us",
+            "href": "/contact",
+            "page": "contact"
+          }
+        ]
       }
     ],
     "menu": [
@@ -76,9 +89,9 @@
         "page": "contact"
       },
       {
-        "label": "Volunteer",
-        "href": "/volunteer",
-        "page": "volunteer"
+        "label": "Sign the petition",
+        "href": "/take-action/defend-sacred-ground",
+        "page": "petition"
       },
       {
         "label": "Contact the Minister",
@@ -86,9 +99,9 @@
         "page": "minister"
       },
       {
-        "label": "Sign the petition",
-        "href": "/take-action/defend-sacred-ground",
-        "page": "petition"
+        "label": "Volunteer",
+        "href": "/volunteer",
+        "page": "volunteer"
       }
     ]
   },
@@ -121,8 +134,8 @@
       "accent": true
     },
     {
-      "n": "$550m",
-      "label": "Of public money spent rewriting our history",
+      "n": "$548.7m",
+      "label": "Redevelopment budget, with the rewriting built into it",
       "em": "",
       "accent": true
     }
@@ -226,10 +239,10 @@
           "body": "The controversial historians behind this have been explicit. One has proposed placing a second tomb beside the Tomb of the Unknown Australian Soldier, so that \"those who fought for empire would be at rest with those who fought against the empire.\" The campaign's own website calls for names added to the Roll of Honour. The same historian co-wrote a book asking whether it is \"not now time for Australia to cast aside\" the Anzac legend. This is not an addition to Anzac. It is a replacement for it."
         },
         {
-          "title": "It is costing $550 million.",
+          "title": "It is being built into a $548 million job.",
           "img": "/assets/cranes.jpg",
           "pos": "center 40%",
-          "body": "The Memorial's redevelopment has been funded at $548.7 million. Three in four Australians say that money would be better spent on health, education and veterans' services. Fewer than one in five support putting frontier conflict in the Memorial at all. It is being built anyway, with money that is not the Council's, for a purpose Parliament never authorised."
+          "body": "The Memorial's redevelopment has been funded at $548.7 million, the largest works programme in its history. The frontier galleries are one part of that spend, and they are the part that changes what the building says about Australia. Building them in at this scale is what makes them permanent. Three in four Australians say the money would be better spent on health, education and veterans' services. Fewer than one in five support putting frontier conflict in the Memorial at all."
         }
       ]
     },
@@ -249,7 +262,7 @@
     "donateBand": {
       "kicker": "Fund the campaign",
       "heading": "Australians do not even know this is happening. You can make the difference.",
-      "body": "They have $548 million of public money and a national institution. We have everyday Australians and the truth. Only one Australian in ten has heard this is happening, and every dollar you give buys another one who finds out in time to object."
+      "body": "They have a $548 million works programme and a national institution. We have everyday Australians and the truth. Only one Australian in ten has heard this is happening, and every dollar you give buys another one who finds out in time to object."
     },
     "quotes": {
       "kicker": "On the record",
@@ -303,8 +316,8 @@
           "body": "The historians behind it have proposed a second tomb beside the Tomb of the Unknown Australian Soldier, and names added to the Roll of Honour. That is not an addition to Anzac. It is a replacement for it."
         },
         {
-          "title": "It is costing $550 million.",
-          "body": "The redevelopment has been funded at $548.7 million of public money. Three in four Australians say it would be better spent on health, education and veterans. Fewer than one in five support putting frontier conflict in the Memorial at all."
+          "title": "It is being built into a $548 million job.",
+          "body": "The redevelopment has been funded at $548.7 million of public money. The frontier galleries are one part of that spend, and the part that changes what the building says. Three in four Australians say the money would be better spent on health, education and veterans. Fewer than one in five support putting frontier conflict in the Memorial at all."
         }
       ],
       "close": "This is not yours to change.",
@@ -334,7 +347,7 @@
     "heading": "Australians do not even know this is happening. You can make the difference.",
     "body": [
       "They did this quietly in secret, and quiet is how it stays unless you help break the silence.",
-      "They have $548 million of public money, a national institution, and the advantage of already being inside the building. We have no member of parliament, no broadcaster and no public funding. What we have is everyday Australians and the truth. Neither of those reaches anyone for free.",
+      "They have a $548 million works programme, a national institution, and the advantage of already being inside the building. We have no member of parliament, no broadcaster and no public funding. What we have is everyday Australians and the truth. Neither of those reaches anyone for free.",
       "Only one Australian in ten has heard that any of this is happening. That silence is not bad luck. It is the strategy, and it is exactly why they expect to get away with it. Every dollar you give buys the one thing that beats it: another Australian who finds out in time to object.",
       "$35 puts the story in front of 1,400 people. $265 buys a full page in a regional paper. $1,500 puts it on a Canberra billboard for a month. That is the entire campaign. There is nothing else funding this and no one else coming."
     ],
@@ -504,7 +517,7 @@
   "issue": {
     "kicker": "The issue",
     "heading": "A shrine, not a soapbox.",
-    "lede": "A $550 million works programme is converting Australia's national shrine into an activist billboard, rewriting what it says about Australia and our fallen.",
+    "lede": "A $548 million works programme is rebuilding Australia's national shrine, and activist history is being built into it, rewriting what the Memorial says about Australia and our fallen.",
     "proseHeading": "Our shrine is NOT for politics or activism.",
     "prose": [
       "The Memorial was built to one purpose: to hold the record of Australians who died serving the Commonwealth. Charles Bean called it the grave they never had. For 85 years, governments of both stripes kept faith with that purpose.",

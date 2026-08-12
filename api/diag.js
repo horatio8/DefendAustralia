@@ -11,6 +11,16 @@
 const PETITION_FORM = process.env.CN_PETITION_FORM_ID || "0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28";
 const STAMP = "diagtest";
 
+// Static requires: Vercel traces each function's bundle from its imports, so a
+// dynamic require of a sibling handler would not be packaged with this one.
+const HANDLERS = {
+  petition: require("./petition-signup"),
+  eventLog: require("./event-log"),
+  capture: require("./capture"),
+  partial: require("./partial"),
+  share: require("./share-issued")
+};
+
 module.exports = async function handler(req, res) {
   const q = req.query || {};
   if (q.key !== "dsg-diag") return res.status(404).json({ error: "not found" });
@@ -48,17 +58,17 @@ async function run(which, tag) {
   const email = STAMP + "-" + which + "-" + tag + "@teller.consulting";
   const common = { first: "Diagtest", last: "Ignore", email, source_url: "https://defendsacredground.com/api/diag" };
   const cases = {
-    petition: ["./petition-signup", { ...common, mobile: "0400000000", postcode: "2600", campaign: "defend-sacred-ground" }],
-    contact: ["./event-log", { ...common, type: "contact_message", topic: "Diagnostic", message: "Automated pipeline test. Safe to delete." }],
-    volunteer: ["./event-log", { ...common, type: "volunteer_signup", postcode: "2600", roles: ["Diagnostic"] }],
-    capture: ["./capture", { ...common, session_id: STAMP + "-" + tag, status: "send_clicked", seq: 1, sent_subject: "Diagnostic" }],
-    partial: ["./partial", { ...common, form: "petition" }],
-    share: ["./share-issued", { platform: "diagnostic", code: "DIAGTS" }]
+    petition: [HANDLERS.petition, { ...common, mobile: "0400000000", postcode: "2600", campaign: "defend-sacred-ground" }],
+    contact: [HANDLERS.eventLog, { ...common, type: "contact_message", topic: "Diagnostic", message: "Automated pipeline test. Safe to delete." }],
+    volunteer: [HANDLERS.eventLog, { ...common, type: "volunteer_signup", postcode: "2600", roles: ["Diagnostic"] }],
+    capture: [HANDLERS.capture, { ...common, session_id: STAMP + "-" + tag, status: "send_clicked", seq: 1, sent_subject: "Diagnostic" }],
+    partial: [HANDLERS.partial, { ...common, form: "petition" }],
+    share: [HANDLERS.share, { platform: "diagnostic", code: "DIAGTS" }]
   };
   const hit = cases[which];
   if (!hit) return { error: "unknown run target", allowed: Object.keys(cases) };
 
-  const handler = require(hit[0]);
+  const handler = hit[0];
   const captured = {};
   const mockRes = {
     setHeader() {},

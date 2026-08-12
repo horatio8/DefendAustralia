@@ -77,22 +77,25 @@ async function entryCount(formKey) {
   throw new Error("no entry total in response");
 }
 
-// Profile upsert, matched on email. Carries the fields no form column exists
-// for, plus tags used for segmentation (donor, volunteer, recurring).
+// Profile upsert. Nucleus matches on its own identity strategies (email and
+// mobile among them) and creates only when nothing matches. This carries the
+// fields no form column exists for, plus the tags used for segmentation.
+//
+// The route is POST /profiles/match. Field names are Nucleus's, not ours:
+// mobile rather than phone, zip rather than postcode.
 async function upsertProfile(p) {
   const body = {
     email: p.email,
-    first_name: p.first_name,
-    last_name: p.last_name,
-    phone: p.mobile || undefined,
-    postcode: p.postcode || undefined
+    first_name: p.first_name || undefined,
+    last_name: p.last_name || undefined,
+    mobile: p.mobile || undefined,
+    zip: p.postcode || undefined,
+    country: "AU"
   };
   if (p.tags && p.tags.length) body.tags = p.tags;
-  if (p.note) body.notes = p.note;
+  if (p.note) body.custom1 = String(p.note).slice(0, 250);
   Object.keys(body).forEach((k) => body[k] === undefined && delete body[k]);
-  // match-or-create is a PUT: it is an upsert, not a create, and Nucleus 405s
-  // on POST.
-  const res = await call("PUT", "/profiles/match-or-create", body);
+  const res = await call("POST", "/profiles/match", body);
   return (res && res.data && res.data.id) || null;
 }
 

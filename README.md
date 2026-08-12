@@ -208,6 +208,48 @@ All 13 payment links now redirect to
 
 Conversion is therefore measured from money, not from clicks.
 
+## Load: surviving a launch surge
+
+Campaign Nucleus is written first on every submission and is the only system a
+signature must reach for the campaign to have it. Airtable follows.
+
+The constraint is Airtable: **five requests per second per base**. A signature
+used to cost about five requests on the request path, so 5,000 signatures in
+two minutes (roughly forty a second) would have needed two hundred requests a
+second and collapsed into 429s.
+
+The request path now appends **one** row to `Ingest Queue` carrying the whole
+submission, batched ten at a time (Airtable's batch limit), and `api/drain.js`
+expands those rows into Contacts, Events and the typed tables afterwards.
+
+- **Cron:** `/api/drain` every minute (`vercel.json`). Per-minute crons need a
+  Vercel Pro plan; on Hobby the schedule is throttled and the queue drains
+  slowly, so check the plan before a big send.
+- **Bounded:** 25 rows per pass with a 45 s budget, so a surge drains steadily
+  across passes instead of timing out.
+- **Idempotent:** a row is marked `Done` only after its expansion succeeded, so
+  an overlapping run or a retry cannot double-write a person. Five failures
+  moves a row to `Failed` for a human rather than retrying forever.
+- **Retries:** every outbound call to both APIs honours `Retry-After` and backs
+  off exponentially with jitter, so concurrent lambdas do not retry in lockstep.
+- **Manual drain:** `GET /api/drain?key=$DRAIN_KEY`. Set `DRAIN_KEY` to lock it
+  down; without it the endpoint is open but only ever does work that was
+  already going to happen.
+
+Nothing is lost if the queue itself fails: the full payload goes to the runtime
+log with a `*_UNSTORED` or `QUEUE_WRITE_FAIL` prefix for replay.
+
+## Partial captures
+
+The petition form beacons on blur of the name and email fields, so someone who
+fills half of it and leaves is still captured. Partials are queued, become a
+`Lapse Queue` row, and get a Nucleus profile tagged **Started petition, did not
+finish** so the follow-up can be sent.
+
+A partial never touches the petition form in Nucleus and never moves the
+counter: it is a lead, not a signature. If the person later signs, the drain
+worker drops the partial rather than nagging someone who already finished.
+
 ## Not yet implemented (backend, spec §5–§12)
 
 Serverless `/api/*` endpoints, Airtable datastore, Campaign Nucleus sync,

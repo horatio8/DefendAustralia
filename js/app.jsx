@@ -461,9 +461,16 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
     try { localStorage.setItem("ff_last_petition_url", location.pathname); } catch (e) {}
     // Campaign updates are the default for signatories, so there is no tickbox
     // to read: consent is implied by signing and stated in the privacy note.
-    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href })
+    // The ask goes out before the redirect, and keepalive keeps it alive
+    // across the navigation, so a signature is never lost to leaving the page.
+    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href }, true)
       .then((d) => { if (d && d.referral_code) try { localStorage.setItem("dsg_ref_code", String(d.referral_code).toUpperCase()); } catch (e) {} })
       .catch(() => {});
+    // A fresh signatory is the warmest a supporter ever gets: send them
+    // straight to the focused donation screen. Brief pause so the success
+    // state registers before the page changes.
+    try { localStorage.setItem("dsg_signed_name", f.first.trim()); } catch (e) {}
+    setTimeout(() => { location.href = "/donate?signed=1"; }, 900);
   };
 
   const link = shareUrl(site);
@@ -946,6 +953,51 @@ function DonatePanel({ site, innerRef }) {
       {toast && <div style={{ fontSize: 13, color: C.red, marginTop: 12 }}>{toast}</div>}
       <div style={{ fontSize: 12, color: C.faint, marginTop: 18, lineHeight: 1.6 }}>{d.panelNote}</div>
       <div style={{ fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 1.6 }}>{d.fineprint}</div>
+    </div>
+  );
+}
+
+/* Straight off the petition form: one screen, no nav, no reading, the amounts
+   in the middle of it. Everything that is not the ask is removed, because the
+   only question at this moment is whether they give. */
+function DonateFocusPage({ site }) {
+  const d = site.donate;
+  const [name, setName] = useState("");
+  useEffect(() => {
+    try { setName(localStorage.getItem("dsg_signed_name") || ""); } catch (e) {}
+  }, []);
+  return (
+    <div id="donate" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: C.cream }}>
+      <div style={{ flex: "none", borderBottom: "1px solid " + C.line, background: "#FFFFFF" }}>
+        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "18px 28px", display: "flex", justifyContent: "center" }}>
+          <a href="/" style={{ display: "block" }}>
+            <img className="m-logo" src="/assets/logo-horizontal.png" alt="Defend Sacred Ground" style={{ height: 46, width: "auto", display: "block" }} />
+          </a>
+        </div>
+      </div>
+      <div className="m-pad p-sec" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 28px" }}>
+        <div style={{ width: "100%", maxWidth: 560 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <MonoKickerCentred color={C.red}>{name ? "Thank you, " + name : "Thank you"}</MonoKickerCentred>
+            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(27px,3.2vw,40px)", lineHeight: 1.2, color: C.navy, margin: "18px 0 16px", fontWeight: 400, textWrap: "balance" }}>{d.signedHeading}</h1>
+            <p style={{ fontSize: 16, lineHeight: 1.65, color: C.mut, margin: "0 auto", maxWidth: 480, textWrap: "pretty" }}>{d.signedBody}</p>
+          </div>
+          <DonatePanel site={site} />
+          <div style={{ textAlign: "center", marginTop: 22 }}>
+            <a href="/" className="hov-copy-red" style={{ fontSize: 14, color: C.faint, borderBottom: "1px solid " + C.tanLine, paddingBottom: 2 }}>{d.signedSkip}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MonoKickerCentred({ color, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <div style={{ width: 32, height: 1, background: color }}></div>
+      <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color }}>{children}</div>
+      <div style={{ width: 32, height: 1, background: color }}></div>
     </div>
   );
 }
@@ -1485,9 +1537,15 @@ const PAGES = {
 };
 
 function App({ site, page }) {
-  const Page = PAGES[page] || HomePage;
+  // ?signed=1 on the donate page is the post-signature screen: chrome removed
+  // so nothing competes with the ask.
+  let focus = false;
+  try { focus = page === "donate" && new URLSearchParams(location.search).get("signed") === "1"; } catch (e) {}
+  const Page = focus ? DonateFocusPage : (PAGES[page] || HomePage);
+  const shell = { fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" };
+  if (focus) return <div style={shell}><Page site={site} /></div>;
   return (
-    <div style={{ fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" }}>
+    <div style={shell}>
       <Nav site={site} page={page} />
       <Page site={site} />
       <Footer site={site} />

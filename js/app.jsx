@@ -984,24 +984,32 @@ function DonateFocusPage({ site }) {
     try { setName(localStorage.getItem("dsg_signed_name") || ""); } catch (e) {}
   }, []);
   return (
-    <div id="donate" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: C.cream }}>
-      <div style={{ flex: "none", borderBottom: "1px solid " + C.line, background: "#FFFFFF" }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "18px 28px", display: "flex", justifyContent: "center" }}>
+    <div id="donate" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: C.deepest }}>
+      {/* Faceless ranks behind the ask: the men the Memorial is for, no one
+          identifiable, so the image carries the argument and not a person. */}
+      <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
+      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom,rgba(10,18,34,.62) 0%,rgba(10,18,34,.8) 45%,rgba(10,18,34,.93) 100%)" }}></div>
+
+      {/* The logo mark is dark, so it sits on its own light bar rather than
+          disappearing into the photograph. */}
+      <div style={{ position: "relative", flex: "none", background: "#FFFFFF" }}>
+        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "14px 28px", display: "flex", justifyContent: "center" }}>
           <a href="/" style={{ display: "block" }}>
-            <img className="m-logo" src="/assets/logo-horizontal.png" alt="Defend Sacred Ground" style={{ height: 46, width: "auto", display: "block" }} />
+            <img className="m-logo" src="/assets/logo-horizontal.png" alt="Defend Sacred Ground" style={{ height: 42, width: "auto", display: "block" }} />
           </a>
         </div>
       </div>
-      <div className="m-pad p-sec" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 28px" }}>
-        <div style={{ width: "100%", maxWidth: 560 }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <MonoKickerCentred color={C.red}>{name ? "Thank you, " + name : "Thank you"}</MonoKickerCentred>
-            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(27px,3.2vw,40px)", lineHeight: 1.2, color: C.navy, margin: "18px 0 16px", fontWeight: 400, textWrap: "balance" }}>{d.signedHeading}</h1>
-            <p style={{ fontSize: 16, lineHeight: 1.65, color: C.mut, margin: "0 auto", maxWidth: 480, textWrap: "pretty" }}>{d.signedBody}</p>
+
+      <div className="m-pad p-sec" style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px" }}>
+        <div style={{ width: "100%", maxWidth: 540 }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <MonoKickerCentred color={C.gold}>{name ? "Thank you, " + name : "Thank you"}</MonoKickerCentred>
+            <h1 style={{ fontFamily: SERIF, fontSize: "clamp(28px,3.4vw,42px)", lineHeight: 1.15, color: "#FFFFFF", margin: "16px 0 14px", fontWeight: 400, textWrap: "balance", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{d.signedHeading}</h1>
+            <p style={{ fontSize: 16, lineHeight: 1.6, color: C.goldPale, margin: "0 auto", maxWidth: 460, textWrap: "pretty" }}>{d.signedBody}</p>
           </div>
           <DonatePanel site={site} />
-          <div style={{ textAlign: "center", marginTop: 22 }}>
-            <a href="/" className="hov-copy-red" style={{ fontSize: 14, color: C.faint, borderBottom: "1px solid " + C.tanLine, paddingBottom: 2 }}>{d.signedSkip}</a>
+          <div style={{ textAlign: "center", marginTop: 18 }}>
+            <a href="/share" className="hov-fg-cream" style={{ fontSize: 14, color: C.steel, borderBottom: "1px solid rgba(255,255,255,.25)", paddingBottom: 2 }}>{d.signedSkip}</a>
           </div>
         </div>
       </div>
@@ -1166,7 +1174,8 @@ function SharePage({ site }) {
       <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
         <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 40px", maxWidth: 600, textWrap: "pretty" }}>{s.lede}</p>
         <div style={{ border: "1px solid " + C.line, padding: 32, marginBottom: 32 }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 18 }}>Your link</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>Your link</div>
+          {s.linkNote && <div style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, marginBottom: 18 }}>{s.linkNote}</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             <div style={{ fontFamily: MONO, fontSize: 16, color: C.navy, background: C.creamMid, padding: "16px 20px", flex: 1, minWidth: 280, overflowWrap: "anywhere" }}>{link.replace("https://", "")}</div>
             <button onClick={() => { copyText(link); flash("Link copied to your clipboard."); issue("copy"); }} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, color: C.cream, background: C.navy, border: "none", padding: "16px 24px" }}>Copy</button>
@@ -1180,11 +1189,9 @@ function SharePage({ site }) {
             <a key={p.label} href={p.href} target={p.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => issue(p.icon)} className="hov-opacity" style={shareBtnStyle(p)}>{inner(p)}</a>
           ))}
         </div>
-        <div className="m-col2" style={{ borderTop: "2px solid " + C.navy, paddingTop: 26, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 28 }}>
-          <div><div style={{ fontFamily: SERIF, fontSize: 38, color: C.navy, lineHeight: 1 }}>{s.placeholderStats.signups}</div><div style={{ fontSize: 13, color: C.mut, marginTop: 6 }}>Signatures from your link</div></div>
-          <div><div style={{ fontFamily: SERIF, fontSize: 38, color: C.navy, lineHeight: 1 }}>{s.placeholderStats.clicks}</div><div style={{ fontSize: 13, color: C.mut, marginTop: 6 }}>People who opened it</div></div>
-          <div><div style={{ fontFamily: SERIF, fontSize: 38, color: C.red, lineHeight: 1 }}>{s.placeholderStats.rank}</div><div style={{ fontSize: 13, color: C.mut, marginTop: 6 }}>Your rank this week</div></div>
-        </div>
+        {/* The per-supporter counts were invented placeholders. Everyone lands
+            here now, so they are gone until the referral rollup can serve real
+            numbers. */}
       </div>
     </div>
   );

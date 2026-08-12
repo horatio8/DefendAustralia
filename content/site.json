@@ -397,18 +397,15 @@
       }
     },
     "panelNote": "Secure checkout by Stripe. Card, PayPal, Apple Pay and Google Pay accepted.",
-    "signedHeading": "Thank you for signing. Here is what makes it count.",
-    "signedBody": "Your name is on the petition. Names alone will not reach the Australians who still have not heard this is happening. That takes money, and this campaign has no other source of it.",
-    "signedSkip": "Not now, take me to the site"
+    "signedHeading": "They have millions. We need you.",
+    "signedBody": "They are trying to desecrate our most sacred memorial in secret. Only you can help get the message out. Every dollar goes to helping Australians learn about this and stand up against it.",
+    "signedSkip": "Not now, help me share it instead"
   },
   "share": {
     "heading": "Now bring five people with you.",
     "lede": "Five is the number that moves this. Supporters who recruit five bring in more signatures than any advertisement we have ever run.",
-    "placeholderStats": {
-      "signups": "12",
-      "clicks": "58",
-      "rank": "#340"
-    }
+    "kicker": "Share it",
+    "linkNote": "This link is yours. Every signature that comes through it is counted to you."
   },
   "news": {
     "heading": "News from the campaign.",

@@ -1172,8 +1172,7 @@ function SharePage({ site }) {
         </div>
       </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
-        <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 40px", maxWidth: 600, textWrap: "pretty" }}>{s.lede}</p>
-        <div style={{ border: "1px solid " + C.line, padding: 32, marginBottom: 32 }}>
+        <div style={{ border: "1px solid " + C.line, padding: 32, margin: "8px 0 32px" }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>Your link</div>
           {s.linkNote && <div style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, marginBottom: 18 }}>{s.linkNote}</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>

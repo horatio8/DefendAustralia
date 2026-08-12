@@ -159,6 +159,16 @@ Endpoints: `petition-signup`, `event-log` (contact + volunteer), `capture`
 (minister), `partial`, `share-issued`, `signature-count`, `donation-status`,
 `stripe-webhook`. Shared clients live in `api/_lib/`.
 
+Nucleus route notes, learned the hard way against the live API: a form entry
+is `POST /forms/{id}/entries`, but a profile upsert is `POST /profiles/match`
+(not `match-or-create`, which 405s on POST and 404s on PUT), and it wants
+`mobile` and `zip` rather than `phone` and `postcode`.
+
+All six write paths were verified against production on 12 Aug 2026: petition,
+contact, volunteer, minister capture, partial and share. Each wrote its
+Contact, its Event, its typed row and its Nucleus entry, and the test records
+were removed afterwards.
+
 Nucleus failures never cost a submission: the supporter always gets the
 success state, and the failure is recorded on the Airtable row as `cn_error`
 so a broken sync is visible in the base rather than silent. Filter any typed

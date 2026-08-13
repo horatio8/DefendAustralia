@@ -118,7 +118,9 @@ async function upsertContact(p) {
     if (p.status && p.status !== rec.fields.status) patch.status = p.status;
     if (p.consent) patch.consent = true;
     await update(T.contacts, rec.id, patch);
-    return { id: rec.id, contact_id: rec.fields.contact_id, created: false };
+    // The fields come back too: the Meta fires need this person's first-touch
+    // fbclid and fbp, and re-reading the row to get them would double the cost.
+    return { id: rec.id, contact_id: rec.fields.contact_id, created: false, fields: { ...rec.fields, ...patch } };
   }
 
   const contact_id = uuid();
@@ -138,7 +140,7 @@ async function upsertContact(p) {
     date_first_seen: nowIso(),
     last_updated: nowIso()
   });
-  return { id: res.id, contact_id, created: true };
+  return { id: res.id, contact_id, created: true, fields: (res && res.fields) || {} };
 }
 
 // Append to the log. dedup_key makes webhook re-delivery a no-op.

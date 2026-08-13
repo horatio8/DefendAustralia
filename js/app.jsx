@@ -107,12 +107,118 @@ function Notice({ kind, children, onRetry }) {
 }
 
 function refFromUrl() {
-  try { return new URLSearchParams(location.search).get("ref") || ""; } catch (e) { return ""; }
+  try { return (new URLSearchParams(location.search).get("ref") || "").trim().toUpperCase(); }
+  catch (e) { return ""; }
 }
 
-function shareUrl(site) {
-  const code = (localStorage.getItem("dsg_ref_code") || site.org.defaultRefCode).toUpperCase();
-  return "https://" + site.org.domain + "/?ref=" + code;
+function shareUrl(site, code) {
+  let c = code;
+  if (!c) { try { c = localStorage.getItem("dsg_ref_code"); } catch (e) {} }
+  return "https://" + site.org.domain + "/?ref=" + String(c || site.org.defaultRefCode).toUpperCase();
+}
+
+/* Arriving on somebody's link.
+ *
+ * Two things happen and they are separate. The click is reported once per page
+ * load so the sharer gets credit for the reach. The code is also kept for the
+ * rest of the visit, because the signature that matters may happen three pages
+ * later and the query string will be long gone by then.
+ *
+ * The stored value is the referrer's code, under a different key from the
+ * visitor's own code. Writing an incoming ref over dsg_ref_code would hand a
+ * visitor the sharer's identity and every onward share would credit the wrong
+ * person. */
+function useReferralArrival() {
+  useEffect(() => {
+    const code = refFromUrl();
+    if (!code) return;
+    try { sessionStorage.setItem("dsg_arrived_ref", code); } catch (e) {}
+    apiPost("/api/share-click", {
+      code, landing: location.href, referrer: document.referrer || ""
+    }, true).catch((err) => console.warn("share click not logged:", messageOf(err)));
+  }, []);
+}
+
+/* The code that brought this visitor here, from the URL or from earlier in
+ * the same visit. Never the visitor's own code. */
+function arrivedRef() {
+  const fromUrl = refFromUrl();
+  if (fromUrl) return fromUrl;
+  try { return sessionStorage.getItem("dsg_arrived_ref") || ""; } catch (e) { return ""; }
+}
+
+/* ── Meta tracking ────────────────────────────────────────────────
+ *
+ * Two halves of one event. The pixel fires in the browser and the same event
+ * is posted to /api/meta-capi with an identical event_id, which Meta collapses
+ * into a single conversion. The pair exists because either half can be lost:
+ * an ad blocker or Safari's tracking prevention kills the browser event, and
+ * roughly a third of them never arrive. Sending only the pixel means paying
+ * for ads you cannot measure.
+ *
+ * fbclid is captured on the first page of the visit and kept. It is the thread
+ * back to the ad that produced a supporter, and it is present in the URL for
+ * exactly one page load before it is gone. */
+function firstTouch() {
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem("dsg_first_touch") || "{}"); } catch (e) {}
+  let fbclid = "";
+  try { fbclid = new URLSearchParams(location.search).get("fbclid") || ""; } catch (e) {}
+
+  if (fbclid && !stored.fbclid) {
+    stored = { fbclid, at: Date.now() };
+    try { localStorage.setItem("dsg_first_touch", JSON.stringify(stored)); } catch (e) {}
+  }
+  return {
+    fbclid: stored.fbclid || "",
+    // Meta's own cookies, if the pixel has had a chance to write them.
+    fbp: readCookie("_fbp"),
+    fbc: readCookie("_fbc") || (stored.fbclid ? "fb.1." + (stored.at || Date.now()) + "." + stored.fbclid : "")
+  };
+}
+
+function readCookie(name) {
+  try {
+    const m = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
+    return m ? m[2] : "";
+  } catch (e) { return ""; }
+}
+
+/* Fire an event to both halves. Identity fields are whatever the visitor has
+ * already typed on this page; the server hashes them before they reach Meta,
+ * and nothing identifying is sent from here in the clear beyond what the
+ * visitor themselves supplied. */
+function track(name, params, identity) {
+  const id = name + "." + Math.random().toString(36).slice(2, 12);
+  const t = firstTouch();
+  try {
+    if (window.fbq) window.fbq("track", name, params || {}, { eventID: id });
+  } catch (e) {}
+  apiPost("/api/meta-capi", {
+    event_name: name, event_id: id, source_url: location.href,
+    ...(params || {}), ...(identity || {}), fbp: t.fbp, fbc: t.fbc, fbclid: t.fbclid
+  }, true).catch((err) => console.warn("capi event not sent:", messageOf(err)));
+}
+
+/* Loads the pixel once per page, from config rather than from a snippet pasted
+ * into every HTML shell, so the id lives in one place and a page added later
+ * cannot forget it. Absent id means no pixel and no requests. */
+function usePixel(site) {
+  useEffect(() => {
+    const id = site.org && site.org.metaPixelId;
+    firstTouch(); // capture fbclid even when the pixel is not configured
+    if (!id || window.fbq) return;
+    /* eslint-disable */
+    (function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+      t = b.createElement(e); t.async = true; t.src = v;
+      s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    /* eslint-enable */
+    window.fbq("init", id);
+    track("PageView");
+  }, []);
 }
 
 /* Copying is the fallback for every share route that cannot open an app, so a
@@ -589,9 +695,16 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
     // Consent is implied by signing and stated in the privacy note, so there is
     // no tickbox to read. keepalive keeps the request alive across the
     // navigation that follows, so leaving immediately cannot lose a signature.
+    // Fired here rather than on the donate page: this is the moment the
+    // conversion happened, and the next page load is not guaranteed.
+    track("Lead", { content_name: site.org.petitionSlug }, {
+      email, first_name: f.first.trim(), last_name: f.last.trim(),
+      mobile: f.mobile.trim(), postcode: f.postcode.trim()
+    });
+
     const sent = apiPost("/api/petition-signup", {
       ...f, consent: true, campaign: site.org.petitionSlug,
-      ref: refFromUrl(), source_url: location.href
+      ref: arrivedRef(), source_url: location.href, ...firstTouch()
     }, true);
 
     // Straight to the ask, but not blindly. A supporter who has just signed is
@@ -937,6 +1050,10 @@ function MinisterPage({ site }) {
     // must not claim the letter went. The letter is kept either way and the
     // copy and webmail routes below still work, but the supporter is told
     // plainly which of those two things just happened.
+    track("Contact", { content_name: "minister letter" }, {
+      email: f.email.trim().toLowerCase(), first_name: f.first.trim(),
+      last_name: f.last.trim(), mobile: f.mobile.trim()
+    });
     setDelivered(!!m.toEmail);
     setSent(true);
     window.scrollTo(0, 0);
@@ -1055,6 +1172,7 @@ function DonatePanel({ site, innerRef }) {
     if (amt < 2) return setPanelError("The smallest monthly gift we can take is $2.");
     setPanelError("");
     setOpening(true);
+    initiate(amt);
     apiPost("/api/checkout", { amount: amt, frequency: "monthly", source_url: location.href })
       .then((resp) => {
         if (!resp || !resp.url) throw new Error("Checkout did not open. Try again, or pick one of the amounts above.");
@@ -1062,6 +1180,13 @@ function DonatePanel({ site, innerRef }) {
       })
       .catch((err) => { setOpening(false); setPanelError(messageOf(err)); });
   };
+
+  // Every route to Stripe reports the intent before the browser leaves, since
+  // whether they complete is Stripe's webhook to tell us, not this page's.
+  const initiate = (amount) => track("InitiateCheckout", {
+    value: Number(amount) || undefined, currency: "AUD",
+    content_name: "donation " + freq
+  });
 
   const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
   const chip = { padding: "22px 10px", textAlign: "center", border: "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer", textDecoration: "none", display: "block", boxSizing: "border-box" };
@@ -1074,14 +1199,14 @@ function DonatePanel({ site, innerRef }) {
       </div>
       <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
         {d.presets.map((v) => (
-          <a key={v} href={links[String(v)] || "#"} className="hov-border-red" style={chip}>
+          <a key={v} href={links[String(v)] || "#"} onClick={() => initiate(v)} className="hov-border-red" style={chip}>
             <div style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
             {freq === "monthly" && <div style={{ fontSize: 11, color: C.faint, marginTop: 5, letterSpacing: ".04em" }}>a month</div>}
           </a>
         ))}
       </div>
       {freq === "once" ? (
-        <a href={customLink || "#"} className="hov-border-navy" style={{ display: "block", width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Other amount</a>
+        <a href={customLink || "#"} onClick={() => initiate(0)} className="hov-border-navy" style={{ display: "block", width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Other amount</a>
       ) : !showOther ? (
         <button onClick={() => setShowOther(true)} className="hov-border-navy" style={{ width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer" }}>Other amount</button>
       ) : (
@@ -1276,18 +1401,117 @@ function ThankYouPage({ site }) {
   );
 }
 
+/* Who is looking at the share page, and what is their link?
+ *
+ * Three arrivals, tried in order of confidence:
+ *   1. a Stripe session id, because they have just donated
+ *   2. a code already in local storage, because they signed on this device
+ *   3. neither, so the page asks for an email
+ *
+ * The Stripe route polls. The browser returning from Stripe usually beats the
+ * webhook that writes the donation, so a first lookup can legitimately find a
+ * paid session whose contact does not exist yet. Backing off and asking again
+ * is right; telling a donor we do not know who they are, seconds after they
+ * gave money, is not. */
+function useShareIdentity(site) {
+  const [ctx, setCtx] = useState({ state: "loading", code: "", first_name: "" });
+  const tries = useRef(0);
+
+  useEffect(() => {
+    let stored = "", name = "";
+    try {
+      stored = (localStorage.getItem("dsg_ref_code") || "").toUpperCase();
+      name = (localStorage.getItem("dsg_signed_name") || "").trim();
+    } catch (e) {}
+
+    let sessionId = "";
+    try { sessionId = new URLSearchParams(location.search).get("session_id") || ""; } catch (e) {}
+
+    // Anyone who already has a code sees their link immediately. The lookup
+    // still runs underneath to fill in a name and confirm the code.
+    if (!sessionId && stored) setCtx({ state: "ready", code: stored, first_name: name });
+
+    let stop = false;
+    const ask = () => {
+      if (stop) return;
+      const qs = sessionId ? "session_id=" + encodeURIComponent(sessionId)
+        : stored ? "code=" + encodeURIComponent(stored) : "";
+      apiGet("/api/share-context" + (qs ? "?" + qs : ""))
+        .then((d) => {
+          if (stop || !d) return;
+          if (d.state === "polling" && tries.current < 6) {
+            tries.current++;
+            setCtx((c) => (c.state === "ready" ? c : { state: "polling", code: "", first_name: d.first_name || name }));
+            return void setTimeout(ask, 1200);
+          }
+          if (d.state === "ready" && d.code) {
+            try { localStorage.setItem("dsg_ref_code", d.code); } catch (e) {}
+            return setCtx({ state: "ready", code: d.code, first_name: d.first_name || name });
+          }
+          // Nothing identified them. A stored code still beats asking.
+          setCtx(stored
+            ? { state: "ready", code: stored, first_name: name }
+            : { state: "ask_email", code: "", first_name: name });
+        })
+        .catch((err) => {
+          if (stop) return;
+          console.warn("share context failed:", messageOf(err));
+          // The code is derivable in the browser, so a lookup failure is not
+          // the end of the page: fall back to whatever this device knows.
+          setCtx(stored
+            ? { state: "ready", code: stored, first_name: name }
+            : { state: "ask_email", code: "", first_name: name });
+        });
+    };
+    ask();
+    return () => { stop = true; };
+  }, []);
+
+  return ctx;
+}
+
+/* The email fallback: no donation session and no stored code, so ask. */
+function ShareEmailGate({ onResolved }) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = () => {
+    if (!validEmail(email)) return setError("Enter the email you signed with so we can find your link.");
+    setError("");
+    setBusy(true);
+    apiPost("/api/share-signup", { email, source_url: location.href })
+      .then((d) => {
+        if (!d || !d.code) throw new Error("We could not build your link. Try again in a moment.");
+        try { localStorage.setItem("dsg_ref_code", d.code); } catch (e) {}
+        onResolved(d);
+      })
+      .catch((err) => { setBusy(false); setError(messageOf(err)); });
+  };
+  return (
+    <div className="pad-card" style={{ border: "1px solid " + C.tan, background: C.creamCard, padding: 32, margin: "8px 0 32px" }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>Your link</div>
+      <p style={{ fontSize: 15, lineHeight: 1.6, color: C.mut, margin: "0 0 18px" }}>
+        Enter your email and we will build the link that credits the people you bring in.
+      </p>
+      <Field id="shre" label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Notice>{error}</Notice>
+      <button onClick={submit} disabled={busy} className={busy ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 18, padding: "17px 24px", opacity: busy ? .72 : 1, cursor: busy ? "default" : "pointer" })}>{busy ? "Building your link…" : "Get my link"}</button>
+    </div>
+  );
+}
+
 function SharePage({ site }) {
   const s = site.share;
   const st = site.shareTexts;
   const [toast, flash] = useToast();
-  // Their first name, kept from the moment they signed. Absent for anyone who
-  // arrives here cold, so the heading has an unnamed form too.
-  const [name, setName] = useState("");
-  useEffect(() => {
-    try { setName((localStorage.getItem("dsg_signed_name") || "").trim()); } catch (e) {}
-  }, []);
+  const resolved = useShareIdentity(site);
+  // The email gate can supply an identity after the hook has settled, so the
+  // rendered context is whichever of the two is more complete.
+  const [gated, setResolved] = useState(null);
+  const ctx = gated ? { state: "ready", code: gated.code, first_name: gated.first_name || resolved.first_name } : resolved;
+  const name = ctx.first_name;
   const heading = name && s.headingNamed ? s.headingNamed.replace("{name}", name) : s.heading;
-  const link = shareUrl(site);
+  const link = shareUrl(site, ctx.code);
   const enc = encodeURIComponent;
   const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true)
     .catch((err) => console.warn("share not logged:", messageOf(err)));
@@ -1323,6 +1547,9 @@ function SharePage({ site }) {
         </div>
       </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 28px 80px" }}>
+        {ctx.state === "ask_email" ? (
+          <ShareEmailGate onResolved={(d) => setResolved(d)} />
+        ) : (
         <div className="pad-card" style={{ border: "1px solid " + C.line, padding: 32, margin: "8px 0 32px" }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>Your link</div>
           {s.linkNote && <div style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, marginBottom: 18 }}>{s.linkNote}</div>}
@@ -1330,8 +1557,12 @@ function SharePage({ site }) {
             <div style={{ fontFamily: MONO, fontSize: 16, color: C.navy, background: C.creamMid, padding: "16px 20px", flex: 1, minWidth: 280, overflowWrap: "anywhere" }}>{link.replace("https://", "")}</div>
             <button onClick={() => { copyThen(link, flash, "Link copied to your clipboard."); issue("copy"); }} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, color: C.cream, background: C.navy, border: "none", padding: "16px 24px" }}>Copy</button>
           </div>
+          {ctx.state === "polling" && (
+            <div style={{ fontSize: 13, color: C.faint, marginTop: 14 }}>Matching your donation to your link…</div>
+          )}
           {toast && <div style={{ fontSize: 13, color: C.green, marginTop: 14 }}>{toast}</div>}
         </div>
+        )}
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 44, maxWidth: 440 }}>
           {platforms.map((p) => p.copy ? (
             <button key={p.label} onClick={() => { copyThen(link, flash, p.icon === "link" ? "Link copied to your clipboard." : "Link copied. Paste it into your post."); issue(p.icon); }} className="hov-opacity" style={shareBtnStyle(p)}>{inner(p)}</button>
@@ -1580,7 +1811,13 @@ function VolunteerPage({ site }) {
     sentRef.current = true;
     setSending(true);
     apiPost("/api/event-log", { type: "volunteer_signup", ...f, roles, source_url: location.href })
-      .then(() => setDone(true))
+      .then(() => {
+        track("CompleteRegistration", { content_name: "volunteer" }, {
+          email: f.email.trim().toLowerCase(), first_name: f.first.trim(),
+          last_name: f.last.trim(), mobile: f.mobile.trim(), postcode: f.postcode.trim()
+        });
+        setDone(true);
+      })
       .catch((err) => {
         sentRef.current = false;
         setSending(false);
@@ -1664,7 +1901,12 @@ function ContactPage({ site }) {
     sentRef.current = true;
     setSending(true);
     apiPost("/api/event-log", { type: "contact_message", ...f, topic, message: msg, source_url: location.href })
-      .then(() => setDone(true))
+      .then(() => {
+        track("Contact", { content_name: topic }, {
+          email: f.email.trim().toLowerCase(), first_name: f.first.trim(), last_name: f.last.trim()
+        });
+        setDone(true);
+      })
       .catch((err) => {
         sentRef.current = false;
         setSending(false);
@@ -1751,6 +1993,10 @@ const PAGES = {
 };
 
 function App({ site, page }) {
+  // Every page, not just the petition: a shared link may point anywhere, and
+  // the sharer earns the click wherever it lands.
+  useReferralArrival();
+  usePixel(site);
   // The two pages at the end of the funnel carry no nav and no footer, only
   // the logo: ?signed=1 on donate is the post-signature ask, and the share page
   // exists to be acted on rather than navigated away from.

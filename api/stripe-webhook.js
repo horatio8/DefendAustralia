@@ -12,6 +12,7 @@
 const Stripe = require("stripe");
 const at = require("./_lib/airtable");
 const nucleus = require("./_lib/nucleus");
+const meta = require("./_lib/meta");
 
 const UPSELL_WINDOW_DAYS = 7;
 
@@ -129,6 +130,39 @@ async function record(event, row, eventType) {
   }
 
   await bumpLifetime(contact.id, (row.amount_cents || 0) / 100);
+
+  // Purchase to Meta, from here rather than from the browser. The donor is on
+  // Stripe's domain when the payment succeeds and may close the tab before
+  // ever loading the thank-you page, so the browser pixel cannot be relied on
+  // for the one event that carries the money. Rebills fire too: a monthly
+  // donor's second year is revenue the original ad produced.
+  //
+  // The event id is the Stripe event id, which is also the Airtable dedup key,
+  // so a Stripe redelivery cannot double-count in Meta either.
+  try {
+    const first = contact.fields || {};
+    await meta.send({
+      event_name: "Purchase",
+      event_id: meta.eventId("purchase", event.id),
+      event_time: (event.created || Math.floor(Date.now() / 1000)) * 1000,
+      action_source: "website",
+      custom: {
+        value: (row.amount_cents || 0) / 100,
+        currency: row.currency || "AUD",
+        content_name: row.frequency
+      },
+      user: {
+        email: row.email, mobile: row.mobile, postcode: row.postcode,
+        first_name: row.first_name, last_name: row.last_name,
+        country: row.country || "au",
+        // First-touch values, carried on the contact from the visit that
+        // produced them. This is the thread back to the ad.
+        fbp: first.fbp || "",
+        fbc: first.fbclid ? meta.fbcFrom(first.fbclid) : ""
+      }
+    });
+  } catch (err) { console.error("META_PURCHASE_FAIL", err.message); }
+
   try {
     await nucleus.upsertProfile({
       email: row.email, first_name: row.first_name, last_name: row.last_name,

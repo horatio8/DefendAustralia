@@ -96,6 +96,13 @@ async function expand(row) {
 const EXPAND = {
   petition: async (p, cn) => {
     const contact = await at.upsertContact({ ...p, source_channel: "Petition", status: "Signed" });
+    // Credit the recruiter, once. referred_by is first-touch: a supporter who
+    // arrives again later on somebody else's link still belongs to whoever
+    // brought them in the first time, or the last sharer would steal the
+    // credit for every re-visit.
+    if (p.ref && contact.created) {
+      await at.update(at.T.contacts, contact.id, { referred_by: p.ref }).catch(() => {});
+    }
     // A repeat press still updates the person, but it must not add a second
     // signature row: the base would then disagree with Nucleus about the count.
     const already = p.email
@@ -116,6 +123,37 @@ const EXPAND = {
       utm_source: p.utm_source || "", utm_medium: p.utm_medium || "", utm_campaign: p.utm_campaign || "",
       utm_term: p.utm_term || "", utm_content: p.utm_content || "",
       timestamp: at.nowIso(), payload: JSON.stringify(p, null, 1)
+    });
+    await at.markFanout(ev.id, true);
+  },
+
+  // A lead ad signature. Same tables as a website signature, plus the ad
+  // attribution columns that are the whole reason for running lead ads.
+  meta_lead: async (p, cn) => {
+    const contact = await at.upsertContact({ ...p, source_channel: "Meta Lead Ad", status: "Signed" });
+    const already = await at.findOne(at.T.signatures,
+      "{meta_leadgen_id}='" + at.esc(p.meta_leadgen_id || "") + "'");
+    if (already) return;
+    const ev = await at.logEvent({
+      contactRecId: contact.id, event_type: "Petition Signed",
+      source_channel: "Meta Lead Ad", source_url: p.source_url, payload: p
+    });
+    await at.create(at.T.signatures, {
+      signature_id: at.uuid(), contact: [contact.id], event: [ev.id],
+      first_name: p.first_name, last_name: p.last_name, email: p.email,
+      mobile: p.mobile || "", postcode: p.postcode || "", campaign: p.campaign || "",
+      consent: true, lead_source: "Meta Lead Ad",
+      cn_synced: cn.synced, cn_entry_id: cn.entryId, cn_error: cn.error,
+      utm_source: "meta", utm_medium: "lead_ad", utm_campaign: p.meta_campaign_name || "",
+      meta_leadgen_id: p.meta_leadgen_id || "", meta_form_id: p.meta_form_id || "",
+      meta_form_name: p.meta_form_name || "", meta_ad_id: p.meta_ad_id || "",
+      meta_ad_name: p.meta_ad_name || "", meta_adset_id: p.meta_adset_id || "",
+      meta_adset_name: p.meta_adset_name || "", meta_campaign_id: p.meta_campaign_id || "",
+      meta_campaign_name: p.meta_campaign_name || "", meta_platform: p.meta_platform || "",
+      meta_partner: p.meta_partner || "",
+      meta_created_time: p.meta_created_time || undefined,
+      source_url: p.source_url || "", timestamp: at.nowIso(),
+      payload: JSON.stringify(p, null, 1)
     });
     await at.markFanout(ev.id, true);
   },
@@ -177,16 +215,52 @@ const EXPAND = {
   },
 
   share: async (p) => {
-    const owner = p.code
-      ? await at.findOne(at.T.contacts, "{referral_code}='" + at.esc(p.code) + "'")
-      : null;
+    const owner = await ownerOf(p.code);
     await at.logEvent({
       contactRecId: owner ? owner.id : undefined,
       event_type: "Share Issued", source_channel: "Share page",
       referral_code_used: p.code, payload: p
     });
+  },
+
+  // Someone followed a supporter's link. Logged against the supporter who
+  // owns the code, not the visitor, because the visitor is still anonymous:
+  // this is a measure of the sharer's reach.
+  share_click: async (p) => {
+    const owner = await ownerOf(p.code);
+    await at.logEvent({
+      contactRecId: owner ? owner.id : undefined,
+      event_type: "Share Click", source_channel: "Referral link",
+      source_url: p.landing, referral_code_used: p.code, payload: p
+    });
+  },
+
+  // A visitor who asked for a share link without ever having signed.
+  share_signup: async (p) => {
+    const contact = await at.upsertContact({
+      ...p, source_channel: "Share page", status: "Lead",
+      referral_code: p.referral_code
+    });
+    await at.logEvent({
+      contactRecId: contact.id, event_type: "Share Signup",
+      source_channel: "Share page", source_url: p.source_url, payload: p
+    });
   }
 };
+
+// Codes are matched case-insensitively: a link that has been through a mail
+// client may come back lowercased, and treating that as a different code
+// splits one supporter's results in two.
+async function ownerOf(code) {
+  const c = String(code || "").trim().toUpperCase();
+  if (!c) return null;
+  try {
+    return await at.findOne(at.T.contacts, "UPPER({referral_code})='" + at.esc(c) + "'");
+  } catch (err) {
+    console.error("REF_OWNER_LOOKUP_FAIL", err.message);
+    return null;
+  }
+}
 
 async function submission(form, eventType, channel, sourceChannel, status, p, cn) {
   const contact = await at.upsertContact({ ...p, consent: true, source_channel: sourceChannel, status });

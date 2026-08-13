@@ -7,7 +7,8 @@
     "petitionSlug": "defend-sacred-ground",
     "signatureFallbackCount": 0,
     "defaultRefCode": "K7QMR4",
-    "signatureGoalStep": 15000
+    "signatureGoalStep": 15000,
+    "metaPixelId": ""
   },
   "banner": {
     "text": "Australians are defending the War Memorial from activists.",

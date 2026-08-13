@@ -13,6 +13,8 @@
 const nucleus = require("./_lib/nucleus");
 const queue = require("./_lib/queue");
 const at = require("./_lib/airtable");
+const meta = require("./_lib/meta");
+const { refCodeFor, normCode } = require("./_lib/refcode");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
@@ -28,8 +30,11 @@ module.exports = async function handler(req, res) {
     mobile: str(b.mobile), postcode: str(b.postcode),
     campaign: str(b.campaign) || "defend-sacred-ground",
     consent: b.consent !== false,
-    ref: str(b.ref), source_url: str(b.source_url),
-    referral_code: makeRefCode(email),
+    ref: normCode(b.ref), source_url: str(b.source_url),
+    referral_code: refCodeFor(email),
+    // First touch, kept on the contact. This is the thread back to the ad that
+    // produced the supporter, and it is in the URL for one page load only.
+    fbclid: str(b.fbclid).slice(0, 200), fbp: str(b.fbp).slice(0, 120),
     ...utm
   };
 
@@ -72,6 +77,31 @@ module.exports = async function handler(req, res) {
   const stored = cnOk || queued.queued;
   if (!stored) console.error("PETITION_UNSTORED", JSON.stringify(p));
 
+  // 3. Meta, server side, paired with the browser's Lead event by a shared id
+  // derived from the email and the day. A supporter whose pixel was blocked is
+  // still counted; one whose pixel fired is still counted once.
+  //
+  // Awaited rather than fired and forgotten: a lambda that returns can be
+  // frozen before an unawaited promise resolves, and a dropped conversion is
+  // an ad budget spent blind. It is wrapped so it can never fail the request.
+  if (!duplicate) {
+    try {
+      await meta.send({
+        event_name: "Lead",
+        event_id: meta.eventId("lead", p.email + ":" + new Date().toISOString().slice(0, 10)),
+        source_url: p.source_url,
+        custom: { content_name: p.campaign },
+        user: {
+          email: p.email, mobile: p.mobile, postcode: p.postcode,
+          first_name: p.first_name, last_name: p.last_name,
+          fbp: p.fbp, fbc: meta.fbcFrom(p.fbclid),
+          ip: (req.headers["x-forwarded-for"] || "").split(",")[0].trim(),
+          ua: String(req.headers["user-agent"] || "").slice(0, 400)
+        }
+      });
+    } catch (err) { console.error("META_LEAD_FAIL", err.message); }
+  }
+
   return res.status(200).json({
     ok: true, stored,
     referral_code: p.referral_code,
@@ -95,14 +125,4 @@ function utmsFrom(sourceUrl) {
     });
   } catch (e) { /* no or unparseable URL */ }
   return out;
-}
-
-// Stable per-email share code, so the same supporter always gets the same one.
-function makeRefCode(email) {
-  let h = 5381;
-  for (let i = 0; i < email.length; i++) h = ((h * 33) ^ email.charCodeAt(i)) >>> 0;
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 6; i++) { code += alphabet[h % alphabet.length]; h = Math.floor(h / alphabet.length) + 7919; }
-  return code;
 }

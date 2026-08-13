@@ -1,0 +1,206 @@
+{
+  "_comment": "Survey config. Screens are rendered in order. tier core means always asked; tier optional may be skipped when the answer is already known. cn_tag is applied on completion with {value} substituted.",
+  "slug": "memorial",
+  "version": "1",
+  "title": "Two minutes, all taps",
+  "intro": {
+    "kicker": "Supporter survey",
+    "heading": "Tell us what matters to you.",
+    "lede": "Fourteen questions, almost all of them taps. It takes about two minutes and it decides what the campaign does next.",
+    "cta": "Start"
+  },
+  "screens": [
+    {
+      "id": "motivation",
+      "type": "single_select",
+      "tier": "core",
+      "field": "primary_motivation",
+      "cn_tag": "motiv:{value}",
+      "question": "What brings you to this campaign?",
+      "options": [
+        { "value": "family", "label": "Someone in my family served", "icon": "medal" },
+        { "value": "served", "label": "I served", "icon": "shield" },
+        { "value": "history", "label": "Our history is being rewritten", "icon": "book" },
+        { "value": "waste", "label": "The money could be better spent", "icon": "coin" },
+        { "value": "secrecy", "label": "It was decided in secret", "icon": "lock" }
+      ]
+    },
+    {
+      "id": "connection",
+      "type": "single_select",
+      "tier": "core",
+      "field": "connection",
+      "cn_tag": "conn:{value}",
+      "question": "What is your connection to the Memorial?",
+      "options": [
+        { "value": "visited", "label": "I have visited it", "icon": "pin" },
+        { "value": "namedthere", "label": "A relative's name is on it", "icon": "flame" },
+        { "value": "canberra", "label": "I live in Canberra", "icon": "home" },
+        { "value": "none", "label": "None, but it still matters", "icon": "heart" }
+      ]
+    },
+    {
+      "id": "statement_why",
+      "type": "statement",
+      "tier": "core",
+      "heading": "That is the part that decides everything else.",
+      "body": "The next few questions are about what you want the campaign to do with it."
+    },
+    {
+      "id": "concern",
+      "type": "multi_select",
+      "tier": "core",
+      "field": "concerns",
+      "cn_tag": "concern:{value}",
+      "question": "Which of these worry you? Pick as many as apply.",
+      "options": [
+        { "value": "reinterpretation", "label": "Rewriting what the Memorial says", "icon": "pen" },
+        { "value": "cost", "label": "The cost of the works", "icon": "coin" },
+        { "value": "consultation", "label": "No public consultation", "icon": "megaphone" },
+        { "value": "demolition", "label": "Demolishing parts of the building", "icon": "hammer" },
+        { "value": "politics", "label": "Politics inside a place of mourning", "icon": "flag" }
+      ]
+    },
+    {
+      "id": "priority",
+      "type": "single_select",
+      "tier": "core",
+      "field": "priority",
+      "cn_tag": "priority:{value}",
+      "question": "If the campaign could win only one thing, which should it be?",
+      "options": [
+        { "value": "halt", "label": "Halt the works", "icon": "stop" },
+        { "value": "transparency", "label": "Publish the decisions", "icon": "eye" },
+        { "value": "commemoration", "label": "Protect it as a place of mourning", "icon": "flame" },
+        { "value": "accountability", "label": "Hold the Council to account", "icon": "gavel" }
+      ]
+    },
+    {
+      "id": "urgency",
+      "type": "scale_1_5",
+      "tier": "core",
+      "field": "urgency",
+      "question": "How urgent does this feel to you?",
+      "lowLabel": "Can wait",
+      "highLabel": "Right now"
+    },
+    {
+      "id": "informed",
+      "type": "scale_1_5",
+      "tier": "optional",
+      "field": "informed",
+      "question": "How well informed do you feel about what is actually planned?",
+      "lowLabel": "Not at all",
+      "highLabel": "Very well"
+    },
+    {
+      "id": "heard_from",
+      "type": "single_select",
+      "tier": "optional",
+      "field": "heard_from",
+      "cn_tag": "source:{value}",
+      "question": "How did you first hear about this?",
+      "options": [
+        { "value": "friend", "label": "A friend or family member", "icon": "people" },
+        { "value": "social", "label": "Social media", "icon": "share" },
+        { "value": "news", "label": "News coverage", "icon": "paper" },
+        { "value": "rsl", "label": "An RSL or veterans' group", "icon": "shield" },
+        { "value": "email", "label": "An email", "icon": "mail" }
+      ]
+    },
+    {
+      "id": "help",
+      "type": "multi_select",
+      "tier": "core",
+      "field": "help",
+      "cn_tag": "help:{value}",
+      "question": "What are you willing to do?",
+      "options": [
+        { "value": "share", "label": "Share it with people I know", "icon": "share" },
+        { "value": "donate", "label": "Chip in", "icon": "coin" },
+        { "value": "letter", "label": "Write to my MP", "icon": "pen" },
+        { "value": "volunteer", "label": "Volunteer some time", "icon": "people" },
+        { "value": "story", "label": "Tell my family's story", "icon": "flame" }
+      ]
+    },
+    {
+      "id": "statement_thanks",
+      "type": "statement",
+      "tier": "core",
+      "heading": "Almost done.",
+      "body": "Two quick ones so we know where you are and how to reach you."
+    },
+    {
+      "id": "postcode",
+      "type": "postcode",
+      "tier": "optional",
+      "field": "postcode",
+      "question": "What is your postcode?",
+      "note": "It tells us which electorates the campaign is strongest in."
+    },
+    {
+      "id": "phone_optin",
+      "type": "phone_optin",
+      "tier": "optional",
+      "field": "phone_optin",
+      "cn_tag": "sms:{value}",
+      "question": "Can we text you when something urgent happens?",
+      "note": "Rarely, and never more than matters. Reply STOP any time.",
+      "options": [
+        { "value": "yes", "label": "Yes, text me", "icon": "sms" },
+        { "value": "no", "label": "No thanks", "icon": "cross" }
+      ]
+    },
+    {
+      "id": "mp_contact",
+      "type": "single_select",
+      "tier": "optional",
+      "field": "mp_contact",
+      "cn_tag": "mp:{value}",
+      "question": "Have you ever contacted your MP about anything?",
+      "options": [
+        { "value": "yes", "label": "Yes", "icon": "mail" },
+        { "value": "no", "label": "No", "icon": "cross" },
+        { "value": "would", "label": "No, but I would", "icon": "pen" }
+      ]
+    },
+    {
+      "id": "anything_else",
+      "type": "single_select",
+      "tier": "optional",
+      "field": "recontact",
+      "cn_tag": "recontact:{value}",
+      "question": "Would you talk to someone from the campaign on the phone?",
+      "options": [
+        { "value": "yes", "label": "Yes, happy to", "icon": "phone" },
+        { "value": "maybe", "label": "Maybe, email me first", "icon": "mail" },
+        { "value": "no", "label": "Rather not", "icon": "cross" }
+      ]
+    }
+  ],
+  "ask": {
+    "heading": "Thank you, {first_name}.",
+    "headingAnon": "Thank you.",
+    "framing": {
+      "family": "You said someone in your family served. That is exactly who the Memorial was built for, and exactly who this is being taken from.",
+      "served": "You served. Nobody has more standing to say what that building is for.",
+      "history": "You said our history is being rewritten. Stopping that takes people who will not let it happen quietly.",
+      "waste": "You said the money could be better spent. Making that argument publicly costs money too, and it is far less than they are spending.",
+      "secrecy": "You said it was decided in secret. Secrecy only survives while nobody is looking.",
+      "default": "The campaign runs on people who do the next thing rather than the easy thing."
+    },
+    "routes": [
+      { "when": "donate", "label": "Chip in", "href": "/donate?focus=1", "primary": true },
+      { "when": "volunteer", "label": "Volunteer", "href": "/volunteer#signup" },
+      { "when": "share", "label": "Get your share link", "href": "/share" },
+      { "when": "letter", "label": "Write to the Minister", "href": "/minister#ff-email-form" }
+    ],
+    "majorDonor": {
+      "label": "I can give more than that",
+      "email": "james@teller.consulting",
+      "subject": "Supporting Defend Sacred Ground"
+    },
+    "fallbackLabel": "Get your share link",
+    "fallbackHref": "/share"
+  }
+}

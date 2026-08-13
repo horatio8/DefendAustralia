@@ -118,6 +118,14 @@ async function upsertProfile(p) {
   };
   if (p.tags && p.tags.length) body.tags = p.tags;
   if (p.note) body.custom1 = String(p.note).slice(0, 250);
+  // The survey token. It goes into whichever custom slot the CRM has been set
+  // up with, named by env rather than hardcoded.
+  //
+  // Nothing else may write to that slot. In the reference build a partial
+  // capture wrote a timestamp into the same field and destroyed every survey
+  // token in the account, which is why this is the only place it is set and
+  // why the partial beacon never calls this function with a uid.
+  if (p.uid && p.uidField) body[p.uidField] = String(p.uid).toUpperCase().slice(0, 64);
   Object.keys(body).forEach((k) => body[k] === undefined && delete body[k]);
   const res = await call("POST", "/profiles/match", body);
   return (res && res.data && res.data.id) || null;

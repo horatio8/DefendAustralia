@@ -235,6 +235,19 @@ const EXPAND = {
     });
   },
 
+  // Someone who reached the survey without an invitation and typed their
+  // details. They become a contact like anyone else.
+  survey_contact: async (p) => {
+    const contact = await at.upsertContact({
+      ...p, consent: true, source_channel: "Survey", status: "Lead",
+      referral_code: p.referral_code
+    });
+    await at.logEvent({
+      contactRecId: contact.id, event_type: "Survey Started",
+      source_channel: "Survey", source_url: p.source_url, payload: p
+    });
+  },
+
   // A tracked short link from a text message was followed. The variant rides
   // on the event so the nightly A/B rollup can join clicks to sends.
   link_click: async (p) => {

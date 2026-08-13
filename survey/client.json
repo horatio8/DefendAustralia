@@ -1,0 +1,42 @@
+{
+  "_comment": "Client config. Everything here is branding and copy. Swapping this file and survey.json points the same app at a different client without touching code.",
+  "client": "defend-sacred-ground",
+  "orgName": "Defend Sacred Ground",
+  "domain": "defendsacredground.com",
+  "crmAccount": "teller",
+  "brand": {
+    "red": "#9E1B24",
+    "navy": "#1F3157",
+    "deep": "#152340",
+    "cream": "#FAF6EF",
+    "creamCard": "#FDFAF4",
+    "ink": "#1B1917",
+    "muted": "#5A5248",
+    "faint": "#8A7A5E",
+    "line": "#E0D6C4",
+    "tan": "#C9BCA4",
+    "gold": "#B08D57",
+    "green": "#4A5C4E"
+  },
+  "fonts": {
+    "display": "'Libre Caslon Display',serif",
+    "ui": "'Public Sans',system-ui,sans-serif",
+    "mono": "'IBM Plex Mono',monospace"
+  },
+  "logo": "/assets/logo-horizontal.png",
+  "copy": {
+    "greeting": "G'day {first_name}.",
+    "greetingAnon": "G'day.",
+    "startCta": "Start",
+    "nextCta": "Next",
+    "backCta": "Back",
+    "finishCta": "Finish",
+    "resumeNote": "Picking up where you left off.",
+    "privacy": "Your answers stay with the campaign. We never sell or share them, and you can unsubscribe from anything at any time.",
+    "captureHeading": "First, who are you?",
+    "captureLede": "So we can put your answers with your name rather than with a stranger's.",
+    "captureCta": "Start the survey",
+    "errorHeading": "That did not load.",
+    "progressLabel": "Question {n} of {total}"
+  }
+}

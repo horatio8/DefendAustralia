@@ -1177,6 +1177,13 @@ function SharePage({ site }) {
         {/* The per-supporter counts were invented placeholders. Everyone lands
             here now, so they are gone until the referral rollup can serve real
             numbers. */}
+        {/* The only way off the page besides sharing, kept quiet so it does not
+            compete with the buttons above it. */}
+        {s.homeLink && (
+          <div style={{ marginTop: 36 }}>
+            <a href="/" className="hov-copy-red" style={{ fontSize: 14, color: C.faint, borderBottom: "1px solid " + C.tanLine, paddingBottom: 2 }}>{s.homeLink}</a>
+          </div>
+        )}
       </div>
     </div>
   );

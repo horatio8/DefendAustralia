@@ -407,7 +407,8 @@
     "kicker": "Share it",
     "heading": "Share this with 3 people. It takes 10 seconds and helps reach thousands of Australians...",
     "headingNamed": "{name}, share this with 3 people. It takes 10 seconds and helps reach thousands of Australians...",
-    "linkNote": "This link is yours. Every signature that comes through it is counted to you."
+    "linkNote": "This link is yours. Every signature that comes through it is counted to you.",
+    "homeLink": "Return to home"
   },
   "news": {
     "heading": "News from the campaign.",

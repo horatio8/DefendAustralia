@@ -235,6 +235,17 @@ const EXPAND = {
     });
   },
 
+  // A tracked short link from a text message was followed. The variant rides
+  // on the event so the nightly A/B rollup can join clicks to sends.
+  link_click: async (p) => {
+    const owner = await ownerOf(p.code);
+    await at.logEvent({
+      contactRecId: owner ? owner.id : undefined,
+      event_type: "Link Click", source_channel: "SMS",
+      source_url: p.landing, referral_code_used: p.code, payload: p
+    });
+  },
+
   // A visitor who asked for a share link without ever having signed.
   share_signup: async (p) => {
     const contact = await at.upsertContact({

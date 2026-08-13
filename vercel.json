@@ -2,89 +2,54 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    {
-      "source": "/petition",
-      "destination": "/take-action/defend-sacred-ground#sign",
-      "permanent": false
-    },
-    {
-      "source": "/sign",
-      "destination": "/take-action/defend-sacred-ground#sign",
-      "permanent": false
-    },
-    {
-      "source": "/take-action",
-      "destination": "/take-action/defend-sacred-ground",
-      "permanent": false
-    },
-    {
-      "source": "/demand",
-      "destination": "/minister#ff-email-form",
-      "permanent": false
-    },
-    {
-      "source": "/contact-the-minister",
-      "destination": "/minister",
-      "permanent": false
-    },
-    {
-      "source": "/about",
-      "destination": "/about-us",
-      "permanent": false
-    },
-    {
-      "source": "/evidence",
-      "destination": "/the-issue",
-      "permanent": false
-    },
-    {
-      "source": "/issue",
-      "destination": "/the-issue",
-      "permanent": false
-    }
+    { "source": "/petition", "destination": "/take-action/defend-sacred-ground#sign", "permanent": false },
+    { "source": "/sign", "destination": "/take-action/defend-sacred-ground#sign", "permanent": false },
+    { "source": "/demand", "destination": "/minister#ff-email-form", "permanent": false },
+    { "source": "/demandvid", "destination": "/minister#video", "permanent": false },
+    { "source": "/contact-the-minister", "destination": "/minister", "permanent": false },
+    { "source": "/volunteer-signup", "destination": "/volunteer#signup", "permanent": false },
+    { "source": "/about", "destination": "/about-us", "permanent": false },
+    { "source": "/evidence", "destination": "/the-issue", "permanent": false },
+    { "source": "/issue", "destination": "/the-issue", "permanent": false },
+    { "source": "/press", "destination": "/media", "permanent": false },
+    { "source": "/media-kit", "destination": "/media", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/fund", "destination": "/api/track-redirect?l=fund" },
+    { "source": "/fight", "destination": "/api/track-redirect?l=fight" },
+    { "source": "/go/:link", "destination": "/api/track-redirect?l=:link" },
+    { "source": "/leaderboard", "destination": "/api/leaderboard" },
+    { "source": "/s/:slug", "destination": "/survey/index.html" },
+    { "source": "/supporters/:slug", "destination": "/webinar.html" },
+    { "source": "/supporters", "destination": "/webinar.html" }
   ],
   "headers": [
     {
       "source": "/content/site.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400, stale-while-revalidate=604800"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
     },
     {
       "source": "/js/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {
       "source": "/css/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/survey/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     }
   ],
   "crons": [
-    {
-      "path": "/api/drain",
-      "schedule": "* * * * *"
-    }
+    { "path": "/api/drain", "schedule": "* * * * *" },
+    { "path": "/api/lapse-sweep", "schedule": "*/5 * * * *" },
+    { "path": "/api/sms-inbound-poll", "schedule": "0 * * * *" },
+    { "path": "/api/nightly-rollup", "schedule": "15 18 * * *" },
+    { "path": "/api/survey-uid-topup", "schedule": "40 18 * * *" }
   ]
 }

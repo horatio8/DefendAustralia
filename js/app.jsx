@@ -1976,6 +1976,253 @@ function ContactPage({ site }) {
   );
 }
 
+/* ── donor briefing ────────────────────────────────────────────────
+ *
+ * Reached from a magic link in an invitation email. The page asks the server
+ * who the visitor is rather than deciding for itself, and every failure looks
+ * identical from here: one neutral "private event" panel that says nothing
+ * about whether the briefing exists, when it is, or whose link this was.
+ *
+ * Times render in the visitor's own zone, with the event's local time shown
+ * beside it when the two differ. A briefing at 7pm Canberra time is 5pm in
+ * Perth, and a supporter who reads 7pm and turns up at 7pm has missed it.
+ */
+function WebinarPage({ site }) {
+  const [ctx, setCtx] = useState({ state: "loading" });
+  const [error, setError] = useState("");
+
+  const slug = (() => {
+    const m = location.pathname.match(/\/supporters\/?([A-Za-z0-9_-]*)/);
+    return m && m[1] ? m[1] : "";
+  })();
+  const tok = (() => {
+    try { return new URLSearchParams(location.search).get("t") || ""; } catch (e) { return ""; }
+  })();
+
+  useEffect(() => {
+    apiGet("/api/webinar-context?slug=" + encodeURIComponent(slug) + "&token=" + encodeURIComponent(tok))
+      .then((d) => setCtx(d && d.state ? d : { state: "private" }))
+      .catch((err) => { setError(messageOf(err)); setCtx({ state: "error" }); });
+  }, []);
+
+  if (ctx.state === "loading") {
+    return <Chromeless><p style={{ fontSize: 17, color: C.mut }}>Loading…</p></Chromeless>;
+  }
+  if (ctx.state !== "ready") {
+    return (
+      <Chromeless>
+        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Private briefing</div>
+        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(28px,3.6vw,42px)", lineHeight: 1.1, color: C.navy, margin: "16px 0 16px", fontWeight: 400 }}>
+          This briefing is for invited supporters.
+        </h1>
+        <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 26px" }}>
+          {ctx.message || "Check the link in your email, or ask us to send it again."}
+        </p>
+        <Notice>{error}</Notice>
+        <a href="/contact" className="hov-navy-fill" style={btnNavyOutline({ padding: "16px 28px", display: "inline-block" })}>Ask for the link</a>
+      </Chromeless>
+    );
+  }
+
+  return <WebinarReady site={site} ctx={ctx} slug={ctx.event.slug} tok={tok} />;
+}
+
+function WebinarReady({ site, ctx, slug, tok }) {
+  const ev = ctx.event;
+  const [reg, setReg] = useState(ctx.registered);
+  const [joinUrl, setJoinUrl] = useState(ev.join_url || "");
+  const t = whenText(ev.starts_at, ev.timezone);
+
+  return (
+    <Chromeless wide>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>Supporter briefing</div>
+      <h1 style={{ fontFamily: SERIF, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.08, color: C.navy, margin: "16px 0 14px", fontWeight: 400, textWrap: "balance" }}>{ev.title}</h1>
+      {ev.lede && <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 24px", maxWidth: 620, textWrap: "pretty" }}>{ev.lede}</p>}
+
+      <div style={{ border: "1px solid " + C.line, borderLeft: "3px solid " + C.gold, padding: "18px 22px", marginBottom: 32, background: C.creamCard }}>
+        <div style={{ fontSize: 17, fontWeight: 600, color: C.navy }}>{t.local}</div>
+        {t.other && <div style={{ fontSize: 14, color: C.mut, marginTop: 4 }}>{t.other}</div>}
+        {ev.duration_minutes ? <div style={{ fontSize: 13, color: C.faint, marginTop: 8 }}>About {ev.duration_minutes} minutes{ev.host ? ", with " + ev.host : ""}.</div> : null}
+      </div>
+
+      {reg ? (
+        <WebinarConfirmed site={site} ev={ev} reg={reg} joinUrl={joinUrl} slug={slug} tok={tok} />
+      ) : (
+        <WebinarForm ev={ev} prefill={ctx.prefill} slug={slug} tok={tok}
+          onDone={(d) => { setReg({ attending: d.attending, send_briefing: true }); if (d.join_url) setJoinUrl(d.join_url); }} />
+      )}
+    </Chromeless>
+  );
+}
+
+function WebinarForm({ ev, prefill, slug, tok, onDone }) {
+  const [f, setF] = useState({
+    first_name: (prefill && prefill.first_name) || "",
+    last_name: (prefill && prefill.last_name) || "",
+    email: (prefill && prefill.email) || "",
+    mobile: (prefill && prefill.mobile) || ""
+  });
+  const [attending, setAttending] = useState("Yes");
+  const [brief, setBrief] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const submit = () => {
+    if (!f.first_name.trim()) return setError("Please enter your first name.");
+    if (!tok && !validEmail(f.email)) return setError("Please enter a valid email address.");
+    setError("");
+    setBusy(true);
+    apiPost("/api/webinar-register", { ...f, slug, token: tok, attending, send_briefing: brief })
+      .then((d) => onDone(d))
+      .catch((err) => { setBusy(false); setError(messageOf(err)); });
+  };
+
+  const choice = (v, label) => (
+    <button key={v} type="button" onClick={() => setAttending(v)}
+      style={{
+        flex: 1, minHeight: 56, padding: "16px 14px", cursor: "pointer", fontSize: 14, fontWeight: 600,
+        background: attending === v ? C.navy : "#FFFFFF", color: attending === v ? C.cream : C.mut,
+        border: "1px solid " + (attending === v ? C.navy : C.tan), whiteSpace: "normal", lineHeight: 1.25
+      }}>{label}</button>
+  );
+
+  return (
+    <div className="pad-card" style={{ border: "1px solid " + C.tan, background: C.cream, padding: 32, maxWidth: 560 }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 18 }}>Are you coming?</div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+        {choice("Yes", "Yes")}
+        {choice("Maybe", "Maybe")}
+        {choice("Cannot make it", "Can't make it")}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <Field id="wfn" label="First name *" value={f.first_name} onChange={set("first_name")} />
+        <Field id="wln" label="Last name" value={f.last_name} onChange={set("last_name")} />
+      </div>
+      {!tok && (
+        <div style={{ marginTop: 16 }}>
+          <Field id="wem" label="Email *" value={f.email} onChange={set("email")} />
+        </div>
+      )}
+      <div style={{ marginTop: 16 }}>
+        <Field id="wmb" label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
+      </div>
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 12, marginTop: 20, cursor: "pointer", fontSize: 14, lineHeight: 1.55, color: C.mut }}>
+        <input type="checkbox" checked={brief} onChange={(e) => setBrief(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1, flex: "none", accentColor: C.red }} />
+        <span>Send me the briefing notes afterwards, whether or not I make it.</span>
+      </label>
+      <Notice>{error}</Notice>
+      <button onClick={submit} disabled={busy} className={busy ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: busy ? .72 : 1, cursor: busy ? "default" : "pointer" })}>
+        {busy ? "Saving…" : attending === "Cannot make it" ? "Send me the notes" : "Save my place"}
+      </button>
+    </div>
+  );
+}
+
+function WebinarConfirmed({ site, ev, reg, joinUrl, slug, tok }) {
+  const coming = reg.attending !== "Cannot make it";
+  return (
+    <div>
+      <div style={{ border: "1px solid " + C.line, borderLeft: "3px solid " + C.green, background: "#F1F5F1", padding: "18px 22px", marginBottom: 28, maxWidth: 620 }}>
+        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green, marginBottom: 6 }}>You are registered</div>
+        <div style={{ fontSize: 16, lineHeight: 1.6, color: C.body }}>
+          {coming
+            ? "We have your place. The joining link appears here on the day, and we will email it too."
+            : "Noted, and the briefing notes will come to you afterwards."}
+        </div>
+      </div>
+
+      {coming && (joinUrl ? (
+        <a href={joinUrl} target="_blank" rel="noopener noreferrer" className="hov-red" style={btnRed({ padding: "19px 32px", display: "inline-block", marginBottom: 34 })}>Join the briefing</a>
+      ) : (
+        <div style={{ fontSize: 15, color: C.faint, marginBottom: 34 }}>The joining link is not up yet. It goes live shortly before we start.</div>
+      ))}
+
+      <WebinarQuestions slug={slug} tok={tok} />
+    </div>
+  );
+}
+
+/* Questions go to the host's run sheet. Deliberately after registration:
+ * asking someone to think of a question before they have decided to come is
+ * one step too many. */
+function WebinarQuestions({ slug, tok }) {
+  const [q, setQ] = useState("");
+  const [sent, setSent] = useState(0);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = () => {
+    if (!q.trim()) return setError("Type your question first.");
+    setError("");
+    setBusy(true);
+    apiPost("/api/webinar-question", { slug, token: tok, question: q })
+      .then(() => { setQ(""); setSent((n) => n + 1); })
+      .catch((err) => setError(messageOf(err)))
+      .then(() => setBusy(false));
+  };
+
+  return (
+    <div style={{ borderTop: "1px solid " + C.line, paddingTop: 30, maxWidth: 620 }}>
+      <h2 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>Ask something.</h2>
+      <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 18px" }}>
+        Questions go to the host beforehand, so the ones people actually want answered get answered.
+      </p>
+      <textarea className="field" rows={4} value={q} onChange={(e) => setQ(e.target.value)}
+        placeholder="What would you like them to cover?"
+        style={{ ...inputStyle(false), lineHeight: 1.6, resize: "vertical" }}></textarea>
+      <Notice>{error}</Notice>
+      {sent > 0 && !error && (
+        <div style={{ fontSize: 14, color: C.green, marginTop: 12 }}>
+          {sent === 1 ? "Sent. Ask another if you like." : sent + " questions sent."}
+        </div>
+      )}
+      <button onClick={submit} disabled={busy} className={busy ? undefined : "hov-navy-deep"} style={{ ...btnBase, width: "100%", marginTop: 16, color: C.cream, background: C.navy, border: "none", padding: "17px 24px", opacity: busy ? .72 : 1, cursor: busy ? "default" : "pointer" }}>
+        {busy ? "Sending…" : "Send my question"}
+      </button>
+    </div>
+  );
+}
+
+/* Chromeless shell shared by the briefing states. */
+function Chromeless({ children, wide }) {
+  return (
+    <div style={{ minHeight: "100vh", background: C.cream }}>
+      <LogoBar />
+      <div className="m-pad p-sec" style={{ maxWidth: wide ? 820 : 620, margin: "0 auto", padding: "56px 28px 80px" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* The visitor's zone first, the event's own zone beside it when they differ.
+ * A briefing at 7pm in Canberra is 5pm in Perth, and a supporter who reads the
+ * Canberra time and turns up at 7pm their time has missed the whole thing. */
+function whenText(startsAt, tz) {
+  if (!startsAt) return { local: "Time to be confirmed", other: "" };
+  const d = new Date(startsAt);
+  if (isNaN(d.getTime())) return { local: "Time to be confirmed", other: "" };
+
+  const opts = { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" };
+  let local = "";
+  let viewerZone = "";
+  try {
+    viewerZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    local = new Intl.DateTimeFormat("en-AU", { ...opts, timeZoneName: "short" }).format(d);
+  } catch (e) { local = d.toString(); }
+
+  let other = "";
+  try {
+    if (tz && viewerZone && tz !== viewerZone) {
+      other = "That is " + new Intl.DateTimeFormat("en-AU", { ...opts, timeZone: tz, timeZoneName: "short" }).format(d) +
+        " where the briefing is hosted.";
+    }
+  } catch (e) { /* an unknown zone is not worth failing the page over */ }
+
+  return { local, other };
+}
+
 /* ── app shell ───────────────────────────────────────────────────── */
 
 const PAGES = {
@@ -1989,7 +2236,8 @@ const PAGES = {
   issue: IssuePage,
   about: AboutPage,
   volunteer: VolunteerPage,
-  contact: ContactPage
+  contact: ContactPage,
+  webinar: WebinarPage
 };
 
 function App({ site, page }) {
@@ -2003,7 +2251,7 @@ function App({ site, page }) {
   let focus = false;
   try { focus = page === "donate" && new URLSearchParams(location.search).get("signed") === "1"; } catch (e) {}
   const Page = focus ? DonateFocusPage : (PAGES[page] || HomePage);
-  const chromeless = focus || page === "share";
+  const chromeless = focus || page === "share" || page === "webinar";
   const shell = { fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" };
   if (chromeless) return <div style={shell}><Page site={site} /></div>;
   return (

@@ -9,8 +9,13 @@
 // exactly: this one, the twin in js/app.jsx, and nothing else. If this changes,
 // every code already in circulation changes with it, so it does not change.
 //
-// The alphabet excludes 0, 1, I, L and O. A code gets read down a phone and
-// typed back in, and those five are where that goes wrong.
+// The alphabet drops 0, 1, I and O, which is what breaks every ambiguous pair:
+// 0/O and 1/I are gone, and L is unambiguous once the digit 1 is absent and
+// codes are uppercase. A code gets read down a phone and typed back in, and
+// those are the characters that go wrong when it is.
+//
+// This is 32 characters and must stay 32: the digest is consumed by repeated
+// division by the alphabet length, so changing the size changes every code.
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 

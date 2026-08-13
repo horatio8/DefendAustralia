@@ -4,5 +4,8 @@
   "description": "Defend Sacred Ground campaign site (static frontend + Vercel serverless API)",
   "dependencies": {
     "stripe": "^17.5.0"
+  },
+  "scripts": {
+    "test": "node test/run.js"
   }
 }

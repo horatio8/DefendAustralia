@@ -77,15 +77,15 @@
     },
     {
       "source": "/s/:slug",
-      "destination": "/survey/index.html"
+      "destination": "/survey"
     },
     {
       "source": "/supporters/:slug",
-      "destination": "/webinar.html"
+      "destination": "/webinar"
     },
     {
       "source": "/supporters",
-      "destination": "/webinar.html"
+      "destination": "/webinar"
     },
     {
       "source": "/take-action/:slug",

@@ -235,6 +235,36 @@ const EXPAND = {
     });
   },
 
+  // A ticket, paid or comped. Both land in the same table so the door list is
+  // one view rather than two.
+  rally_ticket: async (p) => {
+    const contact = await at.upsertContact({
+      ...p, consent: true, source_channel: "Event ticket",
+      status: p.payment_status === "Comped" ? "Lead" : "Donor"
+    });
+    const ev = await at.logEvent({
+      contactRecId: contact.id, event_type: "Ticket Purchased",
+      source_channel: "Event", dedup_key: p.dedup_key || undefined,
+      referral_code_used: p.referral_used, payload: p
+    });
+    if (ev.duplicate) return;
+
+    // A comped row already exists: rally-claim created it when the token was
+    // issued and filled it when it was redeemed. Only paid tickets are new.
+    if (p.payment_status === "Comped") { await at.markFanout(ev.id, true); return; }
+
+    await at.create(at.T.rallyTickets, {
+      ticket_id: at.uuid(), order_ref: p.order_ref || "",
+      event_slug: p.event_slug || "", contact_id: contact.contact_id || "",
+      first_name: p.first_name, last_name: p.last_name, email: p.email,
+      mobile: p.mobile || "", qty: p.qty || 1, amount: p.amount || 0,
+      currency: p.currency || "AUD", payment_status: p.payment_status || "Paid",
+      stripe_session: p.stripe_session || "", stripe_payment_intent: p.stripe_payment_intent || "",
+      referral_used: p.referral_used || "", created_at: at.nowIso()
+    });
+    await at.markFanout(ev.id, true);
+  },
+
   // Someone who reached the survey without an invitation and typed their
   // details. They become a contact like anyone else.
   survey_contact: async (p) => {

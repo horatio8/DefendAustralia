@@ -34,8 +34,21 @@ module.exports = async function handler(req, res) {
   };
 
   // 1. Nucleus, first and foremost.
-  let cnEntryId = null, cnError = "";
+  //
+  // Signing twice is common: the button is pressed again while the next page
+  // is still loading, or someone comes back and is not sure it worked. A
+  // second entry would inflate the count the site reads, so an email that has
+  // already signed is treated as signed rather than added again.
+  let cnEntryId = null, cnError = "", duplicate = false;
   try {
+    duplicate = await nucleus.entryExists("petition", p.email);
+  } catch (err) {
+    // Unknown rather than false: let the signature through instead of losing it.
+    console.error("CN_DUP_CHECK_FAIL", err.message);
+  }
+
+  try {
+    if (duplicate) throw { skip: true };
     cnEntryId = await nucleus.submitEntry("petition", {
       first_name: p.first_name, last_name: p.last_name, email: p.email,
       phone: p.mobile, postcode: p.postcode,
@@ -44,14 +57,16 @@ module.exports = async function handler(req, res) {
     });
   } catch (err) {
     // A duplicate email is a re-signature, not a failure.
-    cnError = err.status === 422 ? "" : String(err.message || err);
-    if (cnError) console.error("CN_PETITION_FAIL", cnError);
+    if (!err || !err.skip) {
+      cnError = err.status === 422 ? "" : String(err.message || err);
+      if (cnError) console.error("CN_PETITION_FAIL", cnError);
+    }
   }
-  const cnOk = !!cnEntryId || (!cnError && nucleus.configured());
+  const cnOk = duplicate || !!cnEntryId || (!cnError && nucleus.configured());
 
   // 2. Airtable, one queued row, expanded later by the drain worker.
   let queued = { queued: false };
-  try { queued = await queue.enqueue("petition", p, { entryId: cnEntryId, error: cnError }); }
+  try { queued = await queue.enqueue("petition", { ...p, duplicate }, { entryId: cnEntryId, error: cnError }); }
   catch (err) { console.error("QUEUE_PETITION_FAIL", err.message); }
 
   const stored = cnOk || queued.queued;
@@ -60,7 +75,7 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({
     ok: true, stored,
     referral_code: p.referral_code,
-    cn: !!cnEntryId,
+    cn: !!cnEntryId || duplicate,
     fallback: HOSTED_FORM
   });
 };

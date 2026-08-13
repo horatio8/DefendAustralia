@@ -96,6 +96,12 @@ async function expand(row) {
 const EXPAND = {
   petition: async (p, cn) => {
     const contact = await at.upsertContact({ ...p, source_channel: "Petition", status: "Signed" });
+    // A repeat press still updates the person, but it must not add a second
+    // signature row: the base would then disagree with Nucleus about the count.
+    const already = p.email
+      ? await at.findOne(at.T.signatures, "LOWER({email})='" + at.esc(at.normEmail(p.email)) + "'")
+      : null;
+    if (already) return;
     const ev = await at.logEvent({
       contactRecId: contact.id, event_type: "Petition Signed",
       source_channel: (p.source_url || "").indexOf("/take-action/") > -1 ? "Petition page" : "Home page",

@@ -450,6 +450,16 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
   const [hp, setHp] = useState("");
   const [error, setError] = useState("");
+  // Latches on the first press and never clears. The browser stays on this
+  // page while the next one loads, which on a slow connection is long enough
+  // for someone to conclude the button did nothing and press it again. That is
+  // what was putting the same person into the CRM three times.
+  //
+  // The guard is a ref, not the state: React batches state updates, so two
+  // clicks in the same tick would both read sending as false and both submit.
+  // The state exists only to relabel the button.
+  const sentRef = useRef(false);
+  const [sending, setSending] = useState(false);
   const goal = nextGoal(count, site);
   const pct = Math.min(100, Math.round((count / goal) * 100));
   const remaining = fmt(Math.max(0, goal - count));
@@ -461,11 +471,14 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
   };
 
   const submit = () => {
+    if (sentRef.current) return;
     if (hp) { location.href = "/donate?signed=1"; return; } // honeypot: accept and discard
     if (!f.first.trim() || !f.last.trim()) return setError("Please enter your first and last name.");
     if (!validEmail(f.email)) return setError("Please enter a valid email address.");
     if (f.mobile.trim() && f.mobile.replace(/\D/g, "").length < 9) return setError("That mobile number looks incomplete. Correct it or clear the field.");
     setError("");
+    sentRef.current = true;
+    setSending(true);
 
     // Everything the next two screens need is derived here, before leaving:
     // the referral code is a pure function of the email and the server derives
@@ -520,7 +533,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
             <Field id={idp + "mb"} label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
           </div>
           {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
-          <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px" })}>Sign the petition</button>
+          <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Adding your name…" : "Sign the petition"}</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
         </div>
     </div>

@@ -72,6 +72,23 @@ async function submitEntry(formKey, fields) {
   return (res && res.data && res.data.id) || null;
 }
 
+// Has this email already signed this form? Used to keep a second press of the
+// button, a back-button re-submit or a retry from adding another signature.
+//
+// The email is compared exactly against what Nucleus returns rather than
+// trusting the search filter. If the filter were ever ignored the endpoint
+// would return unrelated entries, and this would then report no duplicate and
+// let the signature through, which is the safe direction to fail.
+async function entryExists(formKey, email) {
+  const formId = FORMS[formKey];
+  const target = String(email || "").trim().toLowerCase();
+  if (!formId || !target) return false;
+  const res = await call("GET", "/forms/" + encodeURIComponent(formId) +
+    "/entries?filter%5Bsearch%5D=" + encodeURIComponent(target) + "&page%5Bsize%5D=5");
+  const rows = (res && res.data) || [];
+  return rows.some((r) => String(r.email || "").trim().toLowerCase() === target);
+}
+
 // Live entry total for a form. This is what the site's counter reads, so the
 // number on the page and the number in the CRM cannot drift.
 async function entryCount(formKey) {
@@ -106,4 +123,4 @@ async function upsertProfile(p) {
   return (res && res.data && res.data.id) || null;
 }
 
-module.exports = { FORMS, configured, submitEntry, entryCount, upsertProfile };
+module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile };

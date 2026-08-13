@@ -948,6 +948,21 @@ function DonatePanel({ site, innerRef }) {
 /* Straight off the petition form: one screen, no nav, no reading, the amounts
    in the middle of it. Everything that is not the ask is removed, because the
    only question at this moment is whether they give. */
+/* Chromeless pages carry this instead of the nav: the mark only, linking home.
+   The logo is dark, so it sits on its own light bar rather than disappearing
+   into whatever photograph is behind it. */
+function LogoBar() {
+  return (
+    <div style={{ position: "relative", flex: "none", background: "#FFFFFF" }}>
+      <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "14px 28px", display: "flex", justifyContent: "center" }}>
+        <a href="/" style={{ display: "block" }}>
+          <img className="m-logo" src="/assets/logo-horizontal.png" alt="Defend Sacred Ground" style={{ height: 42, width: "auto", display: "block" }} />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function DonateFocusPage({ site }) {
   const d = site.donate;
   const [name, setName] = useState("");
@@ -961,20 +976,12 @@ function DonateFocusPage({ site }) {
       <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
       <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom,rgba(10,18,34,.62) 0%,rgba(10,18,34,.8) 45%,rgba(10,18,34,.93) 100%)" }}></div>
 
-      {/* The logo mark is dark, so it sits on its own light bar rather than
-          disappearing into the photograph. */}
-      <div style={{ position: "relative", flex: "none", background: "#FFFFFF" }}>
-        <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "14px 28px", display: "flex", justifyContent: "center" }}>
-          <a href="/" style={{ display: "block" }}>
-            <img className="m-logo" src="/assets/logo-horizontal.png" alt="Defend Sacred Ground" style={{ height: 42, width: "auto", display: "block" }} />
-          </a>
-        </div>
-      </div>
+      <LogoBar />
 
       <div className="m-pad p-sec" style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px" }}>
         <div style={{ width: "100%", maxWidth: 540 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <MonoKickerCentred color={C.gold}>{name ? "Thank you, " + name : "Thank you"}</MonoKickerCentred>
+            <MonoKickerCentred color={C.gold}>{name && d.signedKickerNamed ? d.signedKickerNamed.replace("{name}", name) : d.signedKicker}</MonoKickerCentred>
             <h1 style={{ fontFamily: SERIF, fontSize: "clamp(28px,3.4vw,42px)", lineHeight: 1.15, color: "#FFFFFF", margin: "16px 0 14px", fontWeight: 400, textWrap: "balance", textShadow: "0 2px 24px rgba(0,0,0,.5)" }}>{d.signedHeading}</h1>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: C.goldPale, margin: "0 auto", maxWidth: 460, textWrap: "pretty" }}>{d.signedBody}</p>
           </div>
@@ -1141,6 +1148,7 @@ function SharePage({ site }) {
   );
   return (
     <div>
+      <LogoBar />
       <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
         <img src="/assets/dawn-service.jpg" alt="Australians holding candles at a dawn service" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.9) 0%,rgba(10,18,34,.3) 60%,rgba(10,18,34,.15) 100%)" }}></div>
@@ -1538,13 +1546,15 @@ const PAGES = {
 };
 
 function App({ site, page }) {
-  // ?signed=1 on the donate page is the post-signature screen: chrome removed
-  // so nothing competes with the ask.
+  // The two pages at the end of the funnel carry no nav and no footer, only
+  // the logo: ?signed=1 on donate is the post-signature ask, and the share page
+  // exists to be acted on rather than navigated away from.
   let focus = false;
   try { focus = page === "donate" && new URLSearchParams(location.search).get("signed") === "1"; } catch (e) {}
   const Page = focus ? DonateFocusPage : (PAGES[page] || HomePage);
+  const chromeless = focus || page === "share";
   const shell = { fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" };
-  if (focus) return <div style={shell}><Page site={site} /></div>;
+  if (chromeless) return <div style={shell}><Page site={site} /></div>;
   return (
     <div style={shell}>
       <Nav site={site} page={page} />

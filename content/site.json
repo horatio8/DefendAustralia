@@ -255,7 +255,7 @@
     },
     "ask": {
       "kicker": "The petition",
-      "heading": "Defend the Australian War Memorial. Sign the petition today.",
+      "heading": "Defend the Australian War Memorial from activist hijacking. Sign the petition today.",
       "formHeading": "Add your name",
       "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial Council to maintain the sanctity of our Australian War Memorial by:"
     },
@@ -295,7 +295,7 @@
   "petition": {
     "badge": "Petition",
     "kicker": "The petition",
-    "heading": "Defend the Australian War Memorial. Sign the petition today.",
+    "heading": "Defend the Australian War Memorial from activist hijacking. Sign the petition today.",
     "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial Council to maintain the sanctity of our Australian War Memorial by:",
     "formHeading": "Add your name",
     "privacyNote": "We will never sell your details. Unsubscribe any time.",
@@ -399,7 +399,9 @@
     "panelNote": "Secure checkout by Stripe. Card, PayPal, Apple Pay and Google Pay accepted.",
     "signedHeading": "Activists have hijacked our most sacred memorial. Only you can help fight back.",
     "signedBody": "They did it in secret, and secrecy is how it survives. Every dollar goes to helping Australians learn about this and stand up against it.",
-    "signedSkip": "Not now, help me share it instead"
+    "signedSkip": "Not now, help me share it instead",
+    "signedKicker": "Thank you for signing",
+    "signedKickerNamed": "Thank you for signing, {name}"
   },
   "share": {
     "kicker": "Share it",

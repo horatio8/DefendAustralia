@@ -21,7 +21,19 @@ const T = {
   signups: "Signups",
   lapse: "Lapse Queue",
   stats: "Site Stats",
-  queue: "Ingest Queue"
+  queue: "Ingest Queue",
+  aiUsage: "AI Usage",
+  brokenLinks: "Broken Links",
+  smsSends: "SMS Sends",
+  smsReplies: "SMS Replies",
+  referralRollup: "Referral Rollup",
+  abDaily: "AB Daily",
+  webinars: "Webinars",
+  registrations: "Registrations",
+  questions: "Questions",
+  surveyContacts: "Survey Contacts",
+  surveyResponses: "Survey Responses",
+  rallyTickets: "Rally Tickets"
 };
 
 function configured() {

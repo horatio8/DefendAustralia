@@ -37,14 +37,73 @@ const ICONS = {
 const fmt = (n) => Number(n).toLocaleString("en-AU");
 const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.trim());
 
+/* Every endpoint answers a failure as {error: "<sentence a supporter can read>"},
+ * so a rejection carries that sentence rather than a status code. Anything that
+ * did not come from the server (offline, DNS, a blocked request) gets the one
+ * message that is actually true in all of those cases. */
+const GENERIC_ERROR = "We could not reach the campaign server. Check your connection and try again.";
+
 function apiPost(path, data, keepalive) {
   try {
     return fetch(path, {
       method: "POST", keepalive: !!keepalive,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
-    }).then((r) => (r.ok ? r.json().catch(() => ({})) : Promise.reject()));
-  } catch (e) { return Promise.reject(e); }
+    }).then(readOrThrow);
+  } catch (e) { return Promise.reject(new Error(GENERIC_ERROR)); }
+}
+
+function apiGet(path) {
+  try {
+    return fetch(path).then(readOrThrow);
+  } catch (e) { return Promise.reject(new Error(GENERIC_ERROR)); }
+}
+
+function readOrThrow(r) {
+  return r.json().catch(() => ({})).then((d) => {
+    if (r.ok) return d;
+    const err = new Error((d && d.error) || GENERIC_ERROR);
+    err.status = r.status;
+    throw err;
+  });
+}
+
+const messageOf = (err) => (err && err.message) || GENERIC_ERROR;
+
+/* How long a submit will wait for an answer before moving the supporter on
+ * anyway. Long enough that a real failure is reported, short enough that a
+ * healthy submit is indistinguishable from an instant one. */
+const GRACE_MS = 900;
+
+/* One visible failure state for the whole site.
+ *
+ * Silence is the worst possible answer to a form that did not work: the
+ * supporter assumes it worked, and the campaign never learns it did not. Every
+ * catch on this page ends here instead of in an empty arrow function.
+ *
+ * role="alert" so a screen reader announces it without the field having to be
+ * refocused, and a red rule down the left so it reads as a failure at a glance
+ * rather than as more small print. */
+function Notice({ kind, children, onRetry }) {
+  if (!children) return null;
+  const bad = kind !== "ok";
+  const edge = bad ? C.red : C.green;
+  return (
+    <div role="alert" aria-live="assertive" style={{
+      marginTop: 14, padding: "12px 14px",
+      background: bad ? "#FDF2F1" : "#F1F5F1",
+      borderLeft: "3px solid " + edge,
+      fontSize: 14, lineHeight: 1.55, color: bad ? "#7A1219" : "#2E3F31"
+    }}>
+      <span>{children}</span>
+      {onRetry && (
+        <button type="button" onClick={onRetry} className="hov-copy-red" style={{
+          display: "block", marginTop: 8, background: "none", border: "none", padding: 0,
+          font: "inherit", fontWeight: 600, color: edge, textDecoration: "underline", cursor: "pointer"
+        }}>Try again</button>
+      )}
+    </div>
+  );
 }
 
 function refFromUrl() {
@@ -56,8 +115,39 @@ function shareUrl(site) {
   return "https://" + site.org.domain + "/?ref=" + code;
 }
 
+/* Copying is the fallback for every share route that cannot open an app, so a
+ * clipboard that silently refuses leaves the supporter with nothing at all.
+ * Resolves true when the text is on the clipboard and false when it is not,
+ * and the callers say which happened. */
 function copyText(text) {
-  if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+
+// Safari before 13.4 and any page served over plain http have no async
+// clipboard, and a share page is exactly where those visitors turn up.
+function legacyCopy(text) {
+  try {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "fixed";
+    el.style.opacity = "0";
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(el);
+    return ok;
+  } catch (e) { return false; }
+}
+
+/* Copy, then say which of the two things happened. */
+function copyThen(text, flash, okMsg) {
+  copyText(text).then((ok) => flash(ok
+    ? okMsg
+    : "Your browser blocked the copy. Select the link above and copy it by hand."));
 }
 
 function useToast() {
@@ -78,10 +168,13 @@ function useToast() {
 function useSignatureCount(site) {
   const [count, setCount] = useState(site.org.signatureFallbackCount);
   useEffect(() => {
-    fetch("/api/signature-count")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
+    // A failed count is not shown to the supporter: the fallback stands in and
+    // the number is simply absent rather than wrong. Announcing "we cannot
+    // count the signatures" beside a Sign button costs signatures for no gain.
+    // The failure goes to the console, where the campaign can see it.
+    apiGet("/api/signature-count")
       .then((d) => { if (d && typeof d.count === "number") setCount(d.count); })
-      .catch(() => {});
+      .catch((err) => console.warn("signature count unavailable:", messageOf(err)));
   }, []);
   return [count, setCount];
 }
@@ -467,7 +560,10 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
 
   const partialBeacon = () => {
     if (!f.first && !f.last && !f.email) return;
-    apiPost("/api/partial", { form: "petition", ...f, campaign: site.org.petitionSlug }, true).catch(() => {});
+    // A beacon the supporter never asked for: a failure must stay off their
+    // screen, but it does not get to vanish either.
+    apiPost("/api/partial", { form: "petition", ...f, campaign: site.org.petitionSlug }, true)
+      .catch((err) => console.warn("partial capture failed:", messageOf(err)));
   };
 
   const submit = () => {
@@ -493,11 +589,34 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
     // Consent is implied by signing and stated in the privacy note, so there is
     // no tickbox to read. keepalive keeps the request alive across the
     // navigation that follows, so leaving immediately cannot lose a signature.
-    apiPost("/api/petition-signup", { ...f, consent: true, campaign: site.org.petitionSlug, ref: refFromUrl(), source_url: location.href }, true).catch(() => {});
+    const sent = apiPost("/api/petition-signup", {
+      ...f, consent: true, campaign: site.org.petitionSlug,
+      ref: refFromUrl(), source_url: location.href
+    }, true);
 
-    // Straight to the ask. No interstitial: a supporter who has just signed is
-    // the warmest they will ever be, and a thank-you card spends that warmth.
-    location.href = "/donate?signed=1";
+    // Straight to the ask, but not blindly. A supporter who has just signed is
+    // the warmest they will ever be and an interstitial spends that warmth, so
+    // the redirect fires the moment the answer lands or after GRACE_MS,
+    // whichever comes first.
+    //
+    // The point of the race is that a fast failure still gets seen. A rejected
+    // email or an unconfigured backend answers in tens of milliseconds, well
+    // inside the window, so the supporter is told rather than sent onward
+    // believing they signed. A slow success is not worth waiting for: the
+    // request has keepalive and survives the navigation regardless.
+    let gone = false;
+    const go = () => { if (!gone) { gone = true; location.href = "/donate?signed=1"; } };
+    const timer = setTimeout(go, GRACE_MS);
+
+    sent
+      .then(go)
+      .catch((err) => {
+        clearTimeout(timer);
+        if (gone) return; // already on the donate page; the log has the payload
+        sentRef.current = false;
+        setSending(false);
+        setError(messageOf(err));
+      });
   };
 
 
@@ -532,7 +651,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
             <Field id={idp + "pc"} label="Postcode" value={f.postcode} onChange={set("postcode")} mono />
             <Field id={idp + "mb"} label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
           </div>
-          {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
+          <Notice>{error}</Notice>
           <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Adding your name…" : "Sign the petition"}</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
         </div>
@@ -757,7 +876,9 @@ function MinisterPage({ site }) {
   const [rewrites, setRewrites] = useState(0);
   const [rewriting, setRewriting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [delivered, setDelivered] = useState(false);
   const [error, setError] = useState("");
+  const [rewriteError, setRewriteError] = useState("");
   const [toast, flash] = useToast();
   const sessionId = useRef("s-" + Math.random().toString(36).slice(2, 10));
   useHashScroll();
@@ -768,23 +889,29 @@ function MinisterPage({ site }) {
   const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "Within safe length";
 
   const capture = (extra, keepalive) =>
-    apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: "minister", ...extra }, keepalive).catch(() => {});
+    apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: "minister", ...extra }, keepalive)
+      .catch((err) => console.warn("capture failed:", messageOf(err)));
 
+  /* "Say it my way". A failure here says so and leaves the letter alone.
+   *
+   * This used to silently substitute a canned local edit, which meant a
+   * supporter whose rewrite had failed was shown two sentences of boilerplate
+   * and told nothing. Their own words are already good enough to send, so the
+   * honest failure state is to keep them and explain. */
   const rewrite = () => {
     if (rewrites >= 3 || rewriting) return;
     setRewriting(true);
+    setRewriteError("");
     apiPost("/api/rewrite", { session_id: sessionId.current, subject, body, first_name: f.first, campaign: "minister" })
       .then((d) => {
-        if (d && d.subject && d.body) { setSubject(d.subject); setBody(d.body); }
-        else throw new Error("bad response");
+        if (!d || !d.body) throw new Error("The rewrite came back empty. Your letter is unchanged.");
+        setSubject(d.subject || subject);
+        setBody(d.body);
+        setRewrites((r) => r + 1);
+        capture({ status: "partial", ai_rewrite_count: rewrites + 1 });
       })
-      .catch(() => {
-        // Offline fallback: the prototype's local personalisation.
-        const name = f.first.trim() || "a supporter";
-        setSubject("A request from " + name + ": pause the Memorial works");
-        setBody((b) => b.replace(/^Dear Minister,/, "Dear Minister,\n\nI do not usually write letters like this."));
-      })
-      .then(() => { setRewrites((r) => r + 1); setRewriting(false); });
+      .catch((err) => setRewriteError(messageOf(err)))
+      .then(() => setRewriting(false));
   };
 
   const send = () => {
@@ -806,6 +933,11 @@ function MinisterPage({ site }) {
         "&body=" + encodeURIComponent(finalBody);
       window.location.href = mailto;
     }
+    // Without a published address there is no mail client to open, so the page
+    // must not claim the letter went. The letter is kept either way and the
+    // copy and webmail routes below still work, but the supporter is told
+    // plainly which of those two things just happened.
+    setDelivered(!!m.toEmail);
     setSent(true);
     window.scrollTo(0, 0);
   };
@@ -863,6 +995,7 @@ function MinisterPage({ site }) {
                 {rewrites >= 3 ? "Rewrite limit reached" : rewriting ? "Rewriting…" : "Say it my way (" + (3 - rewrites) + " left)"}
               </button>
             </div>
+            <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>
             <label htmlFor="subj" style={labelStyle}>Subject</label>
             <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} />
             <label htmlFor="body" style={labelStyle}>Message</label>
@@ -872,20 +1005,20 @@ function MinisterPage({ site }) {
               <span style={{ color: C.faint }}>{counterNote}</span>
             </div>
             <button onClick={send} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>Send it from my email</button>
-            {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
+            <Notice>{error}</Notice>
           </div>
         </div>
       ) : (
         <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "80px 28px", animation: "dsgRise .24s cubic-bezier(.2,.6,.2,1) both" }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green }}>Sent</div>
-          <h2 style={{ fontFamily: SERIF, fontSize: 50, lineHeight: 1.05, color: C.navy, margin: "16px 0 18px", fontWeight: 400 }}>{m.sentHeading}</h2>
-          <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 36px" }}>{m.sentLede}</p>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: delivered ? C.green : C.gold }}>{delivered ? "Sent" : "Ready to send"}</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: 50, lineHeight: 1.05, color: C.navy, margin: "16px 0 18px", fontWeight: 400 }}>{delivered ? m.sentHeading : m.unaddressedHeading}</h2>
+          <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 36px" }}>{delivered ? m.sentLede : m.unaddressedLede}</p>
           <div style={{ border: "1px solid " + C.line, padding: 28, marginBottom: 32 }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 16 }}>Mail app didn't open?</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 16 }}>{delivered ? "Mail app didn't open?" : "Send it yourself"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-              <button onClick={() => { copyText(recipient); flash("Recipient copied to your clipboard."); }} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy recipient</button>
-              <button onClick={() => { copyText(subject); flash("Subject copied to your clipboard."); }} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy subject</button>
-              <button onClick={() => { copyText(body + sig); flash("Message copied to your clipboard."); }} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy message</button>
+              <button onClick={() => copyThen(recipient, flash, "Recipient copied to your clipboard.")} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy recipient</button>
+              <button onClick={() => copyThen(subject, flash, "Subject copied to your clipboard.")} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy subject</button>
+              <button onClick={() => copyThen(body + sig, flash, "Message copied to your clipboard.")} className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Copy message</button>
               <a href={gmailHref} target="_blank" rel="noopener noreferrer" className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Open in Gmail</a>
               <a href={outlookHref} target="_blank" rel="noopener noreferrer" className="hov-chip" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.navy, background: "transparent", border: "1px solid " + C.tan, padding: "13px 18px" }}>Open in Outlook</a>
             </div>
@@ -906,18 +1039,28 @@ function DonatePanel({ site, innerRef }) {
   const [freq, setFreq] = useState("once");
   const [other, setOther] = useState("");
   const [showOther, setShowOther] = useState(false);
+  const [panelError, setPanelError] = useState("");
+  const [opening, setOpening] = useState(false);
   const [toast, flash] = useToast();
   const links = (d.stripeLinks && d.stripeLinks[freq]) || {};
   const customLink = d.stripeLinks && d.stripeLinks.once && d.stripeLinks.once.custom;
 
   // Monthly pay-what-you-want is not supported by Stripe Payment Links, so a
-  // custom monthly gift goes through the checkout endpoint instead.
+  // custom monthly gift goes through the checkout endpoint instead. This is the
+  // one donation path with a server between the donor and Stripe, so it is the
+  // one that can fail before Stripe ever sees it, and it says so when it does.
   const monthlyOther = () => {
     const amt = Number(String(other).replace(/[^\d.]/g, ""));
-    if (!amt) return flash("Enter an amount first.");
+    if (!amt) return setPanelError("Enter an amount first.");
+    if (amt < 2) return setPanelError("The smallest monthly gift we can take is $2.");
+    setPanelError("");
+    setOpening(true);
     apiPost("/api/checkout", { amount: amt, frequency: "monthly", source_url: location.href })
-      .then((resp) => { if (resp && resp.url) window.location.href = resp.url; else throw new Error(); })
-      .catch(() => flash("Could not open checkout. Please try again in a moment."));
+      .then((resp) => {
+        if (!resp || !resp.url) throw new Error("Checkout did not open. Try again, or pick one of the amounts above.");
+        window.location.href = resp.url;
+      })
+      .catch((err) => { setOpening(false); setPanelError(messageOf(err)); });
   };
 
   const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
@@ -948,9 +1091,10 @@ function DonatePanel({ site, innerRef }) {
             <button onClick={() => { setShowOther(false); setOther(""); }} aria-label="Close other amount" className="hov-copy-red" style={{ background: "none", border: "none", color: C.faint, fontSize: 16, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}>×</button>
           </div>
           <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} />
-          <button onClick={monthlyOther} className="hov-red" style={btnRed({ width: "100%", marginTop: 12, fontSize: 14, padding: "16px 20px" })}>Continue to Stripe</button>
+          <button onClick={monthlyOther} disabled={opening} className={opening ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 12, fontSize: 14, padding: "16px 20px", opacity: opening ? .72 : 1, cursor: opening ? "default" : "pointer" })}>{opening ? "Opening Stripe…" : "Continue to Stripe"}</button>
         </div>
       )}
+      <Notice>{panelError}</Notice>
       {toast && <div style={{ fontSize: 13, color: C.red, marginTop: 12 }}>{toast}</div>}
       <div style={{ fontSize: 12, color: C.faint, marginTop: 18, lineHeight: 1.6 }}>{d.panelNote}</div>
       <div style={{ fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 1.6 }}>{d.fineprint}</div>
@@ -1067,13 +1211,17 @@ function ThankYouPage({ site }) {
   const t = site.thankYou;
   const d = site.donate;
   const [gift, setGift] = useState(null);
+  const [giftError, setGiftError] = useState("");
   useEffect(() => {
     const id = new URLSearchParams(location.search).get("session_id");
     if (!id) return;
-    fetch("/api/donation-status?session_id=" + encodeURIComponent(id))
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
+    // The donor has already paid by the time they land here, so a failure to
+    // read the session is cosmetic and must be phrased that way. Telling
+    // someone something went wrong moments after they gave money, when their
+    // money is perfectly safe, is worse than saying nothing precise.
+    apiGet("/api/donation-status?session_id=" + encodeURIComponent(id))
       .then((g) => { if (g && g.paid) setGift(g); })
-      .catch(() => {});
+      .catch((err) => setGiftError("Your donation went through. We just could not load the details to show you here. " + messageOf(err)));
   }, []);
 
   // Offer the monthly link for the largest preset at or below what they gave,
@@ -1096,6 +1244,9 @@ function ThankYouPage({ site }) {
           <p style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: "20px 0 0", maxWidth: 640 }}>
             {gift ? "Your " + (gift.monthly ? "monthly " : "") + "gift of $" + fmt(gift.amount) + " is with us and a receipt is on its way to your inbox." : t.lede}
           </p>
+          {giftError && (
+            <div role="status" style={{ marginTop: 20, padding: "12px 14px", borderLeft: "3px solid " + C.gold, background: "rgba(176,141,87,.12)", fontSize: 14, lineHeight: 1.55, color: C.goldPale, maxWidth: 640 }}>{giftError}</div>
+          )}
         </div>
       </div>
 
@@ -1138,7 +1289,8 @@ function SharePage({ site }) {
   const heading = name && s.headingNamed ? s.headingNamed.replace("{name}", name) : s.heading;
   const link = shareUrl(site);
   const enc = encodeURIComponent;
-  const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true).catch(() => {});
+  const issue = (platform) => apiPost("/api/share-issued", { platform, code: link.split("ref=")[1] }, true)
+    .catch((err) => console.warn("share not logged:", messageOf(err)));
   const platforms = [
     { label: "Share on Facebook", bg: "#1877F2", fg: "#FFFFFF", icon: "facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + enc(link) },
     { label: "Share on Messenger", bg: "#0084FF", fg: "#FFFFFF", icon: "messenger", href: "https://www.facebook.com/sharer/sharer.php?u=" + enc(link) },
@@ -1176,13 +1328,13 @@ function SharePage({ site }) {
           {s.linkNote && <div style={{ fontSize: 14, lineHeight: 1.6, color: C.mut, marginBottom: 18 }}>{s.linkNote}</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             <div style={{ fontFamily: MONO, fontSize: 16, color: C.navy, background: C.creamMid, padding: "16px 20px", flex: 1, minWidth: 280, overflowWrap: "anywhere" }}>{link.replace("https://", "")}</div>
-            <button onClick={() => { copyText(link); flash("Link copied to your clipboard."); issue("copy"); }} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, color: C.cream, background: C.navy, border: "none", padding: "16px 24px" }}>Copy</button>
+            <button onClick={() => { copyThen(link, flash, "Link copied to your clipboard."); issue("copy"); }} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, color: C.cream, background: C.navy, border: "none", padding: "16px 24px" }}>Copy</button>
           </div>
           {toast && <div style={{ fontSize: 13, color: C.green, marginTop: 14 }}>{toast}</div>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 44, maxWidth: 440 }}>
           {platforms.map((p) => p.copy ? (
-            <button key={p.label} onClick={() => { copyText(link); flash(p.icon === "link" ? "Link copied to your clipboard." : "Link copied — paste it into your post."); issue(p.icon); }} className="hov-opacity" style={shareBtnStyle(p)}>{inner(p)}</button>
+            <button key={p.label} onClick={() => { copyThen(link, flash, p.icon === "link" ? "Link copied to your clipboard." : "Link copied. Paste it into your post."); issue(p.icon); }} className="hov-opacity" style={shareBtnStyle(p)}>{inner(p)}</button>
           ) : (
             <a key={p.label} href={p.href} target={p.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => issue(p.icon)} className="hov-opacity" style={shareBtnStyle(p)}>{inner(p)}</a>
           ))}
@@ -1206,20 +1358,26 @@ function NewsPage({ site }) {
   const n = site.news;
   const [active, setActive] = useState(null);
   const [ytVideos, setYtVideos] = useState(null);
+  const [feedError, setFeedError] = useState("");
   const [toast, flash] = useToast();
   useEffect(() => {
     if (!n.youtubeChannelId) return;
-    fetch("/api/youtube?channelId=" + n.youtubeChannelId)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((items) => {
-        if (!Array.isArray(items) || !items.length) return;
+    // The endpoint answers {items:[…]}; each item already carries its id, its
+    // thumbnail and its nocookie embed URL, so nothing is rebuilt here.
+    apiGet("/api/youtube?channelId=" + encodeURIComponent(n.youtubeChannelId))
+      .then((d) => {
+        const items = (d && d.items) || [];
+        if (!items.length) throw new Error("The channel returned no videos.");
         setYtVideos(items.slice(0, 9).map((it) => ({
-          date: new Date(it.published).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }).toUpperCase(),
-          title: it.title, ytId: it.videoId,
-          thumb: "https://i.ytimg.com/vi/" + it.videoId + "/hqdefault.jpg"
+          date: it.published
+            ? new Date(it.published).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }).toUpperCase()
+            : "",
+          title: it.title, ytId: it.id, thumb: it.thumb
         })));
       })
-      .catch(() => {});
+      // The curated list in site.json is still there, so this is a note about
+      // freshness rather than a failure: the rail is populated either way.
+      .catch((err) => setFeedError("Showing our saved videos. The live channel feed did not load. " + messageOf(err)));
   }, []);
   const videos = ytVideos || n.videos;
   const openSocial = (s2) => { if (s2.url) window.open(s2.url, "_blank", "noopener"); else flash("The " + s2.platform + " profile goes live with the campaign."); };
@@ -1265,6 +1423,9 @@ function NewsPage({ site }) {
               <button onClick={() => setActive(null)} className="hov-ghost-cream hov-fg-cream" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.steel, background: "none", border: "1px solid rgba(156,169,193,.4)", padding: "8px 14px", cursor: "pointer", flex: "none" }}>Close</button>
             </div>
           </div>
+        )}
+        {feedError && (
+          <div role="status" style={{ marginBottom: 20, padding: "12px 14px", borderLeft: "3px solid " + C.gold, background: "rgba(176,141,87,.1)", fontSize: 14, lineHeight: 1.55, color: C.mut }}>{feedError}</div>
         )}
         <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
           {videos.map((v, i) => (
@@ -1400,17 +1561,31 @@ function VolunteerPage({ site }) {
   const [hp, setHp] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  const sentRef = useRef(false);
   useHashScroll();
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const toggle = (r) => setRoles(roles.includes(r) ? roles.filter((x) => x !== r) : [...roles, r]);
+
+  // This page has somewhere to wait, unlike the petition, so it waits for the
+  // real answer and only claims success once the submission has been accepted.
   const submit = () => {
+    if (sentRef.current) return;
     if (hp) { setDone(true); return; }
     if (!f.first.trim() || !f.last.trim()) return setError("Please enter your first and last name.");
     if (!validEmail(f.email)) return setError("Please enter a valid email address.");
+    if (f.mobile.trim() && f.mobile.replace(/\D/g, "").length < 9) return setError("That mobile number looks incomplete. Correct it or clear the field.");
     if (!roles.length) return setError("Pick at least one way you can help.");
     setError("");
-    setDone(true);
-    apiPost("/api/event-log", { type: "volunteer_signup", ...f, roles, source_url: location.href }).catch(() => {});
+    sentRef.current = true;
+    setSending(true);
+    apiPost("/api/event-log", { type: "volunteer_signup", ...f, roles, source_url: location.href })
+      .then(() => setDone(true))
+      .catch((err) => {
+        sentRef.current = false;
+        setSending(false);
+        setError(messageOf(err));
+      });
   };
   return (
     <div>
@@ -1447,8 +1622,8 @@ function VolunteerPage({ site }) {
                 <Field id="vmb" label="Mobile" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
                 <Field id="vpc" label="Postcode" value={f.postcode} onChange={set("postcode")} mono />
               </div>
-              {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
-              <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>Count me in</button>
+              <Notice>{error}</Notice>
+              <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Signing you up…" : "Count me in"}</button>
               <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>Privacy preserved. Unsubscribe at any time.</div>
             </div>
           ) : (
@@ -1476,15 +1651,25 @@ function ContactPage({ site }) {
   const [hp, setHp] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  const sentRef = useRef(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const submit = () => {
+    if (sentRef.current) return;
     if (hp) { setDone(true); return; }
     if (!f.first.trim() || !f.last.trim()) return setError("Please enter your first and last name.");
     if (!validEmail(f.email)) return setError("Please enter a valid email address.");
     if (!msg.trim()) return setError("Please write a message.");
     setError("");
-    setDone(true);
-    apiPost("/api/event-log", { type: "contact_message", ...f, topic, message: msg, source_url: location.href }).catch(() => {});
+    sentRef.current = true;
+    setSending(true);
+    apiPost("/api/event-log", { type: "contact_message", ...f, topic, message: msg, source_url: location.href })
+      .then(() => setDone(true))
+      .catch((err) => {
+        sentRef.current = false;
+        setSending(false);
+        setError(messageOf(err));
+      });
   };
   return (
     <div>
@@ -1528,8 +1713,8 @@ function ContactPage({ site }) {
                 <label htmlFor="cmsg" style={labelStyle}>Message *</label>
                 <textarea id="cmsg" className="field" rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.6, resize: "vertical" }}></textarea>
               </div>
-              {error && <div style={{ fontSize: 14, color: C.red, marginTop: 14 }}>{error}</div>}
-              <button onClick={submit} className="hov-red" style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px" })}>Send message</button>
+              <Notice>{error}</Notice>
+              <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Sending…" : "Send message"}</button>
               <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>Privacy preserved. Unsubscribe at any time.</div>
             </div>
           ) : (

@@ -348,7 +348,9 @@
       }
     ],
     "sentHeading": "Sent. Now they have to answer.",
-    "sentLede": "Ministerial correspondence is logged and counted. Yours is on the record."
+    "sentLede": "Ministerial correspondence is logged and counted. Yours is on the record.",
+    "unaddressedHeading": "Your letter is ready. Send it now.",
+    "unaddressedLede": "The Minister's correspondence address is not published on this page yet, so your mail app cannot be opened for you. Copy the letter below and send it from your own email. We have kept your words either way."
   },
   "donate": {
     "kicker": "Fund the campaign",

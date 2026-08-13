@@ -21,6 +21,11 @@
         "label": "Take action",
         "children": [
           {
+            "label": "Everything you can do",
+            "href": "/take-action",
+            "page": "takeaction"
+          },
+          {
             "label": "Sign the petition",
             "href": "/take-action/defend-sacred-ground",
             "page": "petition"
@@ -59,6 +64,11 @@
             "label": "Contact us",
             "href": "/contact",
             "page": "contact"
+          },
+          {
+            "label": "Press kit",
+            "href": "/media",
+            "page": "media"
           }
         ]
       }
@@ -68,6 +78,11 @@
         "label": "Home",
         "href": "/",
         "page": "home"
+      },
+      {
+        "label": "Take action",
+        "href": "/take-action",
+        "page": "takeaction"
       },
       {
         "label": "The Issue",
@@ -103,6 +118,11 @@
         "label": "Volunteer",
         "href": "/volunteer",
         "page": "volunteer"
+      },
+      {
+        "label": "Press kit",
+        "href": "/media",
+        "page": "media"
       }
     ]
   },
@@ -331,6 +351,50 @@
       ],
       "close": "This is not yours to change.",
       "cta": "Sign the petition"
+    }
+  },
+  "petitions": {
+    "defend-sacred-ground": {
+      "slug": "defend-sacred-ground",
+      "live": true,
+      "badge": "Petition",
+      "kicker": "The petition",
+      "heading": "Defend the Australian War Memorial from activist hijacking. Sign the petition today.",
+      "lede": "We call on the Australian Government, Kim Beazley and the Australian War Memorial Council to maintain the sanctity of our Australian War Memorial by:",
+      "formHeading": "Add your name",
+      "privacyNote": "We will never sell your details. Unsubscribe any time.",
+      "why": {
+        "kicker": "Why it matters",
+        "heading": "Four reasons this must stop",
+        "items": [
+          {
+            "title": "It is sacred, not a museum.",
+            "img": "/assets/poppy-wall.jpg",
+            "pos": "center 40%",
+            "body": "The Memorial bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
+          },
+          {
+            "title": "It was done by stealth.",
+            "img": "/assets/change-documents.jpg",
+            "pos": "center center",
+            "body": "No Act of Parliament. No consultation. No legal advice. One paragraph in a Council minute, nine months to release it, and an FOI answer that said no documents existed until it was challenged."
+          },
+          {
+            "title": "It redefined what Australia is.",
+            "img": "/assets/change-curation.jpg",
+            "pos": "center center",
+            "body": "The historians behind it have proposed a second tomb beside the Tomb of the Unknown Australian Soldier, and names added to the Roll of Honour. That is not an addition to Anzac. It is a replacement for it."
+          },
+          {
+            "title": "It is being built into a $548 million job.",
+            "img": "/assets/cranes.jpg",
+            "pos": "center 40%",
+            "body": "The redevelopment has been funded at $548.7 million of public money. The frontier galleries are one part of that spend, and the part that changes what the building says. Three in four Australians say the money would be better spent on health, education and veterans. Fewer than one in five support putting frontier conflict in the Memorial at all."
+          }
+        ],
+        "close": "This is not yours to change.",
+        "cta": "Sign the petition"
+      }
     }
   },
   "minister": {
@@ -663,5 +727,87 @@
     "shareKicker": "Either way",
     "shareHeading": "Tell someone. Only one Australian in ten knows this is happening.",
     "shareCta": "Get your share link"
+  },
+  "takeAction": {
+    "kicker": "Take action",
+    "heading": "Three things that take ten seconds each.",
+    "lede": "Every one of them is counted by somebody who can stop this.",
+    "notFoundHeading": "That petition is not here.",
+    "notFoundLede": "It may have closed, or the link may have been mistyped. These are the ones that are open.",
+    "notFoundCta": "See what is open"
+  },
+  "media": {
+    "kicker": "For journalists",
+    "heading": "Press kit.",
+    "lede": "Everything a newsroom needs to cover this, in one place. Directors are available for comment and answer the same day.",
+    "contactsHeading": "Who to call",
+    "contacts": [
+      {
+        "name": "Media enquiries",
+        "role": "First point of contact",
+        "email": "media@defendsacredground.com",
+        "note": "Mark your subject line with your deadline and a director will come back to you the same day."
+      },
+      {
+        "name": "Campaign office",
+        "role": "Background and documents",
+        "email": "hello@defendsacredground.com",
+        "note": "For the underlying documents, the timeline, and anything on the record."
+      }
+    ],
+    "assetsHeading": "Logos and images",
+    "assetsNote": "Free to use in coverage of the campaign. Please credit Defend Sacred Ground where the image is ours.",
+    "assets": [
+      {
+        "label": "Logo, horizontal",
+        "file": "/assets/logo-horizontal.png",
+        "meta": "PNG, transparent"
+      },
+      {
+        "label": "Logo, square",
+        "file": "/assets/logo-square.png",
+        "meta": "PNG, transparent"
+      },
+      {
+        "label": "The commemorative courtyard",
+        "file": "/assets/hero-courtyard-wide.jpg",
+        "meta": "JPG, landscape"
+      },
+      {
+        "label": "Roll of Honour",
+        "file": "/assets/poppy-wall.jpg",
+        "meta": "JPG, landscape"
+      },
+      {
+        "label": "Dawn service",
+        "file": "/assets/dawn-service.jpg",
+        "meta": "JPG, landscape"
+      }
+    ],
+    "factsHeading": "The short version",
+    "facts": [
+      "The Australian War Memorial is undergoing a redevelopment budgeted at $548.7 million, and a reinterpretation of Australia's history is part of that program.",
+      "The changes were approved by the Australian War Memorial Council, chaired by Kim Beazley.",
+      "They were not put to the public before they were approved.",
+      "The campaign asks for the works to be paused, the decisions published in full, and the Memorial kept as a place of commemoration."
+    ],
+    "statsHeading": "Where the campaign stands",
+    "ctaHeading": "Covering this?",
+    "ctaBody": "Tell us what you need and when you need it by. We would rather help you get it right than read a correction.",
+    "ctaLabel": "Email the campaign"
+  },
+  "won": {
+    "enabled": false,
+    "kicker": "Won",
+    "heading": "You did this.",
+    "lede": "The works are paused. That happened because tens of thousands of Australians refused to let it go through quietly.",
+    "body": [
+      "It was not a change of heart. It was a change of arithmetic. Enough people signed, wrote and gave that the cost of pressing on became higher than the cost of stopping.",
+      "Nothing about it is permanent yet. A pause is a pause, and the same Council that approved this once can approve it again the moment the attention moves on."
+    ],
+    "nextHeading": "What happens now",
+    "nextBody": "The decisions still have not been published in full, and until they are nobody can say what else was approved. That is the next thing.",
+    "ctaLabel": "Keep the pressure on",
+    "ctaHref": "/take-action"
   }
 }

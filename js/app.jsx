@@ -914,7 +914,12 @@ function HomePage({ site }) {
 function PetitionPage({ site }) {
   const [count, setCount] = useSignatureCount(site);
   useHashScroll();
-  const p = site.petition;
+  // Config-driven from the petitions map. The slug in the path selects it, and
+  // an unrecognised slug gets a friendly index rather than a blank page or a
+  // crash on undefined, which is what a mistyped link in a shared post
+  // produces at exactly the moment it is being read by the most people.
+  const p = petitionFor(site);
+  if (!p) return <PetitionNotFound site={site} />;
   const scrollToSign = () => {
     const el = document.getElementById("sign");
     if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 84, behavior: "smooth" });
@@ -1976,6 +1981,226 @@ function ContactPage({ site }) {
   );
 }
 
+/* Which petition is this page? The slug comes from the path. A site with one
+ * petition still works: the map has one entry and every path resolves to it
+ * only if it names that slug, so a typo is caught rather than silently
+ * serving the flagship. */
+function petitionFor(site) {
+  const map = site.petitions || {};
+  const m = location.pathname.match(/\/take-action\/([A-Za-z0-9_-]+)/);
+  const slug = m ? m[1] : (site.org && site.org.petitionSlug);
+  const found = map[slug];
+  if (found && found.live !== false) return found;
+  // Legacy single-petition config, kept working so an older site.json does
+  // not blank the page on deploy.
+  if (!Object.keys(map).length && site.petition) return site.petition;
+  return null;
+}
+
+function livePetitions(site) {
+  const map = site.petitions || {};
+  return Object.keys(map)
+    .map((k) => ({ slug: k, ...map[k] }))
+    .filter((p) => p.live !== false);
+}
+
+function PetitionNotFound({ site }) {
+  const t = site.takeAction || {};
+  const list = livePetitions(site);
+  return (
+    <div className="m-pad p-sec" style={{ maxWidth: 820, margin: "0 auto", padding: "96px 28px 80px" }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Not found</div>
+      <h1 style={{ fontFamily: SERIF, fontSize: "clamp(30px,4vw,46px)", lineHeight: 1.1, color: C.navy, margin: "16px 0 14px", fontWeight: 400 }}>
+        {t.notFoundHeading || "That petition is not here."}
+      </h1>
+      <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 28px", maxWidth: 560 }}>
+        {t.notFoundLede || "It may have closed, or the link may have been mistyped."}
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 460 }}>
+        {list.map((p) => (
+          <a key={p.slug} href={"/take-action/" + p.slug} className="hov-red" style={btnRed({ padding: "17px 26px", display: "block", textAlign: "center" })}>{p.badge || p.heading}</a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* The index of everything a supporter can do. */
+function TakeActionPage({ site }) {
+  const t = site.takeAction || {};
+  const petitions = livePetitions(site);
+  const tiles = petitions.map((p) => ({
+    kicker: p.badge || "Petition",
+    title: p.heading,
+    body: p.lede,
+    href: "/take-action/" + p.slug + "#sign",
+    cta: "Sign the petition"
+  })).concat([
+    {
+      kicker: "Direct action",
+      title: site.minister.heading,
+      body: site.minister.lede,
+      href: "/minister#ff-email-form",
+      cta: "Write to the Minister"
+    },
+    {
+      kicker: "On the ground",
+      title: site.volunteer.heading,
+      body: site.volunteer.lede,
+      href: "/volunteer#signup",
+      cta: "Volunteer"
+    }
+  ]);
+
+  return (
+    <div>
+      <div style={{ background: C.deep, color: C.cream }}>
+        <div className="m-pad p-hero" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{t.kicker}</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(38px,5.2vw,68px)", lineHeight: 1.02, margin: "22px 0 0", maxWidth: 900, fontWeight: 400 }}>{t.heading}</h1>
+          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{t.lede}</p>
+        </div>
+      </div>
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 88px" }}>
+        <div className="m-col1" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+          {tiles.map((tile, i) => (
+            <div key={i} className="pad-tile" style={{ background: C.cream, padding: "30px 30px 34px", display: "flex", flexDirection: "column" }}>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{tile.kicker}</div>
+              <h2 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, margin: "0 0 12px", lineHeight: 1.18, fontWeight: 400 }}>{tile.title}</h2>
+              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", flex: 1 }}>{tile.body}</p>
+              <a href={tile.href} className="hov-red" style={btnRed({ padding: "16px 24px", display: "block", textAlign: "center" })}>{tile.cta}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Press kit. A journalist on deadline wants a name, an address, a logo and
+ * four facts, in that order, without reading the campaign's case first. */
+function MediaPage({ site }) {
+  const m = site.media;
+  const [count] = useSignatureCount(site);
+  const [toast, flash] = useToast();
+  return (
+    <div>
+      <div style={{ background: C.deep, color: C.cream }}>
+        <div className="m-pad p-hero" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{m.kicker}</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,5.4vw,72px)", lineHeight: 1, margin: "22px 0 0", fontWeight: 400 }}>{m.heading}</h1>
+          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{m.lede}</p>
+        </div>
+      </div>
+
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 0" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 24px", fontWeight: 400 }}>{m.contactsHeading}</h2>
+        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+          {m.contacts.map((c, i) => (
+            <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, background: C.cream, padding: 28 }}>
+              <div style={{ fontSize: 17, fontWeight: 600, color: C.navy }}>{c.name}</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, margin: "6px 0 14px" }}>{c.role}</div>
+              <a href={"mailto:" + c.email} className="hov-copy-red" style={{ fontFamily: MONO, fontSize: 15, color: C.navy, borderBottom: "1px solid " + C.tan, paddingBottom: 2 }}>{c.email}</a>
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: C.mut, margin: "16px 0 0" }}>{c.note}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "56px 28px 0" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>{m.factsHeading}</h2>
+        <ol style={{ margin: "20px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 1, background: C.tanLine, border: "1px solid " + C.tanLine }}>
+          {m.facts.map((f, i) => (
+            <li key={i} style={{ background: C.cream, padding: "20px 24px", display: "flex", gap: 16, alignItems: "flex-start" }}>
+              <span style={{ fontFamily: MONO, fontSize: 12, color: C.red, flex: "none", width: 26, paddingTop: 3 }}>{"0" + (i + 1)}</span>
+              <span style={{ fontSize: 16, lineHeight: 1.65, color: C.body }}>{f}</span>
+            </li>
+          ))}
+        </ol>
+        {count > 0 && (
+          <div style={{ marginTop: 20, fontSize: 15, color: C.mut }}>
+            <strong style={{ color: C.navy }}>{fmt(count)}</strong> people have signed the petition to date. That number is live and comes from the campaign's own database.
+          </div>
+        )}
+      </div>
+
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "56px 28px 0" }}>
+        <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>{m.assetsHeading}</h2>
+        <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 24px", maxWidth: 620 }}>{m.assetsNote}</p>
+        <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 20 }}>
+          {m.assets.map((a, i) => (
+            <div key={i} style={{ border: "1px solid " + C.line, background: C.cream }}>
+              <div style={{ height: 140, background: C.creamMid, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <img src={a.file} alt={a.label} loading="lazy" style={{ maxWidth: "82%", maxHeight: "82%", objectFit: "contain" }} />
+              </div>
+              <div style={{ padding: "16px 18px 18px" }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.navy }}>{a.label}</div>
+                <div style={{ fontFamily: MONO, fontSize: 11, color: C.faint, margin: "4px 0 12px" }}>{a.meta}</div>
+                {/* A download attribute rather than a copy button: a newsroom
+                    wants the file, not a URL to paste somewhere. */}
+                <a href={a.file} download className="hov-navy-fill" style={btnNavyOutline({ fontSize: 13, padding: "11px 16px", display: "inline-block" })}>Download</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "56px 28px 88px" }}>
+        <div style={{ background: C.creamMid, borderLeft: "3px solid " + C.red, padding: "32px 34px" }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: 30, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>{m.ctaHeading}</h2>
+          <p style={{ fontSize: 16, lineHeight: 1.65, color: C.body, margin: "0 0 22px", maxWidth: 560 }}>{m.ctaBody}</p>
+          <a href={"mailto:" + m.contacts[0].email} className="hov-red" style={btnRed({ padding: "17px 28px", display: "inline-block" })}>{m.ctaLabel}</a>
+          {toast && <div style={{ fontSize: 13, color: C.green, marginTop: 14 }}>{toast}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* The victory page. Off by default: publishing it before there is anything to
+ * publish is the fastest way to look ridiculous, so it stays behind a flag in
+ * config and answers as a normal 404 until the day it is true. */
+function WonPage({ site }) {
+  const w = site.won || {};
+  if (!w.enabled) return <NotFoundInline />;
+  return (
+    <div>
+      <div style={{ position: "relative", background: C.deepest, color: C.cream, overflow: "hidden" }}>
+        <img src="/assets/dawn-service.jpg" alt="Australians at a dawn service" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", opacity: .5 }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.94) 0%,rgba(10,18,34,.55) 70%,rgba(10,18,34,.3) 100%)" }}></div>
+        <div className="m-pad p-hero" style={{ position: "relative", maxWidth: 900, margin: "0 auto", padding: "120px 28px 72px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: ".22em", textTransform: "uppercase", background: C.green, color: "#FFFFFF", display: "inline-block", padding: "7px 12px" }}>{w.kicker}</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,6vw,78px)", lineHeight: 1, margin: "22px 0 0", fontWeight: 400 }}>{w.heading}</h1>
+          <p style={{ fontSize: 20, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 640, textWrap: "pretty" }}>{w.lede}</p>
+        </div>
+      </div>
+      <div className="m-pad p-sec" style={{ maxWidth: 760, margin: "0 auto", padding: "64px 28px 40px" }}>
+        {(w.body || []).map((t, i) => (
+          <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i ? "20px 0 0" : 0, textWrap: "pretty" }}>{t}</p>
+        ))}
+      </div>
+      <div className="m-pad p-sec-b" style={{ maxWidth: 760, margin: "0 auto", padding: "0 28px 88px" }}>
+        <div style={{ borderLeft: "3px solid " + C.red, background: C.creamMid, padding: "28px 30px" }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 10px", fontWeight: 400 }}>{w.nextHeading}</h2>
+          <p style={{ fontSize: 16, lineHeight: 1.65, color: C.body, margin: "0 0 22px" }}>{w.nextBody}</p>
+          <a href={w.ctaHref || "/take-action"} className="hov-red" style={btnRed({ padding: "17px 28px", display: "inline-block" })}>{w.ctaLabel}</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NotFoundInline() {
+  return (
+    <div className="m-pad p-sec" style={{ maxWidth: 640, margin: "0 auto", padding: "110px 28px 90px" }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Not found</div>
+      <h1 style={{ fontFamily: SERIF, fontSize: 42, lineHeight: 1.08, color: C.navy, margin: "16px 0 14px", fontWeight: 400 }}>Nothing here yet.</h1>
+      <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 26px" }}>This page goes up when there is something to put on it.</p>
+      <a href="/take-action" className="hov-red" style={btnRed({ padding: "17px 28px", display: "inline-block" })}>See what you can do now</a>
+    </div>
+  );
+}
+
 /* ── donor briefing ────────────────────────────────────────────────
  *
  * Reached from a magic link in an invitation email. The page asks the server
@@ -2237,7 +2462,10 @@ const PAGES = {
   about: AboutPage,
   volunteer: VolunteerPage,
   contact: ContactPage,
-  webinar: WebinarPage
+  webinar: WebinarPage,
+  takeaction: TakeActionPage,
+  media: MediaPage,
+  won: WonPage
 };
 
 function App({ site, page }) {

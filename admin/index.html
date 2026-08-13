@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Edit the site — Defend Sacred Ground</title>
+<link rel="icon" type="image/png" href="/assets/logo-square.png">
+<style>
+  /* Shown only while the CMS bundle is loading, or forever if it cannot be
+     reached. A blank white page gives a volunteer nothing to act on. */
+  body { margin: 0; font: 15px/1.6 system-ui, sans-serif; background: #FAF6EF; color: #1B1917; }
+  #boot { max-width: 620px; margin: 0 auto; padding: 80px 24px; }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  p { color: #5A5248; }
+  code { background: #EFE7DA; padding: 2px 6px; }
+  .warn { border-left: 3px solid #B08D57; background: rgba(176,141,87,.12); padding: 14px 16px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div id="boot">
+  <h1>Loading the editor…</h1>
+  <p>If this message is still here in a few seconds, the editor could not load. Check your connection, then reload.</p>
+  <div class="warn">
+    <strong>What this edits.</strong> Changes here are written straight to
+    <code>content/site.json</code> and go live on the next deploy, usually within a
+    minute. Amounts, payment links and tracking ids are deliberately not editable
+    here: a mistyped Stripe link sends donations nowhere, so those stay with the
+    people who deploy.
+  </div>
+</div>
+
+<script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
+<script>
+  // The CMS replaces the whole body once it boots, so the notice above only
+  // survives if it never does.
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      if (window.CMS) {
+        var boot = document.getElementById("boot");
+        if (boot) boot.remove();
+      }
+    }, 1200);
+  });
+</script>
+</body>
+</html>

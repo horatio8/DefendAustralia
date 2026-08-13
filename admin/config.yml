@@ -1,0 +1,185 @@
+# Decap CMS. The point of this file is that a campaign director can change a
+# headline at nine on a Sunday night without waiting for someone who knows git.
+#
+# site.json is edited as one file rather than being split into collections,
+# because the app reads it as one object and a partial write would leave a page
+# referencing a key that no longer exists. Decap's editorial workflow is off:
+# a campaign wants the correction live, not sitting in a pull request.
+#
+# Only the fields that are genuinely copy are exposed. Slugs, ids, Stripe links
+# and pixel ids are deliberately absent: those are deploy-time settings, and a
+# mistyped Stripe URL entered through a CMS takes donations to nowhere.
+
+backend:
+  name: github
+  repo: horatio8/DefendAustralia
+  branch: main
+  # A campaign has volunteers, not GitHub accounts. The OAuth proxy lets them
+  # sign in with a shared campaign login rather than each needing repo access.
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
+publish_mode: simple
+media_folder: assets/uploads
+public_folder: /assets/uploads
+site_url: https://defendsacredground.com
+display_url: https://defendsacredground.com
+logo_url: /assets/logo-square.png
+
+collections:
+  - name: content
+    label: Site content
+    editor:
+      preview: false
+    files:
+      - name: banner
+        label: Announcement bar
+        file: content/site.json
+        fields:
+          - label: Announcement
+            name: banner
+            widget: object
+            fields:
+              - { label: "Text (when there are signatures to report)", name: text, widget: string }
+              - { label: "Text (before the first signature)", name: zeroText, widget: string }
+              - { label: "Button label", name: cta, widget: string }
+          # Everything not edited here still has to be written back, or saving
+          # the banner would delete the rest of the file.
+          - { label: Organisation, name: org, widget: object, collapsed: true, fields: [{ label: Name, name: name, widget: string }] }
+
+      - name: home
+        label: Home page
+        file: content/site.json
+        fields:
+          - label: Home
+            name: home
+            widget: object
+            fields:
+              - label: Hero
+                name: hero
+                widget: object
+                fields:
+                  - { label: Kicker, name: kicker, widget: string }
+                  - { label: Lede, name: lede, widget: text }
+                  - { label: "Emphasised line", name: ledeEm, widget: string, required: false }
+                  - { label: "Button label", name: cta, widget: string }
+              - label: "The ask"
+                name: ask
+                widget: object
+                fields:
+                  - { label: Kicker, name: kicker, widget: string }
+                  - { label: Heading, name: heading, widget: text }
+                  - { label: "Form heading", name: formHeading, widget: string }
+                  - { label: "We call on…", name: lede, widget: text }
+
+      - name: petition
+        label: Petition page
+        file: content/site.json
+        fields:
+          - label: Petition
+            name: petition
+            widget: object
+            fields:
+              - { label: Badge, name: badge, widget: string }
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: "We call on…", name: lede, widget: text }
+              - { label: "Form heading", name: formHeading, widget: string }
+              - { label: "Privacy note", name: privacyNote, widget: text }
+
+      - name: minister
+        label: Minister page
+        file: content/site.json
+        fields:
+          - label: Minister
+            name: minister
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: Lede, name: lede, widget: text }
+              - { label: "Recipient name", name: recipientName, widget: string }
+              - { label: "Recipient shown on the page", name: recipientDisplay, widget: string }
+              - label: "Recipient email address"
+                name: toEmail
+                widget: string
+                required: false
+                hint: "Until this is filled in, the page cannot open anyone's mail app. It tells supporters that plainly and offers the copy and webmail routes instead."
+              - { label: "Correspondence copy address", name: correspondenceEmail, widget: string }
+              - { label: "Goes-to note", name: goesToNote, widget: text }
+              - { label: "Sent heading", name: sentHeading, widget: string }
+              - { label: "Sent lede", name: sentLede, widget: text }
+
+      - name: donate
+        label: Donation copy
+        file: content/site.json
+        fields:
+          - label: Donate
+            name: donate
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: "Post-signature heading", name: signedHeading, widget: text }
+              - { label: "Post-signature body", name: signedBody, widget: text }
+              - { label: "Post-signature kicker", name: signedKicker, widget: string }
+              - { label: "Post-signature kicker, named", name: signedKickerNamed, widget: string, hint: "Use {name} where their first name goes." }
+              - { label: "Skip link", name: signedSkip, widget: string }
+              - { label: "Panel note", name: panelNote, widget: text }
+              - { label: Fineprint, name: fineprint, widget: text }
+
+      - name: share
+        label: Share page
+        file: content/site.json
+        fields:
+          - label: Share
+            name: share
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: text }
+              - { label: "Heading with their name", name: headingNamed, widget: text, hint: "Use {name} where their first name goes." }
+              - { label: "Link note", name: linkNote, widget: text }
+              - { label: "Home link", name: homeLink, widget: string }
+          - label: "Share wording"
+            name: shareTexts
+            widget: object
+            fields:
+              - { label: "Long form (email, Facebook)", name: long, widget: text }
+              - { label: "Short form (SMS, WhatsApp)", name: sms, widget: text }
+              - { label: "X", name: x, widget: text }
+              - { label: "Email subject", name: emailSubject, widget: string }
+
+      - name: media
+        label: Press kit
+        file: content/site.json
+        fields:
+          - label: Media
+            name: media
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lede, name: lede, widget: text }
+              - { label: "Facts", name: facts, widget: list, field: { label: Fact, name: fact, widget: text } }
+
+      - name: won
+        label: Victory page
+        file: content/site.json
+        fields:
+          - label: Won
+            name: won
+            widget: object
+            fields:
+              - label: "Publish this page"
+                name: enabled
+                widget: boolean
+                default: false
+                hint: "Leave off until it is actually true. While it is off the page reads as not found."
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lede, name: lede, widget: text }
+              - { label: Body, name: body, widget: list, field: { label: Paragraph, name: p, widget: text } }
+              - { label: "What happens now, heading", name: nextHeading, widget: string }
+              - { label: "What happens now, body", name: nextBody, widget: text }
+              - { label: "Button label", name: ctaLabel, widget: string }
+              - { label: "Button link", name: ctaHref, widget: string }

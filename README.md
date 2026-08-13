@@ -1,269 +1,230 @@
 # Defend Sacred Ground — Campaign Site
 
-Static-first advocacy campaign site, implemented from the Claude Design handoff
-(`Defend Sacred Ground - Campaign Site.dc.html`) and structured per the bundled
-campaign platform specification.
+Static-first advocacy campaign site, built from the Claude Design handoff and
+the bundled campaign platform specification.
 
 ## Architecture
 
-- **Static-first frontend, no build step.** Every page is a plain HTML shell that
-  mounts one shared React app via `<div id="root" data-page="…">`. React 18 UMD +
-  Babel Standalone are loaded from CDN; `js/app.jsx` is compiled in the browser.
-- **Content-driven.** Nearly all copy, nav, demands, stats, timeline, donation
-  tiers, and page content live in `content/site.json`. Edit copy without touching
-  components — no campaign literals live in `js/app.jsx`.
-- **Backend-optional.** All `/api/*` calls (signature count, petition signup,
-  partial-capture beacons, email capture, AI rewrite, checkout, share events,
-  broken-link reports, YouTube feed) are best-effort: the site is fully usable
-  as a static deploy and picks up live behaviour as endpoints ship.
+- **Static-first frontend, no build step.** Every page is a plain HTML shell
+  that mounts one shared React app via `<div id="root" data-page="…">`. React 18
+  UMD + Babel Standalone are vendored in `/vendor`; `js/app.jsx` is compiled in
+  the browser. All asset URLs carry a `?v=<date>` cache-buster bumped on deploy.
+- **Content-driven.** Nearly all copy, nav, petitions, demands, stats and
+  donation tiers live in `content/site.json`, editable through the git-backed
+  CMS at `/admin`. No campaign literals live in `js/app.jsx`.
+- **Serverless backend.** One function per endpoint under `/api/*`. No server
+  state; per-instance in-memory caches only, for rate limiting and throttles.
+- **Two sub-apps.** `/survey` and the webinar page ship separately from the
+  main bundle, because they are reached from CRM emails by people who may never
+  have seen the site.
 
 ## Pages
 
 | Path | File | `data-page` |
 |---|---|---|
 | `/` | `index.html` | `home` |
-| `/take-action/defend-sacred-ground` | `take-action/defend-sacred-ground.html` | `petition` |
-| `/minister` | `minister.html` | `minister` (email-pressure page) |
+| `/take-action` | `take-action/index.html` | `takeaction` |
+| `/take-action/<slug>` | `take-action/defend-sacred-ground.html` | `petition` |
+| `/minister` | `minister.html` | `minister` |
 | `/donate` | `donate.html` | `donate` |
+| `/donate?signed=1` | same shell | post-signature ask, chromeless |
 | `/share` | `share.html` | `share` |
+| `/thank-you` | `thank-you.html` | `thankyou` (post-donation, noindex) |
 | `/news` | `news.html` | `news` |
 | `/the-issue` | `the-issue.html` | `issue` |
 | `/about-us` | `about-us.html` | `about` |
+| `/media` | `media.html` | `media` |
+| `/won` | `won.html` | `won` (off until `won.enabled`) |
 | `/volunteer` | `volunteer.html` | `volunteer` |
 | `/contact` | `contact.html` | `contact` |
-| `/thank-you` | `thank-you.html` | `thankyou` (post-donation, noindex) |
+| `/supporters/<slug>` | `webinar.html` | `webinar`, chromeless |
+| `/s/<slug>` | `survey/index.html` | standalone survey app |
+| `/admin` | `admin/index.html` | Decap CMS |
 | any unmatched URL | `404.html` | self-contained real 404 |
 
-Vanity redirects (302, repointable) live in `vercel.json`: `/petition`,
-`/take-action`, `/demand`, `/about`, `/issue`, and friends.
+Vanity redirects (302, repointable) live in `vercel.json`. `/fund` and
+`/fight` rewrite to the tracked-link endpoint; `/leaderboard` rewrites to the
+API. `/take-action/:slug` falls through to the petition shell so an unknown
+slug renders the in-app "not found" rather than a bare 404.
 
-## Contracts kept (spec §14)
+---
 
-- Hash-target element ids: `#sign` (petition form), `#ff-email-form` (minister),
-  `#signup` (volunteer), `#donate`, `#home-sign`, and `#root[data-page]`.
-- Hash deep links on JS-rendered pages retry until mounted, scroll instantly,
-  re-align until document height is stable, and cancel on user interaction.
-- mailto rules: single recipient in To, correspondence copy via `cc`,
-  URL-encoded subject/body, ~1900-char counter (ok/warn/over), supporter
-  name+email appended after the sign-off, Gmail/Outlook webmail fallbacks and
-  copy buttons on the success state.
-- 404 is a real 404: broken-link report bar (path rendered as a text node),
-  15 s `location.replace` auto-forward with cancel-on-any-interaction, `noindex`.
-- Buttons with campaign-length labels wrap (`white-space:normal`).
-- Honeypot fields on all public forms; bot fills are silently accepted.
+# Environment variables
 
-## Config to set at launch
+Every variable, what breaks without it, and where to get it. `/api/env-check`
+serves this same list live with each one's status, and `?live=1` makes one real
+authenticated call per service — which is the only way to tell a variable that
+is set and wrong from one that is right.
 
-In `content/site.json`:
+### Required. Without these the site is not operational.
 
-- `minister.toEmail` — the Minister's real correspondence address (mailto stays
-  disabled until set; copy/webmail fallbacks still work).
-- `news.youtubeChannelId` — enables the live video feed via `/api/youtube`.
-- `news.socials[].url` — real profile URLs.
-- `org.signatureFallbackCount` — shown only for the moment before
-  `/api/signature-count` answers. Keep it at the real Nucleus total (0 today),
-  never a padded number: the displayed count has to match Nucleus exactly.
-- `org.signatureGoalStep` — the goal ladder, 15,000 by default. The target is
-  always the next unreached multiple, so it rolls over on its own.
-- Director portraits on About us: swap each placeholder slot for an `<img>`.
-
-In each HTML shell: inject the Meta Pixel snippet where marked.
-
-## CRM receiver (Campaign Nucleus)
-
-Petition signups sync to Campaign Nucleus (account `teller`):
-
-- **Form:** "Defend Sacred Ground: Petition to Kim Beazley" — slug `dsg-beazley`,
-  id `0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28`, group "Defend Sacred Ground"
-- **Fields:** first_name*, last_name*, email* (unique), postcode, phone (all
-  matching the site's petition form)
-- **Receiver endpoint** (for `CN_RECEIVER_URLS` in the backend env, spec §9):
-  `POST https://api.campaignnucleus.com/v1/forms/0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28/entries`
-  mapped as `{"defend-sacred-ground": "<that URL>"}`
-- **Signature count:** `api/signature-count.js` reads the form's entry total
-  from Nucleus (60 s cache) so the number on the site is the number in the CRM.
-  Env: `CN_API_TOKEN`, `CN_PETITION_FORM_ID`
-  (`0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28`), optionally `CN_API_BASE` and
-  `CN_ACCOUNT_SLUG` (`teller`). Until those are set the endpoint returns 503 and
-  the site falls back to `org.signatureFallbackCount`.
-- **Hosted fallback page:** https://teller.nucleuspages.com/landing/dsg-beazley
-  (branded in campaign colours; redirects to /donate after signing; admin
-  notifications to james@teller.consulting)
-
-## Stripe (donations)
-
-Live account: **Defend Australia** (`acct_1U2ufdCy6Gkrn2pI`).
-
-Donations run on **Stripe Payment Links** so a donor reaches Stripe in one
-click with the amount already set — the site never collects the amount.
-Clicking any chip in the DonatePanel navigates straight to
-`donate.stripe.com`. Links live in `content/site.json` under
-`donate.stripeLinks` and can be swapped without touching code.
-
-- Products: `prod_V3FawQKMSVc0q5` (one-off), `prod_V3FaRw3sHgMvAB` (monthly)
-- 6 one-off + 6 monthly links ($35/$65/$135/$265/$550/$1500 AUD) plus a
-  one-off "customer chooses what to pay" link ($5–$10,000)
-- Every link carries `metadata.campaign = defend-sacred-ground`, a
-  `DSG DONATION` statement-descriptor suffix, and redirects to `/thank-you`
-- Payment methods are dynamic (dashboard-controlled), so PayPal / Apple Pay /
-  Google Pay appear automatically once enabled in Dashboard settings
-
-**Custom monthly amounts** are the one gap: Stripe Payment Links do not
-support pay-what-you-want on recurring prices. In monthly mode the "Other
-amount" control collects the amount and posts to `api/checkout.js`, which
-creates a subscription Checkout Session. That path needs the env vars below;
-every other amount works with no backend at all.
-
-Env (Vercel):
-
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`
-- `CN_API_TOKEN`, optionally `CN_ACCOUNT_SLUG` (`teller`) and `CN_API_BASE`
-- `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID` (`appVVWhWpNfImwxH9`)
-- Webhook endpoint `https://<domain>/api/stripe-webhook`, events
-  `checkout.session.completed` and `invoice.paid`
-
-### Dashboard steps that cannot be done over the API
-
-1. **Logo** — Settings → Branding: upload `assets/stripe-logo.png` (900×239)
-   and `assets/stripe-icon.png` (512×512). Colours, font (Inter) and square
-   border style are already set via the API.
-2. **PayPal** — Settings → Payment methods: turn on PayPal (card, Apple Pay
-   and Google Pay are on by default). Apple Pay also needs the live domain
-   registered once the site is deployed.
-3. **Receipts** — Settings → Business → Customer emails: enable
-   "Successful payments" (and, for monthly donors, the Billing email
-   notifications).
-4. **Public details** — Settings → Business: set the public business name,
-   support email and statement descriptor so donors recognise the charge.
-
-## Data pipeline
-
-Every public form writes to two places. Campaign Nucleus is the system of
-record for people; Airtable is the operational base, modelled on Farmers
-Fightback: an append-only `Events` log with typed projections beside it.
-
-Base **Defend Sacred Ground** (`appVVWhWpNfImwxH9`), tables:
-
-| Table | What lands in it |
-|---|---|
-| `Contacts` | one row per person, matched on email then mobile |
-| `Events` | append-only log, `dedup_key` makes webhook re-delivery a no-op |
-| `Petition Signatures` | one row per signature, with `cn_synced` / `cn_error` |
-| `Donations` | one row per charge, plus the `upsell_*` columns |
-| `Form Submissions` | contact-us and volunteer messages |
-| `Signups` | minister email-action session captures, upserted on `session_id` |
-| `Lapse Queue` | started-but-unfinished forms, for one follow-up |
-| `Site Stats` | key-value for numbers the site serves |
-
-Endpoints: `petition-signup`, `event-log` (contact + volunteer), `capture`
-(minister), `partial`, `share-issued`, `signature-count`, `donation-status`,
-`stripe-webhook`. Shared clients live in `api/_lib/`.
-
-Nucleus route notes, learned the hard way against the live API: a form entry
-is `POST /forms/{id}/entries`, but a profile upsert is `POST /profiles/match`
-(not `match-or-create`, which 405s on POST and 404s on PUT), and it wants
-`mobile` and `zip` rather than `phone` and `postcode`.
-
-All six write paths were verified against production on 12 Aug 2026: petition,
-contact, volunteer, minister capture, partial and share. Each wrote its
-Contact, its Event, its typed row and its Nucleus entry, and the test records
-were removed afterwards.
-
-Nucleus failures never cost a submission: the supporter always gets the
-success state, and the failure is recorded on the Airtable row as `cn_error`
-so a broken sync is visible in the base rather than silent. Filter any typed
-table on `cn_synced` unchecked to find them.
-
-### Campaign Nucleus forms (account `teller`, group "Defend Sacred Ground")
-
-| Form | Slug | Id |
+| Variable | What it does | Where it comes from |
 |---|---|---|
-| Petition to Kim Beazley | `dsg-beazley` | `0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28` |
-| Contact | `dsg-contact` | `e3a6dff2-91d1-4a3a-87e6-259116d840d7` |
-| Volunteer | `dsg-volunteer` | `b2efb75b-d4b1-48e8-b84d-5149e0aea4df` |
+| `CN_API_TOKEN` | Every signature, and the counter on the site. Without it `/api/signature-count` 503s and nothing reaches the CRM. | Campaign Nucleus → account settings → API |
+| `AIRTABLE_TOKEN` | Every table. Without it the queue, the drain and all reporting are dead. | airtable.com/create/tokens, scoped to the base with `data.records:read/write` and `schema.bases:read` |
+| `AIRTABLE_BASE_ID` | Which base. `appVVWhWpNfImwxH9` for this campaign. | The base URL |
+| `STRIPE_SECRET_KEY` | Custom monthly checkout, the thank-you page, share identity by session. | Stripe → Developers → API keys (live `sk_live_…`) |
+| `STRIPE_WEBHOOK_SECRET` | Donation rows, the upsell close, the Purchase event to Meta. **Without it no donation is ever recorded.** | Stripe → Developers → Webhooks → the endpoint's signing secret |
+| `ADMIN_BASIC_AUTH` | `user:password` for env-check, the leaderboard, the A/B report and the token exports. Unset makes all of them answer 404. | Pick one. Treat it as a password, because it is one |
 
-Three site fields have no column on their CN form, because the form builder
-rejected them at creation. They are carried instead of dropped:
+### Strongly recommended.
 
-- contact `topic` is prefixed onto the message body
-- volunteer `postcode` and `roles` ride on the CN profile as a note and tags
+| Variable | What it does | Notes |
+|---|---|---|
+| `SITE_URL` | Absolute URLs in Stripe returns. | `https://defendsacredground.com` |
+| `SITE_DOMAIN` | CORS allowlist and generated links. | Defaults to `defendsacredground.com` |
+| `CN_ACCOUNT_SLUG` | Which Nucleus account. | `teller` |
+| `CRM_UID_FIELD` | Which CRM custom slot holds the survey token. | Defaults to `custom2`. **Nothing else in the codebase may write to it** |
+| `META_PIXEL_ID` | Browser pixel and the CAPI destination. Without it every ad dollar is unmeasured. | Meta Events Manager |
+| `META_CAPI_TOKEN` | Server-side events. Roughly a third of browser events never arrive without this half. | Events Manager → the dataset → Conversions API → generate token |
+| `ANTHROPIC_API_KEY` | The "Say it my way" rewrite. | console.anthropic.com |
+| `AI_REWRITE_DAILY_CAP` | Hard daily ceiling on rewrites. **Unset means no cap and no bound on spend.** | A number, e.g. `500` |
+| `IP_HASH_SALT` | Salts hashed IPs in rate limits and AI usage. Unset means the hash is a lookup table of every Australian IP. | Any long random string |
+| `CRON_SECRET` | Bearer for manual cron runs. Vercel's own cron header always works regardless. | Any long random string |
+| `WEBINAR_TOKEN_SECRET` | Signs briefing magic links. Unset means no private briefing can be opened at all. | Any long random string. **Changing it invalidates every link already emailed** |
 
-All three are always written in full to Airtable. If the columns are added to
-CN later, drop the workarounds in `api/event-log.js` and pass them straight
-through.
+### Optional, per feature.
 
-## Donations and the monthly upsell
+**Campaign Nucleus.** `CN_API_BASE` (non-standard host), `CN_PETITION_FORM_ID`,
+`CN_CONTACT_FORM_ID`, `CN_VOLUNTEER_FORM_ID` (override the built-in ids),
+`CN_HOSTED_PETITION_URL` (fallback form offered when a signature cannot be
+stored).
 
-All 13 payment links now redirect to
-`/thank-you?session_id={CHECKOUT_SESSION_ID}` instead of `/share`.
+**Meta lead ads.** `META_LEAD_VERIFY_TOKEN` (Meta's subscription handshake),
+`META_LEAD_SECRET` (shared secret on the relay; **without it the lead webhook is
+open**), `META_LEAD_FORM_MAP` (JSON, `{"<form id>":"<petition slug>"}`),
+`META_TEST_EVENT_CODE` (routes events to Meta's test view; **remove before a
+real flight**).
 
-1. `/thank-you` reads the session through `api/donation-status.js` and greets
-   the donor by name with the amount they actually gave.
-2. For a one-off gift it offers the monthly link for the largest preset at or
-   below that amount, so the ask is never bigger than the gift already made.
-   A monthly donor is never asked again.
-3. `stripe-webhook` writes the Donation row with `upsell_outcome = Offered`.
-4. When a monthly subscription starts for the same email within seven days,
-   the earlier one-off row flips to `Accepted` and records the subscription id.
+**SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID`, `CELLCAST_API_BASE`,
+`CELLCAST_WEBHOOK_SECRET` (without it the inbound endpoint accepts anything).
 
-Conversion is therefore measured from money, not from clicks.
+**Ticketing.** `RALLY_STRIPE_SECRET_KEY`, `RALLY_STRIPE_WEBHOOK_SECRET`
+(without it no ticket is ever recorded), `RALLY_TICKET_PRICE_ID` or
+`RALLY_TICKET_CENTS` (defaults to 2500).
 
-## Load: surviving a launch surge
+**Other.** `ANTHROPIC_MODEL` (defaults to `claude-haiku-4-5-20251001`),
+`DRAIN_KEY` (locks the manual drain), `SIGNATURE_GOAL_STEP` (defaults 15000),
+`DEFAULT_PETITION_SLUG` (where an unmapped Meta lead lands).
 
-Campaign Nucleus is written first on every submission and is the only system a
-signature must reach for the campaign to have it. Airtable follows.
+### Webhooks to register
 
-The constraint is Airtable: **five requests per second per base**. A signature
-used to cost about five requests on the request path, so 5,000 signatures in
-two minutes (roughly forty a second) would have needed two hundred requests a
-second and collapsed into 429s.
+| Where | URL | Events |
+|---|---|---|
+| Stripe (donations) | `https://defendsacredground.com/api/stripe-webhook` | `checkout.session.completed`, `invoice.paid` |
+| Stripe (tickets) | `https://defendsacredground.com/api/rally-webhook` | `checkout.session.completed` |
+| Meta lead ads | `https://defendsacredground.com/api/meta-lead-webhook` | leadgen |
+| Cellcast inbound | `https://defendsacredground.com/api/cellcast-inbound` | inbound SMS |
 
-The request path now appends **one** row to `Ingest Queue` carrying the whole
-submission, batched ten at a time (Airtable's batch limit), and `api/drain.js`
-expands those rows into Contacts, Events and the typed tables afterwards.
+---
 
-- **Cron:** `/api/drain` every minute (`vercel.json`), on Vercel Pro. Measured
-  on 12 Aug 2026: a row planted in the queue was expanded 0.5 s later, and a
-  live signature was expanded 1.5 s after it was queued. Queue latency is
-  effectively invisible to a supporter.
-- **Bounded:** 25 rows per pass with a 45 s budget, so a surge drains steadily
-  across passes instead of timing out.
-- **Idempotent:** a row is marked `Done` only after its expansion succeeded, so
-  an overlapping run or a retry cannot double-write a person. Five failures
-  moves a row to `Failed` for a human rather than retrying forever.
-- **Retries:** every outbound call to both APIs honours `Retry-After` and backs
-  off exponentially with jitter, so concurrent lambdas do not retry in lockstep.
-- **Manual drain:** `GET /api/drain?key=$DRAIN_KEY`. Set `DRAIN_KEY` to lock it
-  down; without it the endpoint is open but only ever does work that was
-  already going to happen.
+## API surface
 
-Nothing is lost if the queue itself fails: the full payload goes to the runtime
-log with a `*_UNSTORED` or `QUEUE_WRITE_FAIL` prefix for replay.
+**Public capture:** `petition-signup`, `capture`, `partial`, `event-log`,
+`checkout`, `share-issued`, `share-click`, `share-context`, `share-signup`,
+`signature-count`, `donation-status`, `youtube`, `track-redirect`,
+`report-broken-link`, `rewrite`, `meta-capi`, `survey/{resolve,capture,answer,complete}`,
+`webinar-{context,register,question}`, `rally-{checkout,claim}`.
 
-## Partial captures
+**Webhooks:** `stripe-webhook`, `rally-webhook`, `cellcast-inbound`,
+`meta-lead-webhook`.
 
-The petition form beacons on blur of the name and email fields, so someone who
-fills half of it and leaves is still captured. Partials are queued, become a
-`Lapse Queue` row, and get a Nucleus profile tagged **Started petition, did not
-finish** so the follow-up can be sent.
+**Admin (basic auth):** `env-check`, `leaderboard`, `ab-report`,
+`stripe-backfill`, `lapse-reconcile`, `survey-uids`, `webinar-tokens`.
 
-A partial never touches the petition form in Nucleus and never moves the
-counter: it is a lead, not a signature. If the person later signs, the drain
-worker drops the partial rather than nagging someone who already finished.
+**Crons:** see below.
 
-## Not yet implemented (backend, spec §5–§12)
+Every endpoint: CORS per the allowlist, `OPTIONS` 204, method guard, JSON
+errors as `{error: "<a sentence a supporter can read>"}` — the frontend renders
+that string directly, so it is written for a person and not for a log.
 
-Serverless `/api/*` endpoints, Airtable datastore, Campaign Nucleus sync,
-Stripe checkout + webhooks, Cellcast SMS, Meta CAPI, AI rewrite service,
-survey sub-app, webinar system, and cron jobs. The frontend already calls the
-agreed endpoint paths with the agreed payloads, so these can land without
-frontend changes.
+## Scheduled jobs
+
+| Cron | Schedule | Work |
+|---|---|---|
+| `/api/drain` | every minute | Expand the Ingest Queue into the relational tables |
+| `/api/lapse-sweep` | every 5 min | Enrol non-completers, close the ones who finished, tail-kick the SMS queue |
+| `/api/sms-inbound-poll` | hourly | Pull inbound SMS, handle STOP |
+| `/api/nightly-rollup` | daily 04:15 AEST | Referral rollup, A/B daily, full signature recount, milestone hook |
+| `/api/survey-uid-topup` | daily 04:40 AEST | Survey tokens for contacts added since the last run |
+
+`/api/sms-queue` has no schedule. It drains off `/api/signature-count`, the
+busiest endpoint on the site, throttled to once per five minutes per warm
+instance: during a surge it drains continuously off real traffic, and in the
+quiet hours nothing runs.
+
+## Data model
+
+Base **Defend Sacred Ground** (`appVVWhWpNfImwxH9`), 21 tables.
+
+Core: `Contacts`, `Events` (append-only, source of truth), `Petition Signatures`,
+`Donations`, `Form Submissions`, `Signups`, `Lapse Queue`, `Site Stats`,
+`Ingest Queue`.
+
+Growth and measurement: `Referral Rollup`, `AB Daily`, `SMS Sends`,
+`SMS Replies`, `AI Usage`, `Broken Links`.
+
+Programmes: `Webinars`, `Registrations`, `Questions`, `Survey Contacts`,
+`Survey Responses`, `Rally Tickets`.
+
+## Things that are true about this codebase
+
+Written down because each was learned the hard way and each is easy to undo by
+accident.
+
+**Campaign Nucleus is written first, always.** It is the system of record, the
+site's counter reads from it, and it is the only place a signature has to be
+for the campaign to have it. Airtable follows, as one queued row.
+
+**Airtable allows five requests per second per base.** A signature used to cost
+five. The request path now appends one queue row and `api/drain.js` expands it
+afterwards, which is what lets 5,000 signatures in two minutes land without
+losing anyone. Never add a direct Airtable write to a request path.
+
+**Referral codes are derived from the email, uppercase, matched
+case-insensitively.** Three implementations must agree exactly:
+`api/_lib/refcode.js`, the twin in `js/app.jsx`, and nothing else. Changing the
+algorithm changes every code already in circulation.
+
+**The incoming `?ref=` is stored separately from the visitor's own code.**
+Writing one over the other hands each visitor the sharer's identity and every
+onward share then credits the wrong person.
+
+**Vercel ignores `api/` files beginning with `_`,** which is why shared code
+lives in `api/_lib/` and is still bundled through static imports. **Vercel
+traces bundles from static imports only** — a lazy `require()` of a sibling
+handler is not packaged and fails at runtime.
+
+**React batches state updates,** so a `useState` guard against double submits
+does not work. The submit latches use a `useRef`.
+
+**Nothing but `survey-uids` and `survey-uid-topup` may write `CRM_UID_FIELD`.**
+In the reference build a partial capture wrote a timestamp there and destroyed
+every survey token in the account.
+
+**Every API error is a sentence, not a code.** The frontend renders
+`{error}` straight onto the page.
+
+**A capture endpoint never echoes stored personal data.** Otherwise a write-only
+form becomes an email lookup service.
 
 ## Local preview
 
 ```
-npx serve .        # or: python3 -m http.server
+python3 -m http.server 8000      # .html paths; no clean URLs, no API
+npx serve .                      # clean URLs
 ```
 
-Then open http://localhost:3000 (clean URLs need `serve`/Vercel; with the
-Python server use the `.html` paths).
+The API needs `vercel dev` or a deployment. `python3 -m http.server` is
+single-threaded and drops concurrent requests, which reads as a broken page:
+use a threading server if you are testing anything real.
+
+## Still to configure at launch
+
+In `content/site.json`: `minister.toEmail` (the page tells supporters plainly
+that it cannot open their mail app until this is set), `news.youtubeChannelId`,
+`news.socials[].url`, `org.metaPixelId`, About us director portraits.
+
+In Stripe's dashboard, none of which can be done over the API: upload the logo,
+enable PayPal, register the Apple Pay domain, turn on customer receipts, and
+set the public business details.

@@ -90,6 +90,21 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
+console.log("\n-- a test Stripe key on a live deployment --");
+// This was live for a while and nothing caught it. A test key authenticates,
+// retrieves the account and creates sessions, so every reachability check
+// passed. What it cannot do is take money or see a live session id, which is
+// what the thank-you page is handed after every real donation.
+const { liveStripeKey } = require(ROOT + "/api/env-check.js");
+ok(liveStripeKey("sk_live_51abcDEF") === true, "a live secret key is live");
+ok(liveStripeKey("rk_live_51abcDEF") === true, "a live restricted key is live");
+ok(liveStripeKey("  sk_live_51abcDEF  ") === true, "surrounding whitespace from a paste is tolerated");
+ok(liveStripeKey("sk_test_51abcDEF") === false, "a test secret key is not live");
+ok(liveStripeKey("rk_test_51abcDEF") === false, "a test restricted key is not live");
+ok(liveStripeKey("pk_live_51abcDEF") === false, "a publishable key pasted by mistake is not live");
+ok(liveStripeKey("") === false && liveStripeKey(null) === false, "empty and null are not live");
+ok(liveStripeKey("sk_live_") === false, "a truncated paste is not live");
+
 console.log("\n-- config --");
 const site = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8"));
 ok(!!site.petitions && Object.keys(site.petitions).length >= 1, "petitions is a slug map");

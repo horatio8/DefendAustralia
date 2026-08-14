@@ -63,7 +63,7 @@ is set and wrong from one that is right.
 | `CN_API_TOKEN` | Every signature, and the counter on the site. Without it `/api/signature-count` 503s and nothing reaches the CRM. | Campaign Nucleus → account settings → API |
 | `AIRTABLE_TOKEN` | Every table. Without it the queue, the drain and all reporting are dead. | airtable.com/create/tokens, scoped to the base with `data.records:read/write` and `schema.bases:read` |
 | `AIRTABLE_BASE_ID` | Which base. `appVVWhWpNfImwxH9` for this campaign. | The base URL |
-| `STRIPE_SECRET_KEY` | Custom monthly checkout, the thank-you page, share identity by session. | Stripe → Developers → API keys (live `sk_live_…`) |
+| `STRIPE_SECRET_KEY` | Custom monthly checkout, the thank-you page, share identity by session. **Must be live mode.** A `sk_test_` key authenticates and creates sessions, so every check passes, but it takes no money and cannot see the live session ids the Payment Links hand back. | Stripe → Developers → API keys (live `sk_live_…`) |
 | `STRIPE_WEBHOOK_SECRET` | Donation rows, the upsell close, the Purchase event to Meta. **Without it no donation is ever recorded.** | Stripe → Developers → Webhooks → the endpoint's signing secret |
 | `ADMIN_BASIC_AUTH` | `user:password` for env-check, the leaderboard, the A/B report and the token exports. Unset makes all of them answer 404. | Pick one. Treat it as a password, because it is one |
 

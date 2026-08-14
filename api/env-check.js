@@ -44,7 +44,7 @@ const GROUPS = [
   {
     name: "Stripe (donations)",
     vars: [
-      { key: "STRIPE_SECRET_KEY", need: "must", why: "Custom monthly checkout, the thank-you page and share identity by session." },
+      { key: "STRIPE_SECRET_KEY", need: "must", why: "Custom monthly checkout, the thank-you page and share identity by session. Must be a live mode key: a test key passes every check and still takes no money." },
       { key: "STRIPE_WEBHOOK_SECRET", need: "must", why: "Donation rows, the upsell close and the Purchase event to Meta. Without it no donation is ever recorded." }
     ]
   },
@@ -155,7 +155,16 @@ async function probe() {
     if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not set");
     const Stripe = require("stripe");
     const acct = await new Stripe(process.env.STRIPE_SECRET_KEY).accounts.retrieve();
-    return "account " + (acct.id || "?") + (acct.charges_enabled ? ", charges enabled" : ", CHARGES DISABLED");
+    // Reachability is not the question for this one. A test key is a working
+    // key: it authenticates, it retrieves the account, it creates sessions.
+    // Those sessions just take no money, and they cannot see any of the live
+    // donations the Payment Links produce, so the thank-you page loses every
+    // real donor. It is the most convincing kind of wrong, which is why the
+    // mode is checked before anything else is reported.
+    if (!liveStripeKey(process.env.STRIPE_SECRET_KEY)) {
+      throw new Error("TEST MODE key on a live deployment. Custom monthly checkout would open a test page that takes no real money, and /thank-you cannot look up any live donation.");
+    }
+    return "live mode, account " + (acct.id || "?") + (acct.charges_enabled ? ", charges enabled" : ", CHARGES DISABLED");
   });
 
   await time("meta", async () => {
@@ -249,6 +258,14 @@ function html(groups, missingMust, missingShould, live) {
     summary + recommended + "</div>" + body + liveHtml +
     "<p class=hint>Presence and length only. This page never shows a value.</p></main>";
 }
+
+/* Secret keys carry their mode in the prefix, so this needs no extra call:
+ * sk_live_ is a full key, rk_live_ a restricted one. Anything else, including
+ * an empty value or a publishable key pasted by mistake, is not live. */
+function liveStripeKey(k) {
+  return /^(sk|rk)_live_[A-Za-z0-9]/.test(String(k == null ? "" : k).trim());
+}
+module.exports.liveStripeKey = liveStripeKey;
 
 function esc(s) {
   return String(s == null ? "" : s)

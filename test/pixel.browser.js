@@ -7,6 +7,20 @@
 // conversion twice and the campaign optimises against inflated numbers.
 const { chromium } = require("playwright");
 const BASE = process.env.BASE || "http://127.0.0.1:8912";
+
+// A plain static server does neither of the two things Vercel does to a URL:
+// cleanUrls, which serves the-issue.html at /the-issue, and the rewrite that
+// maps /take-action/:slug onto the petition shell. Without this the petition
+// page 404s locally and the Lead assertions never run, which is exactly the
+// half of the pixel that matters, since PageView proves only that the script
+// loaded. Against a real deployment the paths are used as written.
+const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)/.test(BASE);
+function at(p) {
+  const [path, query] = p.split("?");
+  const file = LOCAL && path !== "/" && !path.endsWith(".html") ? path + ".html" : path;
+  return BASE + file + (query ? "?" + query : "");
+}
+
 (async () => {
   const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
   const fails = [];
@@ -24,7 +38,7 @@ const BASE = process.env.BASE || "http://127.0.0.1:8912";
   p.on("request", (r) => { if (r.method() === "POST" && r.url().includes("meta-capi")) capiPosts.push(r.postData()); });
   p.on("pageerror", (e) => fails.push("page error: " + e.message));
 
-  await p.goto(BASE + "/?fbclid=TESTCLICK123", { waitUntil: "domcontentloaded" });
+  await p.goto(at("/?fbclid=TESTCLICK123"), { waitUntil: "domcontentloaded" });
   await p.waitForFunction(() => window.fbq, { timeout: 8000 }).catch(() => {});
   await p.waitForTimeout(600);
 
@@ -46,14 +60,14 @@ const BASE = process.env.BASE || "http://127.0.0.1:8912";
 
   // First touch must survive to the next page: the ad click id is in the URL
   // for one page load only.
-  await p.goto(BASE + "/the-issue", { waitUntil: "domcontentloaded" });
+  await p.goto(at("/the-issue"), { waitUntil: "domcontentloaded" });
   await p.waitForTimeout(500);
   const kept = await p.evaluate(() => localStorage.getItem("dsg_first_touch"));
   ok(kept && kept.includes("TESTCLICK123"), "fbclid is kept after the query string is gone: " + kept);
 
   // Signing must fire Lead with the supporter's details.
   capiPosts.length = 0;
-  await p.goto(BASE + "/take-action/defend-sacred-ground", { waitUntil: "domcontentloaded" });
+  await p.goto(at("/take-action/defend-sacred-ground"), { waitUntil: "domcontentloaded" });
   await p.waitForTimeout(400);
   await p.fill("#pfn", "Ada"); await p.fill("#pln", "Lovelace");
   await p.fill("#pem", "ada@example.com"); await p.fill("#ppc", "2600");

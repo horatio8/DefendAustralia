@@ -9,6 +9,16 @@
 // everything would make the recordings worthless.
 const { chromium } = require("playwright");
 const BASE = process.env.BASE || "http://127.0.0.1:8912";
+
+// A plain static server does not apply cleanUrls or the /take-action/:slug
+// rewrite, so extensionless paths 404 and every masking check below would find
+// no fields and pass vacuously. Resolve them to the file Vercel would serve.
+const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)/.test(BASE);
+function at(p) {
+  const [path, query] = p.split("?");
+  const file = LOCAL && path !== "/" && !path.endsWith(".html") ? path + ".html" : path;
+  return BASE + file + (query ? "?" + query : "");
+}
 (async () => {
   const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
   const fails = [];
@@ -22,7 +32,7 @@ const BASE = process.env.BASE || "http://127.0.0.1:8912";
   await p.route("**/connect.facebook.net/**", (r) => r.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
   p.on("pageerror", (e) => fails.push("page error: " + e.message));
 
-  await p.goto(BASE + "/", { waitUntil: "domcontentloaded" });
+  await p.goto(at("/"), { waitUntil: "domcontentloaded" });
   await p.waitForFunction(() => window.clarity, { timeout: 8000 }).catch(() => {});
   await p.waitForTimeout(900);
 
@@ -32,7 +42,7 @@ const BASE = process.env.BASE || "http://127.0.0.1:8912";
 
   // Masking, on the pages that carry something private.
   const check = async (path, sel, label) => {
-    await p.goto(BASE + path, { waitUntil: "domcontentloaded" });
+    await p.goto(at(path), { waitUntil: "domcontentloaded" });
     await p.waitForFunction(() => document.querySelectorAll("input,textarea").length > 0, { timeout: 8000 }).catch(() => {});
     const masked = await p.evaluate((s) => {
       const els = Array.from(document.querySelectorAll(s));
@@ -47,7 +57,7 @@ const BASE = process.env.BASE || "http://127.0.0.1:8912";
 
   // Nothing that is not a form field should be masked: masking the whole page
   // would make the recordings useless.
-  await p.goto(BASE + "/", { waitUntil: "domcontentloaded" });
+  await p.goto(at("/"), { waitUntil: "domcontentloaded" });
   await p.waitForFunction(() => document.querySelectorAll("input,textarea").length > 0, { timeout: 8000 }).catch(() => {});
   const overMasked = await p.evaluate(() =>
     document.querySelectorAll('[data-clarity-mask="true"]').length >

@@ -73,7 +73,7 @@ const GROUPS = [
     vars: [
       { key: "ANTHROPIC_API_KEY", need: "should", why: 'The "Say it my way" button. Without it the button reports that the service is off, which is honest but the feature is dead.' },
       { key: "ANTHROPIC_MODEL", need: "optional", why: "Defaults to claude-haiku-4-5-20251001." },
-      { key: "AI_REWRITE_DAILY_CAP", need: "should", why: "Hard daily ceiling on rewrites. Unset means no cap and no bound on spend." }
+      { key: "AI_REWRITE_DAILY_CAP", need: "optional", why: "Hard daily ceiling on rewrites. Unset falls back to 500 a day, which is the safe default. Set 0 to deliberately remove the ceiling." }
     ]
   },
   {

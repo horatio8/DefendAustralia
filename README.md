@@ -78,7 +78,7 @@ is set and wrong from one that is right.
 | `META_PIXEL_ID` | Browser pixel and the CAPI destination. Without it every ad dollar is unmeasured. | Meta Events Manager |
 | `META_CAPI_TOKEN` | Server-side events. Roughly a third of browser events never arrive without this half. | Events Manager → the dataset → Conversions API → generate token |
 | `ANTHROPIC_API_KEY` | The "Say it my way" rewrite. | console.anthropic.com |
-| `AI_REWRITE_DAILY_CAP` | Hard daily ceiling on rewrites. **Unset means no cap and no bound on spend.** | A number, e.g. `500` |
+| `AI_REWRITE_DAILY_CAP` | Hard daily ceiling on rewrites. Unset falls back to **500 a day**, because the safe reading of "unset" on a public endpoint that spends money is not "unlimited". Set `0` to deliberately remove the ceiling. | A number, e.g. `500` |
 | `IP_HASH_SALT` | Salts hashed IPs in rate limits and AI usage. Unset means the hash is a lookup table of every Australian IP. | Any long random string |
 | `CRON_SECRET` | Bearer for manual cron runs. Vercel's own cron header always works regardless. | Any long random string |
 | `WEBINAR_TOKEN_SECRET` | Signs briefing magic links. Unset means no private briefing can be opened at all. | Any long random string. **Changing it invalidates every link already emailed** |

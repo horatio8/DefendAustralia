@@ -106,6 +106,19 @@ ok(/function metaError/.test(metaSrc), "there is a dedicated error reader");
 ok(/split\(token\)\.join/.test(metaSrc), "the token is scrubbed from anything rendered");
 delete process.env.META_CAPI_TOKEN;
 
+console.log("\n-- the rewrite spend ceiling --");
+// The endpoint is public and spends money on someone else's key, so the
+// reading of an unset variable matters. It used to be "no ceiling", which made
+// the one configuration mistake nobody notices also the expensive one.
+const rewriteSrc = fs.readFileSync(ROOT + "/api/rewrite.js", "utf8");
+ok(/DEFAULT_DAILY_CAP\s*=\s*(\d+)/.test(rewriteSrc), "there is a named default cap");
+const capDefault = Number(rewriteSrc.match(/DEFAULT_DAILY_CAP\s*=\s*(\d+)/)[1]);
+ok(capDefault > 0 && capDefault <= 5000, "the default cap is a real bound: " + capDefault + " a day");
+ok(!/Number\(process\.env\.AI_REWRITE_DAILY_CAP \|\| 0\)/.test(rewriteSrc),
+   "unset no longer falls through to unlimited");
+ok(/raw === "" \? DEFAULT_DAILY_CAP/.test(rewriteSrc), "an unset variable takes the default, not zero");
+ok(/cap <= 0/.test(rewriteSrc), "an explicit 0 still removes the ceiling on purpose");
+
 console.log("\n-- a test Stripe key on a live deployment --");
 // This was live for a while and nothing caught it. A test key authenticates,
 // retrieves the account and creates sessions, so every reachability check

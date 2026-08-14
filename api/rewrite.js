@@ -164,9 +164,20 @@ async function sessionCount(session_id) {
   }
 }
 
+// A default cap, because the safe value of "unset" is not unlimited.
+//
+// This endpoint is public and it spends money on someone else's key. Reading
+// an unset variable as "no ceiling" means the one configuration mistake nobody
+// notices is also the expensive one, and a campaign finds out through a bill.
+// 500 rewrites a day is far above what this campaign's traffic produces and
+// far below anything that would hurt. Set AI_REWRITE_DAILY_CAP to raise it, or
+// to 0 to deliberately remove the ceiling.
+const DEFAULT_DAILY_CAP = 500;
+
 async function overDailyCap() {
-  const cap = Number(process.env.AI_REWRITE_DAILY_CAP || 0);
-  if (!cap || !at.configured()) return false;
+  const raw = String(process.env.AI_REWRITE_DAILY_CAP || "").trim();
+  const cap = raw === "" ? DEFAULT_DAILY_CAP : Number(raw);
+  if (!Number.isFinite(cap) || cap <= 0 || !at.configured()) return false;
   try {
     const today = new Date().toISOString().slice(0, 10);
     const res = await at.call("GET", at.T.aiUsage,

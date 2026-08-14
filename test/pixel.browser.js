@@ -6,7 +6,7 @@
 // event carry the same event_id. If those ever diverge Meta counts one
 // conversion twice and the campaign optimises against inflated numbers.
 const { chromium } = require("playwright");
-const BASE = process.env.BASE || BASE + "";
+const BASE = process.env.BASE || "http://127.0.0.1:8912";
 (async () => {
   const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
   const fails = [];

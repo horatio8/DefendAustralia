@@ -221,6 +221,30 @@ function usePixel(site) {
   }, []);
 }
 
+/* Microsoft Clarity: session recordings and heatmaps.
+ *
+ * From config for the same reason as the pixel, and loaded the same way. It is
+ * a different kind of tool though: Clarity records what a supporter did on the
+ * page, so the two forms that carry a private message are masked before it
+ * starts. Clarity masks input values by default, but the Minister letter and
+ * the contact message live in textareas whose content is the whole point, and
+ * a recording of somebody's letter to a minister is not ours to keep.
+ *
+ * Absent id means no script and no requests. */
+function useClarity(site) {
+  useEffect(() => {
+    const id = site.org && site.org.clarityProjectId;
+    if (!id || window.clarity) return;
+    /* eslint-disable */
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", id);
+    /* eslint-enable */
+  }, []);
+}
+
 /* Copying is the fallback for every share route that cannot open an app, so a
  * clipboard that silently refuses leaves the supporter with nothing at all.
  * Resolves true when the text is on the clipboard and false when it is not,
@@ -334,11 +358,16 @@ function MonoKicker({ color, rule, children }) {
   );
 }
 
+/* Every text field on the site goes through here, which is why the masking
+ * attribute lives here rather than on each form. Clarity masks input values by
+ * default, but that default is a dashboard setting somebody can change, and
+ * the cost of it being changed is a recording of a supporter's name, email and
+ * mobile. Declaring it in the markup means the page decides, not the account. */
 function Field({ id, label, value, onChange, onBlur, mono, placeholder }) {
   return (
     <div>
       <label htmlFor={id} style={labelStyle}>{label}</label>
-      <input id={id} className="field" value={value} placeholder={placeholder} onChange={onChange} onBlur={onBlur} style={inputStyle(mono)} />
+      <input id={id} className="field" value={value} placeholder={placeholder} onChange={onChange} onBlur={onBlur} style={inputStyle(mono)} data-clarity-mask="true" />
     </div>
   );
 }
@@ -1119,9 +1148,9 @@ function MinisterPage({ site }) {
             </div>
             <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>
             <label htmlFor="subj" style={labelStyle}>Subject</label>
-            <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} />
+            <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} data-clarity-mask="true" />
             <label htmlFor="body" style={labelStyle}>Message</label>
-            <textarea id="body" className="field" rows={14} value={body} onChange={(e) => setBody(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.65, padding: 16, background: C.cream, resize: "vertical" }}></textarea>
+            <textarea id="body" className="field" rows={14} value={body} onChange={(e) => setBody(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.65, padding: 16, background: C.cream, resize: "vertical" }} data-clarity-mask="true"></textarea>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, fontFamily: MONO, fontSize: 12 }}>
               <span style={{ color: counterColor }}>{fmt(chars)} / 1,900 characters</span>
               <span style={{ color: C.faint }}>{counterNote}</span>
@@ -1220,7 +1249,7 @@ function DonatePanel({ site, innerRef }) {
             <label htmlFor="oa" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut }}>Other monthly amount</label>
             <button onClick={() => { setShowOther(false); setOther(""); }} aria-label="Close other amount" className="hov-copy-red" style={{ background: "none", border: "none", color: C.faint, fontSize: 16, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}>×</button>
           </div>
-          <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} />
+          <input id="oa" className="field-thin" value={other} onChange={(e) => setOther(e.target.value)} placeholder="AUD" style={inputStyle(true)} data-clarity-mask="true" />
           <button onClick={monthlyOther} disabled={opening} className={opening ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 12, fontSize: 14, padding: "16px 20px", opacity: opening ? .72 : 1, cursor: opening ? "default" : "pointer" })}>{opening ? "Opening Stripe…" : "Continue to Stripe"}</button>
         </div>
       )}
@@ -1958,7 +1987,7 @@ function ContactPage({ site }) {
               </div>
               <div style={{ marginTop: 16 }}>
                 <label htmlFor="cmsg" style={labelStyle}>Message *</label>
-                <textarea id="cmsg" className="field" rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.6, resize: "vertical" }}></textarea>
+                <textarea id="cmsg" className="field" rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.6, resize: "vertical" }} data-clarity-mask="true"></textarea>
               </div>
               <Notice>{error}</Notice>
               <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 24, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Sending…" : "Send message"}</button>
@@ -2393,7 +2422,7 @@ function WebinarQuestions({ slug, tok }) {
       <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: "0 0 18px" }}>
         Questions go to the host beforehand, so the ones people actually want answered get answered.
       </p>
-      <textarea className="field" rows={4} value={q} onChange={(e) => setQ(e.target.value)}
+      <textarea className="field" rows={4} value={q} onChange={(e) => setQ(e.target.value)} data-clarity-mask="true"
         placeholder="What would you like them to cover?"
         style={{ ...inputStyle(false), lineHeight: 1.6, resize: "vertical" }}></textarea>
       <Notice>{error}</Notice>
@@ -2473,6 +2502,7 @@ function App({ site, page }) {
   // the sharer earns the click wherever it lands.
   useReferralArrival();
   usePixel(site);
+  useClarity(site);
   // The two pages at the end of the funnel carry no nav and no footer, only
   // the logo: ?signed=1 on donate is the post-signature ask, and the share page
   // exists to be acted on rather than navigated away from.

@@ -142,7 +142,7 @@ function Postcode({ value, onChange }) {
   return (
     <div>
       <label className="lbl" htmlFor="pc">Postcode</label>
-      <input id="pc" className="field mono" inputMode="numeric" autoComplete="postal-code"
+      <input id="pc" className="field mono" inputMode="numeric" autoComplete="postal-code" data-clarity-mask="true"
         maxLength={4} value={value || ""}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 4))} />
     </div>
@@ -333,10 +333,10 @@ function Capture({ client, config, src, onDone }) {
           <h1>{c.captureHeading}</h1>
           <p className="lede">{c.captureLede}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div><label className="lbl" htmlFor="cf">First name</label><input id="cf" className="field" autoComplete="given-name" value={f.first_name} onChange={set("first_name")} /></div>
-            <div><label className="lbl" htmlFor="cl">Last name</label><input id="cl" className="field" autoComplete="family-name" value={f.last_name} onChange={set("last_name")} /></div>
-            <div><label className="lbl" htmlFor="ce">Email</label><input id="ce" className="field" type="email" inputMode="email" autoComplete="email" value={f.email} onChange={set("email")} /></div>
-            <div><label className="lbl" htmlFor="cm">Mobile (optional)</label><input id="cm" className="field mono" inputMode="tel" autoComplete="tel" placeholder="04xxxxxxxx" value={f.mobile} onChange={set("mobile")} /></div>
+            <div><label className="lbl" htmlFor="cf">First name</label><input id="cf" className="field" autoComplete="given-name" value={f.first_name} onChange={set("first_name")} data-clarity-mask="true" /></div>
+            <div><label className="lbl" htmlFor="cl">Last name</label><input id="cl" className="field" autoComplete="family-name" value={f.last_name} onChange={set("last_name")} data-clarity-mask="true" /></div>
+            <div><label className="lbl" htmlFor="ce">Email</label><input id="ce" className="field" type="email" inputMode="email" autoComplete="email" value={f.email} onChange={set("email")} data-clarity-mask="true" /></div>
+            <div><label className="lbl" htmlFor="cm">Mobile (optional)</label><input id="cm" className="field mono" inputMode="tel" autoComplete="tel" placeholder="04xxxxxxxx" value={f.mobile} onChange={set("mobile")} data-clarity-mask="true" /></div>
           </div>
           {error && <div className="alert" role="alert">{error}</div>}
           <p className="privacy">{c.privacy}</p>

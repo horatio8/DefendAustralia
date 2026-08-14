@@ -171,8 +171,19 @@ async function probe() {
     const meta = require("./_lib/meta");
     if (!meta.configured()) throw new Error("META_PIXEL_ID or META_CAPI_TOKEN not set");
     // A PageView with a fixed id, so repeated checks do not inflate anything.
-    const r = await meta.send({ event_name: "PageView", event_id: "envcheck.probe", action_source: "system_generated", user: {} });
-    if (!r.sent) throw new Error("rejected: " + (r.reason || r.status));
+    //
+    // external_id is added because the probe previously carried nothing but a
+    // hashed country, which is the weakest matching parameter Meta accepts and
+    // one it has been known to reject on its own. That rules out one cause of a
+    // 400 without inventing a person: the id is a constant, because there is no
+    // person behind this event.
+    const r = await meta.send({
+      event_name: "PageView",
+      event_id: "envcheck.probe",
+      action_source: "system_generated",
+      user: { external_id: "env-check-probe" }
+    });
+    if (!r.sent) throw new Error("rejected " + (r.status || "") + ": " + (r.reason || "no detail"));
     return "accepted a test event";
   });
 

@@ -90,6 +90,22 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
+console.log("\n-- the Meta probe and its error reporting --");
+// The live probe reported "rejected: 400" and nothing else, which is not a
+// diagnosis. A revoked token and a malformed event look identical at that
+// resolution, and Meta says which it is in the response body.
+const probeUser = meta.userData({ external_id: "env-check-probe" });
+ok(!!probeUser.external_id, "the probe carries a real matching parameter");
+ok(probeUser.external_id[0] !== "env-check-probe", "external_id is hashed, never sent in the clear");
+ok(probeUser.external_id[0] === meta.hashed("env-check-probe"), "it hashes by the same rules as every other field");
+ok(Object.keys(meta.userData({})).length > 0, "an empty user object still produces a matching parameter");
+
+process.env.META_CAPI_TOKEN = "SECRET-TOKEN-VALUE-THAT-MUST-NOT-LEAK";
+const metaSrc = fs.readFileSync(ROOT + "/api/_lib/meta.js", "utf8");
+ok(/function metaError/.test(metaSrc), "there is a dedicated error reader");
+ok(/split\(token\)\.join/.test(metaSrc), "the token is scrubbed from anything rendered");
+delete process.env.META_CAPI_TOKEN;
+
 console.log("\n-- a test Stripe key on a live deployment --");
 // This was live for a while and nothing caught it. A test key authenticates,
 // retrieves the account and creates sessions, so every reachability check

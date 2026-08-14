@@ -51,6 +51,10 @@ function userData(p) {
   const u = {};
   const put = (key, val) => { if (val) u[key] = [val]; };
   put("em", hashed(p.email));
+  // Not a person: our own identifier for one, or a constant for an event that
+  // has no person behind it at all. Meta counts it as a matching parameter,
+  // which matters because an event carrying none of them is rejected outright.
+  put("external_id", hashed(p.external_id));
   put("ph", hashed(p.mobile || p.phone, "phone"));
   put("fn", hashed(p.first_name));
   put("ln", hashed(p.last_name));
@@ -103,13 +107,31 @@ async function send(events, opts) {
     const text = await r.text();
     if (!r.ok) {
       console.error("META_CAPI_FAIL", r.status, text.slice(0, 300));
-      return { sent: false, status: r.status };
+      // Meta says exactly what is wrong, and a bare status code does not. The
+      // difference between a revoked token and a malformed event is the whole
+      // diagnosis, and without this it was only ever in a log nobody reads.
+      return { sent: false, status: r.status, reason: metaError(text) };
     }
     return { sent: true, events: list.length };
   } catch (err) {
     console.error("META_CAPI_ERROR", err.message);
     return { sent: false, reason: String(err.message || err) };
   }
+}
+
+/* Meta's message, with the token scrubbed. The body does not normally echo the
+ * access token, but this string is rendered on /api/env-check, and that page
+ * has already been screenshotted and shared once. A surface that displays an
+ * upstream error should never be the thing that discloses the credential. */
+function metaError(text) {
+  let msg = String(text || "").slice(0, 400);
+  try {
+    const j = JSON.parse(text);
+    if (j && j.error) msg = [j.error.message, j.error.error_user_msg].filter(Boolean).join(" — ") || msg;
+  } catch (e) {}
+  const token = process.env.META_CAPI_TOKEN;
+  if (token && token.length > 8) msg = msg.split(token).join("[token]");
+  return msg.slice(0, 300);
 }
 
 // A stable id per logical conversion, so the browser and the server produce

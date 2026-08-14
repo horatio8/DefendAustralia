@@ -128,5 +128,26 @@ const rogue = uidWriters.filter((f) => !allowed.includes(f));
 ok(rogue.length === 0, "only the uid jobs write the CRM survey slot" +
   (rogue.length ? " (also: " + rogue.join(", ") + ")" : ""));
 
+// ── 11. No dead domain may appear anywhere in the code or config.
+// defendsacredground.au has no DNS record. It was once the default return URL
+// after a Stripe payment, so a donor was charged, sent to a browser error,
+// assumed it had failed and paid again. Any reappearance of it, in a fallback
+// or a link, costs money.
+const allSrc = files.concat(["js/app.jsx", "survey/survey.jsx", "content/site.json", "vercel.json", "404.html"]);
+const deadDomain = allSrc.filter((rel) => {
+  try { return /defendsacredground\.au/.test(fs.readFileSync(ROOT + "/" + rel, "utf8")); }
+  catch (e) { return false; }
+});
+ok(deadDomain.length === 0, "the dead .au domain appears nowhere" +
+  (deadDomain.length ? " (found in: " + deadDomain.join(", ") + ")" : ""));
+
+// Every URL handed to Stripe as a place to send a donor after payment must be
+// absolute https with a real host. A relative or malformed one is a dead end
+// reached only after the card has been charged.
+const checkoutSrc = fs.readFileSync(ROOT + "/api/checkout.js", "utf8");
+ok(/success_url:\s*site \+/.test(checkoutSrc), "the success URL is built from the derived site origin");
+ok(/usable\(site\)/.test(checkoutSrc), "checkout refuses to run when that origin is not a usable https URL");
+ok(!/process\.env\.SITE_URL \|\| "https:\/\/[a-z]+\.au"/.test(checkoutSrc), "no .au fallback remains in checkout");
+
 console.log("\n" + (bad ? bad + " FAILED" : "every contract holds"));
 process.exit(bad ? 1 : 0);

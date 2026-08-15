@@ -281,12 +281,9 @@ function html(groups, missingMust, missingShould, live) {
     "<p class=hint>Presence and length only. This page never shows a value.</p></main>";
 }
 
-/* Secret keys carry their mode in the prefix, so this needs no extra call:
- * sk_live_ is a full key, rk_live_ a restricted one. Anything else, including
- * an empty value or a publishable key pasted by mistake, is not live. */
-function liveStripeKey(k) {
-  return /^(sk|rk)_live_[A-Za-z0-9]/.test(String(k == null ? "" : k).trim());
-}
+/* One definition of "is this key live", shared with the lapse sweep, which has
+ * to answer the same question before it can trust a "no payment found". */
+const liveStripeKey = require("./_lib/stripe").liveKey;
 module.exports.liveStripeKey = liveStripeKey;
 
 function esc(s) {

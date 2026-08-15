@@ -90,6 +90,48 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
+console.log("\n-- nobody who has paid gets dunned --");
+// The Farmers Fightback failure: a donor taps an amount, goes back, taps
+// another, pays on the second session. The first session never turns paid and
+// looks exactly like an abandon, because it is one, by somebody who has
+// already given. Airtable alone cannot see that, because it only learns about
+// a gift through the webhook and the drain.
+const sweepSrc = fs.readFileSync(ROOT + "/api/lapse-sweep.js", "utf8");
+const stripeLib = require(ROOT + "/api/_lib/stripe.js");
+
+ok(/state\.unknown/.test(sweepSrc), "the sweep has a third state, not just done or not done");
+ok(/out\.held\+\+/.test(sweepSrc) && /continue;/.test(sweepSrc), "an unconfirmable row is held rather than sent");
+ok(!/async function finished\(/.test(sweepSrc), "the old two-state check is gone");
+
+// The fall-through bug: a donation abandon was closed if the person had ever
+// signed the petition, and nearly every donor signs first.
+const doneFn = sweepSrc.slice(sweepSrc.indexOf("async function alreadyDone"));
+const donationBranch = doneFn.slice(doneFn.indexOf('f.form === "Donation"'), doneFn.indexOf("const clauses = [\"LOWER({email})", doneFn.indexOf('f.form === "Donation"') + 400));
+ok(!/T\.signatures/.test(donationBranch), "a donation row is never settled by a signature");
+ok(/at\.T\.donations/.test(doneFn) && /stripe\.hasPaid/.test(doneFn), "a donation row checks donations and Stripe");
+ok(/LOOKBACK_MINUTES/.test(sweepSrc), "the check looks back before the row, not from it");
+ok(/\{mobile\}=/.test(doneFn), "identity is matched on mobile as well as email");
+
+// Absence of evidence in Stripe is only evidence of absence when the key can
+// actually see live payments.
+ok(typeof stripeLib.hasPaid === "function", "there is a direct paid check");
+const noKey = process.env.STRIPE_SECRET_KEY;
+delete process.env.STRIPE_SECRET_KEY;
+ok(stripeLib.liveKey() === false, "an absent key is not live");
+process.env.STRIPE_SECRET_KEY = "sk_test_abc123";
+ok(stripeLib.liveKey() === false, "a test key is not live");
+process.env.STRIPE_SECRET_KEY = "sk_live_abc123";
+ok(stripeLib.liveKey() === true, "a live key is live");
+if (noKey === undefined) delete process.env.STRIPE_SECRET_KEY; else process.env.STRIPE_SECRET_KEY = noKey;
+
+const stripeSrc = fs.readFileSync(ROOT + "/api/_lib/stripe.js", "utf8");
+ok(/unknown: true, why: "stripe key is test mode/.test(stripeSrc),
+   "a test key returns unknown, never 'not paid'");
+ok(/return \{ unknown: true, why: "session lookup failed/.test(stripeSrc),
+   "an unreadable session returns unknown, never 'not paid'");
+ok(/customers\.list/.test(stripeSrc) && /paymentIntents\.list/.test(stripeSrc),
+   "payment is searched by identity, not only by this one session");
+
 console.log("\n-- the lapse A/B split --");
 // This was the gap: assign() existed, was tested, and nothing called it. The
 // only place with a test name pinned variant to "a" for everybody, so the

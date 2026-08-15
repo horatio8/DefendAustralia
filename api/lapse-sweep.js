@@ -18,10 +18,14 @@ const h = require("./_lib/http");
 const at = require("./_lib/airtable");
 const nucleus = require("./_lib/nucleus");
 const ab = require("./_lib/ab");
+const stripe = require("./_lib/stripe");
 const sms = require("./_lib/sms");
 const smsQueue = require("./sms-queue");
 
 const WAIT_MINUTES = 30;
+// A payment can land either side of the moment an abandon is written, so the
+// completion check looks back before the row, not from it.
+const LOOKBACK_MINUTES = 15;
 const SLICE = 40;
 
 // One automation per form. The tag is what the CRM automation listens on, and
@@ -67,7 +71,7 @@ module.exports = async function handler(req, res) {
   if (!h.requireCron(req, res)) return;
   if (!at.configured()) return res.status(503).json({ error: "airtable not configured" });
 
-  const out = { checked: 0, completed: 0, enrolled: 0, texted: 0, failed: 0, enrol_failed: 0, arms: {} };
+  const out = { checked: 0, completed: 0, enrolled: 0, texted: 0, failed: 0, enrol_failed: 0, held: 0, arms: {} };
   const cutoff = new Date(Date.now() - WAIT_MINUTES * 60000).toISOString();
 
   let rows = [];
@@ -92,9 +96,18 @@ module.exports = async function handler(req, res) {
 
     try {
       // Re-checked now, not when the row was written.
-      if (await finished(f.form, email)) {
+      const state = await alreadyDone(f, email);
+      if (state.unknown) {
+        // Held, not sent. The row stays Waiting and the next sweep tries again,
+        // so this self-heals the moment the thing that was unreadable is fixed.
+        out.held++;
+        await at.update(at.T.lapse, row.id, { note: "held, could not confirm: " + state.why })
+          .catch(() => {});
+        continue;
+      }
+      if (state.done) {
         out.completed++;
-        await close(row, "Completed", "finished before the follow-up went out");
+        await close(row, "Completed", state.why);
         continue;
       }
 
@@ -172,13 +185,45 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({ ok: true, ...out });
 };
 
-async function finished(form, email) {
-  if (form === "Donation") {
-    const gift = await at.findOne(at.T.donations, "LOWER({email})='" + at.esc(email) + "'");
-    if (gift) return true;
+/* Did this person already do the thing we are about to chase them for?
+ *
+ * Three outcomes. "done" and "not done" are answers. "unknown" means we could
+ * not establish it, and the row is held rather than sent, because the cost of
+ * the two mistakes is not symmetric: not sending a reminder loses a signature,
+ * and sending a receipt-shaped nag to somebody who has already paid loses a
+ * donor. When in doubt, hold.
+ *
+ * Each form checks only its own evidence. This used to fall through, so a
+ * donation abandon by anyone who had ever signed the petition was closed as
+ * completed. Nearly every donor signs first, which is why donation follow-ups
+ * were almost never going out at all. */
+async function alreadyDone(f, email) {
+  const phone = h.e164(f.mobile || "");
+  // A payment can land either side of the moment the abandon was written, so
+  // look back a little before the row rather than from it.
+  const since = new Date(new Date(f.created_at || Date.now()).getTime() - LOOKBACK_MINUTES * 60000).toISOString();
+
+  if (f.form === "Donation") {
+    // Airtable first: it is the cheap check, and a hit here is conclusive.
+    const clauses = ["LOWER({email})='" + at.esc(email) + "'"];
+    if (phone) clauses.push("{mobile}='" + at.esc(phone) + "'");
+    const gift = await at.findOne(at.T.donations,
+      "AND(OR(" + clauses.join(",") + "),IS_AFTER({timestamp},'" + since + "'))");
+    if (gift) return { done: true, why: "donation row already recorded" };
+
+    // Then Stripe, which is the system of record for whether money moved.
+    // Airtable only learns about a gift through the webhook and the drain, so
+    // absence there is a lag as often as it is a fact.
+    const paid = await stripe.hasPaid({ sessionId: f.session_id, email, since });
+    if (paid.unknown) return { unknown: true, why: paid.why };
+    if (paid.paid) return { done: true, why: paid.why };
+    return { done: false, why: paid.why };
   }
-  const signed = await at.findOne(at.T.signatures, "LOWER({email})='" + at.esc(email) + "'");
-  return !!signed;
+
+  const clauses = ["LOWER({email})='" + at.esc(email) + "'"];
+  if (phone) clauses.push("{mobile}='" + at.esc(phone) + "'");
+  const signed = await at.findOne(at.T.signatures, "OR(" + clauses.join(",") + ")");
+  return signed ? { done: true, why: "signature already recorded" } : { done: false, why: "no signature found" };
 }
 
 function close(row, status, note, variant) {

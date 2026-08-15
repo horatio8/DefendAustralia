@@ -34,8 +34,8 @@ const SLICE = 40;
 // build, and nobody noticed until the reporting was needed.
 //
 // Two SMS bodies per form, because an arm that sends identical copy is not an
-// arm. A is the plain restatement, B names what the money or the signature is
-// for. Both stay inside one segment.
+// arm. A restates what was left unfinished and how quick it is to finish. B
+// leads with the reason it matters and asks. Both stay inside one segment.
 const AUTOMATIONS = {
   Petition: {
     test: "petition_lapse",
@@ -48,9 +48,13 @@ const AUTOMATIONS = {
   Donation: {
     test: "donation_lapse",
     tags: ["Defend Sacred Ground", "Lapsed donation"],
+    // Neither of these says anything about what did or did not reach the
+    // person's card. We know a checkout was not completed; we do not know
+    // what their bank did with the attempt, and a text that guesses wrong
+    // about somebody's money is the fastest way to lose them.
     sms: {
-      A: "Your donation to Defend Sacred Ground did not go through. You can finish it here: {link}",
-      B: "Your donation to Defend Sacred Ground did not complete, so nothing was charged. Only supporters fund this campaign: {link}"
+      A: "You came to give to Defend Sacred Ground and did not finish. It takes under a minute and every dollar counts: {link}",
+      B: "Only one Australian in ten knows this is happening. Every dollar changes that, and giving takes under a minute: {link}"
     }
   }
 };

@@ -149,6 +149,18 @@ ok(bodies.every((b) => {
   return a.slice(4) !== bb;
 }), "the two arms are not the same sentence");
 
+// A text that guesses about somebody's money is worse than no text. We know a
+// checkout was not completed; we do not know what the bank did with the
+// attempt, so neither donation arm may say anything about the card.
+const smsLines = lapseSrc.match(/^\s+[AB]: "(?:[^"\\]|\\.)*"/gm) || [];
+ok(smsLines.length === 4, "four SMS bodies in total (" + smsLines.length + ")");
+ok(!/nothing (has been |was )?charged|your card/i.test(lapseSrc),
+   "no lapse text makes a claim about what reached the card");
+// One segment is 160 GSM-7 characters. Two segments is two sends for the same
+// message, and the link is the longest part of it.
+ok(smsLines.every((l) => l.replace("{link}", "https://defendsacredground.com/fight").length - 8 <= 160),
+   "every lapse text stays inside one segment");
+
 // The split has to be even, or the winner is an artefact of the sample sizes.
 const armCount = { A: 0, B: 0 };
 for (let i = 0; i < 4000; i++) armCount[ab.assign("petition_lapse", "person" + i + "@example.com", ["A", "B"])]++;

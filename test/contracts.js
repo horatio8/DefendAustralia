@@ -158,7 +158,10 @@ ok(!/process\.env\.SITE_URL \|\| "https:\/\/[a-z]+\.au"/.test(checkoutSrc), "no 
 const siteRaw = fs.readFileSync(ROOT + "/content/site.json", "utf8");
 const imgPaths = new Set();
 (function walk(v) {
-  if (typeof v === "string") { if (/^\/assets\/[\w.-]+$/.test(v)) imgPaths.add(v); return; }
+  // Subfolders too: the CMS writes uploads to /assets/uploads/, so a hero
+  // chosen through /admin lands one level down and would otherwise skip the
+  // check entirely, which is the case most likely to be got wrong.
+  if (typeof v === "string") { if (/^\/assets\/[\w.\/-]+\.\w+$/.test(v)) imgPaths.add(v); return; }
   if (Array.isArray(v)) return v.forEach(walk);
   if (v && typeof v === "object") return Object.values(v).forEach(walk);
 })(JSON.parse(siteRaw));

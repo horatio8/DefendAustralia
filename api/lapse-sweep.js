@@ -41,7 +41,7 @@ const AUTOMATIONS = {
     test: "petition_lapse",
     tags: ["Defend Sacred Ground", "Lapsed petition"],
     sms: {
-      A: "You started signing the petition to defend the Australian War Memorial and did not finish. It takes ten seconds: {link}",
+      A: "We need your support. Adding your name to the petition to defend the Australian War Memorial takes ten seconds: {link}",
       B: "Your name is missing from the petition to keep activists out of the Australian War Memorial. Ten seconds to add it: {link}"
     }
   },

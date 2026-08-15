@@ -2081,13 +2081,37 @@ function TakeActionPage({ site }) {
     }
   ]);
 
+  // The photograph is config, not a literal, so it can be swapped without a
+  // code change. Absent, the hero falls back to the flat panel it was before:
+  // a missing image must not take the heading down with it.
+  const hero = t.heroImage;
+
   return (
     <div>
-      <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad p-hero" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+      <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
+        {hero && (
+          <React.Fragment>
+            <img
+              src={hero}
+              alt={t.heroAlt || ""}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: t.heroPosition || "center center", filter: "grayscale(1) brightness(1.3) contrast(1.05)" }}
+            />
+            {/* The scrim is what keeps the heading readable. Without it the
+              * contrast depends on whichever photograph is configured, and
+              * light sky behind white serif is unreadable.
+              *
+              * It is weighted to the left, where the text is, rather than laid
+              * flat across the whole band. A flat scrim heavy enough to carry
+              * the heading also erases the building, which is the reason for
+              * having a photograph at all. */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(20,32,54,.92) 0%,rgba(20,32,54,.78) 42%,rgba(20,32,54,.42) 100%)" }}></div>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(20,32,54,.55) 0%,rgba(20,32,54,.2) 45%,rgba(20,32,54,.35) 100%)" }}></div>
+          </React.Fragment>
+        )}
+        <div className="m-pad p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
           <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{t.kicker}</div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(38px,5.2vw,68px)", lineHeight: 1.02, margin: "22px 0 0", maxWidth: 900, fontWeight: 400 }}>{t.heading}</h1>
-          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{t.lede}</p>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(38px,5.2vw,68px)", lineHeight: 1.02, margin: "22px 0 0", maxWidth: 900, fontWeight: 400, textShadow: hero ? "0 2px 32px rgba(0,0,0,.55)" : "none" }}>{t.heading}</h1>
+          <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty", textShadow: hero ? "0 1px 18px rgba(0,0,0,.6)" : "none" }}>{t.lede}</p>
         </div>
       </div>
       <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 88px" }}>

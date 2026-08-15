@@ -733,6 +733,9 @@
     "kicker": "Take action",
     "heading": "10 seconds to make a difference",
     "lede": "Every action here is counted by somebody who can stop this.",
+    "heroImage": "/assets/hero-dome-dusk.jpg",
+    "heroAlt": "The dome of the Australian War Memorial at dusk",
+    "heroPosition": "center 55%",
     "notFoundHeading": "That petition is not here.",
     "notFoundLede": "It may have closed, or the link may have been mistyped. These are the ones that are open.",
     "notFoundCta": "See what is open"

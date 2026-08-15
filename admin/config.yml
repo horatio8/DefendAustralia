@@ -128,6 +128,28 @@ collections:
               - { label: "Panel note", name: panelNote, widget: text }
               - { label: Fineprint, name: fineprint, widget: text }
 
+      - name: takeaction
+        label: Take action page
+        file: content/site.json
+        fields:
+          - label: "Take action"
+            name: takeAction
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: Lede, name: lede, widget: text }
+              - label: "Hero image"
+                name: heroImage
+                widget: image
+                required: false
+                hint: "Wide and shallow works best, around 3:1. It is shown greyscale under a dark scrim. Leave empty for a plain colour hero."
+              - { label: "Hero image description", name: heroAlt, widget: string, required: false, hint: "Read aloud by screen readers, and shown if the image fails to load." }
+              - { label: "Hero focal point", name: heroPosition, widget: string, required: false, hint: "CSS object-position, e.g. \"center 55%\". Moves the visible part of the crop." }
+              - { label: "Unknown petition heading", name: notFoundHeading, widget: string }
+              - { label: "Unknown petition lede", name: notFoundLede, widget: text }
+              - { label: "Unknown petition button", name: notFoundCta, widget: string }
+
       - name: share
         label: Share page
         file: content/site.json

@@ -149,5 +149,29 @@ ok(/success_url:\s*site \+/.test(checkoutSrc), "the success URL is built from th
 ok(/usable\(site\)/.test(checkoutSrc), "checkout refuses to run when that origin is not a usable https URL");
 ok(!/process\.env\.SITE_URL \|\| "https:\/\/[a-z]+\.au"/.test(checkoutSrc), "no .au fallback remains in checkout");
 
+// ── 11. Every image path in the content file exists on disk.
+// A hero, a tile or a press-kit asset whose path is wrong does not throw. It
+// renders an empty band or a broken icon, and it does so only on the page
+// nobody happened to open after the edit. The CMS writes these paths, so a
+// typo here is a content mistake rather than a code one, and nothing else
+// would catch it.
+const siteRaw = fs.readFileSync(ROOT + "/content/site.json", "utf8");
+const imgPaths = new Set();
+(function walk(v) {
+  if (typeof v === "string") { if (/^\/assets\/[\w.-]+$/.test(v)) imgPaths.add(v); return; }
+  if (Array.isArray(v)) return v.forEach(walk);
+  if (v && typeof v === "object") return Object.values(v).forEach(walk);
+})(JSON.parse(siteRaw));
+const missingImgs = [...imgPaths].filter((p) => !fs.existsSync(ROOT + p));
+ok(missingImgs.length === 0, "every image path in site.json exists" +
+  (missingImgs.length ? " (missing: " + missingImgs.join(", ") + ")" : " (" + imgPaths.size + " paths)"));
+
+// ── 12. The take action hero degrades rather than disappearing.
+const appSrcTA = fs.readFileSync(ROOT + "/js/app.jsx", "utf8");
+const taFn = appSrcTA.slice(appSrcTA.indexOf("function TakeActionPage"), appSrcTA.indexOf("function MediaPage"));
+ok(/const hero = t\.heroImage/.test(taFn), "the take action hero image comes from config, not a literal");
+ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
+ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
+
 console.log("\n" + (bad ? bad + " FAILED" : "every contract holds"));
 process.exit(bad ? 1 : 0);

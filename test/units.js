@@ -156,6 +156,17 @@ const smsLines = lapseSrc.match(/^\s+[AB]: "(?:[^"\\]|\\.)*"/gm) || [];
 ok(smsLines.length === 4, "four SMS bodies in total (" + smsLines.length + ")");
 ok(!/nothing (has been |was )?charged|your card/i.test(lapseSrc),
    "no lapse text makes a claim about what reached the card");
+// And it asks rather than tells. "You did not finish" is a true sentence
+// that reads as an accusation, which is the wrong register for somebody
+// else's money.
+// Read the sent strings, not the file: the comment above them quotes the
+// phrasing it forbids, and a check that trips on its own explanation is a
+// check nobody will keep.
+const donationSms = ((lapseSrc.match(/Donation:[\s\S]*?\n  \}/) || [""])[0]
+  .match(/^\s+[AB]: "((?:[^"\\]|\\.)*)"/gm) || []).join(" ");
+ok(/Did you mean/.test(donationSms), "the donation texts were found to check (" + donationSms.length + " chars)");
+ok(!/did not finish|(was|were) not finished/i.test(donationSms),
+   "neither donation text tells the recipient what they failed to do");
 // One segment is 160 GSM-7 characters. Two segments is two sends for the same
 // message, and the link is the longest part of it.
 ok(smsLines.every((l) => l.replace("{link}", "https://defendsacredground.com/fight").length - 8 <= 160),

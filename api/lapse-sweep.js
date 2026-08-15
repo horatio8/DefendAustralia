@@ -52,8 +52,11 @@ const AUTOMATIONS = {
     // person's card. We know a checkout was not completed; we do not know
     // what their bank did with the attempt, and a text that guesses wrong
     // about somebody's money is the fastest way to lose them.
+    //
+    // Both ask rather than tell. "You did not finish" is true and reads as
+    // an accusation, which is the wrong register for a stranger's money.
     sms: {
-      A: "You came to give to Defend Sacred Ground and did not finish. It takes under a minute and every dollar counts: {link}",
+      A: "Did you mean to finish your donation to Defend Sacred Ground? It takes under a minute and every dollar counts: {link}",
       B: "Only one Australian in ten knows this is happening. Every dollar changes that, and giving takes under a minute: {link}"
     }
   }

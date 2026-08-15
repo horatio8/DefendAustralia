@@ -96,6 +96,14 @@ open**), `META_LEAD_FORM_MAP` (JSON, `{"<form id>":"<petition slug>"}`),
 `META_TEST_EVENT_CODE` (routes events to Meta's test view; **remove before a
 real flight**).
 
+**Campaign Nucleus automations.** `CN_AUTOMATION_PETITION_LAPSE_A` / `_B` and
+`CN_AUTOMATION_DONATION_LAPSE_A` / `_B` are the two arms of each lapse test.
+Nucleus has no create-automation endpoint, so these ids are copied out of the
+Nucleus interface by hand; the API can only drop people into an automation that
+already exists. Setting the unsuffixed `CN_AUTOMATION_PETITION_LAPSE` instead
+runs the flow with no split. With none of them set the sweep still tags the
+profile, so nobody is lost, but there is no A/B.
+
 **SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID`, `CELLCAST_API_BASE`,
 `CELLCAST_WEBHOOK_SECRET` (without it the inbound endpoint accepts anything).
 

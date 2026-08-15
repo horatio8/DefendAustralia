@@ -77,6 +77,17 @@ const GROUPS = [
     ]
   },
   {
+    name: "Campaign Nucleus automations (lapse follow-up)",
+    vars: [
+      { key: "CN_AUTOMATION_PETITION_LAPSE_A", need: "should", why: "Nucleus automation id for arm A of the unfinished-petition follow-up. Automations cannot be created by API, so this id is copied from the Nucleus interface." },
+      { key: "CN_AUTOMATION_PETITION_LAPSE_B", need: "should", why: "Arm B of the same test. Without both arms the split cannot happen and everyone gets arm A." },
+      { key: "CN_AUTOMATION_DONATION_LAPSE_A", need: "should", why: "Arm A of the abandoned-donation follow-up." },
+      { key: "CN_AUTOMATION_DONATION_LAPSE_B", need: "should", why: "Arm B of the abandoned-donation follow-up." },
+      { key: "CN_AUTOMATION_PETITION_LAPSE", need: "optional", why: "Single id used for every arm, for running the flow without a split. Overridden by the _A and _B pair." },
+      { key: "CN_AUTOMATION_DONATION_LAPSE", need: "optional", why: "The same, for donations." }
+    ]
+  },
+  {
     name: "Webinars and events",
     vars: [
       { key: "WEBINAR_TOKEN_SECRET", need: "should", why: "Signs briefing magic links. Unset means no private briefing can be opened at all." },

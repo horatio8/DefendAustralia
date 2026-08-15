@@ -131,4 +131,38 @@ async function upsertProfile(p) {
   return (res && res.data && res.data.id) || null;
 }
 
-module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile };
+/* Drop a person into a Campaign Nucleus automation by id.
+ *
+ * POST /automations/{id}/profiles. The id has to come from the CN interface,
+ * because automations are the one part of Nucleus with no create endpoint:
+ * they can be driven by API and only built by hand. That asymmetry is why the
+ * ids are env vars and why the caller has to survive them being absent.
+ *
+ * Enrolling by id rather than by tag is what makes an A/B arm possible. A tag
+ * fires whichever single automation is listening for it, so two arms need two
+ * automations and a choice between them at send time. */
+async function automationAdd(automationId, p) {
+  const id = String(automationId || "").trim();
+  if (!id) return { ok: false, skipped: true, reason: "no automation id configured" };
+  const body = {
+    email: p.email || undefined,
+    first_name: p.first_name || undefined,
+    last_name: p.last_name || undefined,
+    mobile: p.mobile || undefined,
+    zip: p.postcode || undefined,
+    country: "AU"
+  };
+  if (p.tags && p.tags.length) body.tags = p.tags;
+  Object.keys(body).forEach((k) => body[k] === undefined && delete body[k]);
+  try {
+    const res = await call("POST", "/automations/" + encodeURIComponent(id) + "/profiles", body);
+    return { ok: true, id: (res && res.data && res.data.id) || null };
+  } catch (err) {
+    // Never throws to the caller. A follow-up that fails to enrol must not
+    // take down the sweep for everyone behind it in the queue.
+    console.error("CN_AUTOMATION_ADD_FAIL", id, err.message);
+    return { ok: false, error: String(err.message || err).slice(0, 200) };
+  }
+}
+
+module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile, automationAdd };

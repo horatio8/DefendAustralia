@@ -90,6 +90,49 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
+console.log("\n-- the lapse A/B split --");
+// This was the gap: assign() existed, was tested, and nothing called it. The
+// only place with a test name pinned variant to "a" for everybody, so the
+// column was populated and the split never happened.
+const lapseSrc = fs.readFileSync(ROOT + "/api/lapse-sweep.js", "utf8");
+ok(/ab\.assign\(plan\.test, email, \["A", "B"\]\)/.test(lapseSrc), "the sweep assigns an arm per person");
+ok(!/variant: "a"/.test(lapseSrc), "nothing is pinned to a single arm any more");
+ok(/test: plan\.test, variant/.test(lapseSrc), "the SMS send carries the same arm as the CRM enrolment");
+
+// Two arms must send different words, or the test measures nothing.
+const bodies = lapseSrc.match(/A: "(?:[^"\\]|\\.)*",\s*\n\s*B: "(?:[^"\\]|\\.)*"/g) || [];
+ok(bodies.length === 2, "both forms carry two SMS bodies (" + bodies.length + ")");
+ok(bodies.every((b) => {
+  const [a, bb] = b.split(/\n\s*B: /);
+  return a.slice(4) !== bb;
+}), "the two arms are not the same sentence");
+
+// The split has to be even, or the winner is an artefact of the sample sizes.
+const armCount = { A: 0, B: 0 };
+for (let i = 0; i < 4000; i++) armCount[ab.assign("petition_lapse", "person" + i + "@example.com", ["A", "B"])]++;
+ok(Math.min(armCount.A, armCount.B) > 1850, "the arms split evenly: " + JSON.stringify(armCount));
+ok(ab.assign("petition_lapse", "a@b.com", ["A", "B"]) === ab.assign("petition_lapse", "a@b.com", ["A", "B"]),
+   "a re-sweep cannot move somebody between arms");
+// Independence, asserted over a sample rather than one lucky email: if the
+// two tests agreed on everybody they would be one test wearing two names, and
+// a person's donation arm would be predictable from their petition arm.
+let agreements = 0;
+for (let i = 0; i < 1000; i++) {
+  const id = "person" + i + "@example.com";
+  if (ab.assign("petition_lapse", id, ["A", "B"]) === ab.assign("donation_lapse", id, ["A", "B"])) agreements++;
+}
+ok(agreements > 400 && agreements < 600, "the two tests assign independently (" + agreements + "/1000 agree)");
+
+// Automations are driven by id, and an absent id must not lose the person.
+ok(/CN_AUTOMATION_DONATION_LAPSE/.test(lapseSrc) && /CN_AUTOMATION_PETITION_LAPSE/.test(lapseSrc),
+   "both lapse automations are read from env");
+ok(/\[key \+ "_" \+ variant\] \|\| process\.env\[key\] \|\| ""/.test(lapseSrc),
+   "an arm id falls back to the single id, then to none");
+const nucSrc = fs.readFileSync(ROOT + "/api/_lib/nucleus.js", "utf8");
+ok(/automations\/" \+ encodeURIComponent\(id\) \+ "\/profiles/.test(nucSrc), "enrolment posts to the automation route");
+ok(/skipped: true, reason: "no automation id/.test(nucSrc), "a missing id is reported, not thrown");
+ok(/upsertProfile\(\{/.test(lapseSrc), "an unconfigured deployment still tags the profile");
+
 console.log("\n-- the Meta probe and its error reporting --");
 // The live probe reported "rejected: 400" and nothing else, which is not a
 // diagnosis. A revoked token and a malformed event look identical at that

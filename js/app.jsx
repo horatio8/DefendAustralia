@@ -1789,7 +1789,10 @@ function AboutPage({ site }) {
       </div>
       <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.directorsKicker}</div>
-        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 32 }}>
+        {/* Fits however many directors are configured. Hardcoding three left a
+          * hole on the right the moment one was removed, and a board is the
+          * kind of thing that changes without anyone remembering the grid. */}
+        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 32 }}>
           {a.directors.map((dr, i) => (
             <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, padding: 32, background: C.cream }}>
               {/* Photo slot: swap the placeholder for an <img> when portraits are supplied. */}

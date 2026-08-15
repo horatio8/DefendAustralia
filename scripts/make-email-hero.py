@@ -1,10 +1,11 @@
 # Build the email hero: the petition page's photograph, treated the same way,
-# with the campaign mark centred on a light plate.
+# with the campaign mark centred on it.
 #
-# The plate is not decoration. The logo is navy and dark red on transparent and
-# it was drawn for a white ground, so laid straight onto a greyscale trench
-# photograph it disappears. The site already solves this the same way: the mark
-# gets its own light bar wherever the ground behind it is dark.
+# The mark sits directly on the photograph, with nothing behind it. That works
+# only because the logo PNG carries a faint light outline of its own, which is
+# what separates navy and dark red lettering from a dark greyscale ground. Take
+# a version of the logo without that outline and this stops reading, and the
+# answer then is a lighter photograph rather than a panel behind the mark.
 from PIL import Image, ImageEnhance
 import os
 
@@ -17,9 +18,7 @@ OUT = os.path.join(SRC, "email-hero.jpg")
 # forty per cent of the photograph is empty sky, and cropping it away is what
 # puts the marching column in the frame instead of a grey field.
 W, H = 1200, 420          # displays at 600x210, doubled for retina
-PLATE_W, PLATE_H = 620, 200
-LOGO_W = 540
-CREAM = (250, 246, 239)   # campaign cream
+LOGO_W = 620
 NAVY = (15, 27, 51)       # campaign deepest, for the scrim
 
 # ---- 1. the photograph, cropped the way the petition page crops it ----------
@@ -48,19 +47,14 @@ scrim = Image.new("RGB", (W, H), NAVY)
 mask = Image.new("L", (1, H))
 for y in range(H):
     t = y / (H - 1)
-    mask.putpixel((0, y), int(255 * (0.24 + 0.22 * t)))   # 24% at top, 46% at base
+    mask.putpixel((0, y), int(255 * (0.30 + 0.22 * t)))   # 30% at top, 52% at base
 photo = Image.composite(scrim, photo, mask.resize((W, H)))
 
-# ---- 3. the plate and the mark ---------------------------------------------
+# ---- 3. the mark, straight onto the photograph -----------------------------
 logo = Image.open(os.path.join(SRC, "logo-horizontal.png")).convert("RGBA")
 lw, lh = logo.size
 logo = logo.resize((LOGO_W, int(lh * LOGO_W / lw)), Image.LANCZOS)
-
-plate = Image.new("RGB", (PLATE_W, PLATE_H), CREAM)
-plate.paste(logo, ((PLATE_W - logo.width) // 2, (PLATE_H - logo.height) // 2), logo)
-
-px, py = (W - PLATE_W) // 2, (H - PLATE_H) // 2
-photo.paste(plate, (px, py))
+photo.paste(logo, ((W - logo.width) // 2, (H - logo.height) // 2), logo)
 
 photo.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)
 print("wrote", OUT, photo.size, str(os.path.getsize(OUT) // 1024) + "KB")

@@ -2151,7 +2151,9 @@ function MediaPage({ site }) {
 
       <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 0" }}>
         <h2 style={{ fontFamily: SERIF, fontSize: 34, color: C.navy, margin: "0 0 24px", fontWeight: 400 }}>{m.contactsHeading}</h2>
-        <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+        {/* auto-fit stretches a lone card the full 1280, which reads as a
+            layout fault rather than a single point of contact. */}
+        <div className="m-col" style={{ display: "grid", gridTemplateColumns: m.contacts.length === 1 ? "minmax(300px,540px)" : "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
           {m.contacts.map((c, i) => (
             <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, background: C.cream, padding: 28 }}>
               <div style={{ fontSize: 17, fontWeight: 600, color: C.navy }}>{c.name}</div>

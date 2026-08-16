@@ -739,19 +739,13 @@
     "kicker": "For journalists",
     "heading": "Press kit.",
     "lede": "Everything a newsroom needs to cover this, in one place. Directors are available for comment and answer the same day.",
-    "contactsHeading": "Who to call",
+    "contactsHeading": "Who to contact",
     "contacts": [
       {
-        "name": "Media enquiries",
-        "role": "First point of contact",
-        "email": "media@defendsacredground.com",
-        "note": "Mark your subject line with your deadline and a director will come back to you the same day."
-      },
-      {
-        "name": "Campaign office",
-        "role": "Background and documents",
+        "name": "All enquiries",
+        "role": "Media, documents and background",
         "email": "hello@defendsacredground.com",
-        "note": "For the underlying documents, the timeline, and anything on the record."
+        "note": "Mark your subject line with your deadline and a director will come back to you the same day. The same address reaches us for the underlying documents, the timeline, and anything on the record."
       }
     ],
     "assetsHeading": "Logos and images",

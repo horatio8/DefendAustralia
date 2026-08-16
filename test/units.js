@@ -198,6 +198,21 @@ ok(/automations\/" \+ encodeURIComponent\(id\) \+ "\/profiles/.test(nucSrc), "en
 ok(/skipped: true, reason: "no automation id/.test(nucSrc), "a missing id is reported, not thrown");
 ok(/upsertProfile\(\{/.test(lapseSrc), "an unconfigured deployment still tags the profile");
 
+console.log("\n-- the donation ask to a new signatory --");
+// The failure worth guarding is not "the email did not send". It is one
+// person being enrolled twice because they pressed Sign twice, and getting
+// the same appeal in duplicate a minute apart.
+const signSrc = fs.readFileSync(ROOT + "/api/petition-signup.js", "utf8");
+ok(/CN_AUTOMATION_SIGNATURE_ASK/.test(signSrc), "the donation ask is enrolled by automation id from env");
+ok(/if \(!duplicate && nucleus\.configured\(\) && process\.env\.CN_AUTOMATION_SIGNATURE_ASK\)/.test(signSrc),
+   "a repeat signature is not enrolled a second time");
+// It must never cost a signature. The enrolment sits after the record is
+// written and is wrapped, so a Nucleus outage cannot fail the request.
+ok(signSrc.indexOf("CN_AUTOMATION_SIGNATURE_ASK") > signSrc.indexOf("queue.enqueue"),
+   "enrolment happens after the signature is stored");
+ok(/catch \(err\) \{ console\.error\("CN_SIGNATURE_ASK_FAIL"/.test(signSrc),
+   "a failed enrolment is logged, never thrown");
+
 console.log("\n-- the Meta probe and its error reporting --");
 // The live probe reported "rejected: 400" and nothing else, which is not a
 // diagnosis. A revoked token and a malformed event look identical at that

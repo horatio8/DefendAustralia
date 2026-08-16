@@ -77,8 +77,9 @@ const GROUPS = [
     ]
   },
   {
-    name: "Campaign Nucleus automations (lapse follow-up)",
+    name: "Campaign Nucleus automations",
     vars: [
+      { key: "CN_AUTOMATION_SIGNATURE_ASK", need: "should", why: "Nucleus automation id for the donation ask sent to a new signatory. Unset means a signature is recorded and nothing is ever asked of that person again." },
       { key: "CN_AUTOMATION_PETITION_LAPSE_A", need: "should", why: "Nucleus automation id for arm A of the unfinished-petition follow-up. Automations cannot be created by API, so this id is copied from the Nucleus interface." },
       { key: "CN_AUTOMATION_PETITION_LAPSE_B", need: "should", why: "Arm B of the same test. Without both arms the split cannot happen and everyone gets arm A." },
       { key: "CN_AUTOMATION_DONATION_LAPSE_A", need: "should", why: "Arm A of the abandoned-donation follow-up." },

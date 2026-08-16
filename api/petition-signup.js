@@ -102,6 +102,27 @@ module.exports = async function handler(req, res) {
     } catch (err) { console.error("META_LEAD_FAIL", err.message); }
   }
 
+  // 4. The donation ask, to somebody who has just signed.
+  //
+  // Only for a new signature. A duplicate is a second press of the same
+  // button or a return visit, and the person was enrolled the first time;
+  // enrolling again is how one supporter comes to receive the same appeal
+  // twice in a minute.
+  //
+  // Enrolment is by automation id from the environment, so an unset variable
+  // means this does nothing at all rather than failing the signature. The id
+  // has to be copied out of the Nucleus interface: automations cannot be
+  // created or listed over the API.
+  if (!duplicate && nucleus.configured() && process.env.CN_AUTOMATION_SIGNATURE_ASK) {
+    try {
+      await nucleus.automationAdd(process.env.CN_AUTOMATION_SIGNATURE_ASK, {
+        email: p.email, first_name: p.first_name, last_name: p.last_name,
+        mobile: p.mobile, postcode: p.postcode,
+        tags: ["Defend Sacred Ground", "Signed petition"]
+      });
+    } catch (err) { console.error("CN_SIGNATURE_ASK_FAIL", err.message); }
+  }
+
   return res.status(200).json({
     ok: true, stored,
     referral_code: p.referral_code,

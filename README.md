@@ -104,6 +104,12 @@ already exists. Setting the unsuffixed `CN_AUTOMATION_PETITION_LAPSE` instead
 runs the flow with no split. With none of them set the sweep still tags the
 profile, so nobody is lost, but there is no A/B.
 
+`CN_AUTOMATION_SIGNATURE_ASK` is the automation a new signatory is enrolled
+into by `/api/petition-signup`, which sends the donation ask. It fires only on
+a first signature: a duplicate is a second press of the button, and enrolling
+again is how one person receives the same appeal twice in a minute. Unset, the
+signature is recorded and nothing further is asked of that person.
+
 **SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID`, `CELLCAST_API_BASE`,
 `CELLCAST_WEBHOOK_SECRET` (without it the inbound endpoint accepts anything).
 

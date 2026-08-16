@@ -101,6 +101,8 @@ collections:
               - { label: Lede, name: lede, widget: text }
               - { label: "Recipient name", name: recipientName, widget: string }
               - { label: "Recipient shown on the page", name: recipientDisplay, widget: string }
+              - { label: "Recipient photo", name: recipientPhoto, widget: image, required: false, hint: "Head and shoulders. Shown beside the name in the goes-to block. Leave blank for no photo." }
+              - { label: "Recipient photo alt text", name: recipientPhotoAlt, widget: string, required: false }
               - label: "Recipient email address"
                 name: toEmail
                 widget: string

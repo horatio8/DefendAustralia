@@ -1133,8 +1133,19 @@ function MinisterPage({ site }) {
             </div>
             <div style={{ marginTop: 28, borderTop: "1px solid " + C.line, paddingTop: 20 }}>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 12 }}>Goes to</div>
-              <div style={{ fontSize: 15, color: C.ink, fontWeight: 600 }}>{m.recipientName}</div>
-              <div style={{ fontSize: 13, color: C.mut, marginTop: 4 }}>{m.recipientDisplay}</div>
+              {/* The portrait is optional and the block reads correctly without
+                  it, so an unset or missing photo costs nothing. A letter is
+                  easier to write to a face than to a job title. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                {m.recipientPhoto && (
+                  <img src={m.recipientPhoto} alt={m.recipientPhotoAlt || m.recipientName} width="56" height="56"
+                       style={{ width: 56, height: 56, objectFit: "cover", objectPosition: "50% 22%", border: "1px solid " + C.line, flex: "none", background: C.creamMid }} />
+                )}
+                <div>
+                  <div style={{ fontSize: 15, color: C.ink, fontWeight: 600 }}>{m.recipientName}</div>
+                  <div style={{ fontSize: 13, color: C.mut, marginTop: 4 }}>{m.recipientDisplay}</div>
+                </div>
+              </div>
               <div style={{ fontSize: 13, color: C.faint, marginTop: 10, lineHeight: 1.55 }}>{m.goesToNote}</div>
             </div>
           </div>

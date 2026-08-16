@@ -173,6 +173,11 @@ ok(missingImgs.length === 0, "every image path in site.json exists" +
 const appSrcTA = fs.readFileSync(ROOT + "/js/app.jsx", "utf8");
 const taFn = appSrcTA.slice(appSrcTA.indexOf("function TakeActionPage"), appSrcTA.indexOf("function MediaPage"));
 ok(/const hero = t\.heroImage/.test(taFn), "the take action hero image comes from config, not a literal");
+
+// The minister's portrait is optional. An unset photo must leave the goes-to
+// block reading correctly rather than rendering a broken image icon next to
+// the name of the person we are asking people to write to.
+ok(/\{m\.recipientPhoto && \(/.test(appSrcTA), "the minister portrait renders only when one is configured");
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 

@@ -674,7 +674,7 @@ function refCodeFor(email) {
 }
 
 /* Petition sign form card (home + petition pages). */
-function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote }) {
+function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNote, submitLabel }) {
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "", postcode: "" });
   const [hp, setHp] = useState("");
   const [error, setError] = useState("");
@@ -794,7 +794,7 @@ function SignCard({ site, count, setCount, idp, formHeading, formBody, privacyNo
             <Field id={idp + "mb"} label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
           </div>
           <Notice>{error}</Notice>
-          <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Adding your name…" : "Sign the petition"}</button>
+          <button onClick={submit} disabled={sending} className={sending ? undefined : "hov-red"} style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: sending ? .72 : 1, cursor: sending ? "default" : "pointer" })}>{sending ? "Adding your name…" : (submitLabel || "Add my signature ›")}</button>
           <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.6 }}>{privacyNote}</div>
         </div>
     </div>
@@ -845,7 +845,7 @@ function HomePage({ site }) {
       <div id="home-sign" style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <AskBlock site={site} ask={h.ask} showHeading />
-          <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} />
+          <SignCard site={site} count={count} setCount={setCount} idp="h" formHeading={h.ask.formHeading} privacyNote={site.petition.privacyNote} submitLabel={site.petition.submitLabel} />
         </div>
       </div>
 
@@ -977,7 +977,7 @@ function PetitionPage({ site }) {
       <div style={{ background: "#FFFFFF", borderBottom: "1px solid " + C.line }}>
         <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "start" }}>
           <AskBlock site={site} ask={p} />
-          <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading={p.formHeading} privacyNote={p.privacyNote} />
+          <SignCard site={site} count={count} setCount={setCount} idp="p" formHeading={p.formHeading} privacyNote={p.privacyNote} submitLabel={p.submitLabel || site.petition.submitLabel} />
         </div>
       </div>
 

@@ -404,9 +404,9 @@
     "kicker": "Direct action · the Minister",
     "heading": "Contact the one person who can pause this.",
     "lede": "It sends from your own address, in your own words. Ministers count individual letters. They discount petitions.",
-    "recipientName": "The Hon. Minister for Veterans' Affairs",
-    "recipientDisplay": "minister@…gov.au",
-    "toEmail": "",
+    "recipientName": "The Hon. Matt Keogh MP, Minister for Veterans' Affairs",
+    "recipientDisplay": "Matt.Keogh.MP@aph.gov.au",
+    "toEmail": "Matt.Keogh.MP@aph.gov.au",
     "correspondenceEmail": "correspondence@defendsacredground.com",
     "goesToNote": "Copied to the shadow minister and to correspondence@defendsacredground.com",
     "variations": [

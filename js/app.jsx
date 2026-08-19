@@ -1107,9 +1107,16 @@ function MinisterPage({ site }) {
             <h1 style={{ fontFamily: SERIF, fontSize: 54, lineHeight: 1.03, margin: "20px 0 18px", fontWeight: 400 }}>{m.heading}</h1>
             <p style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: "0 0 28px", maxWidth: 520 }}>{m.lede}</p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 340 }}>
-            <img src="/assets/minister-portrait.jpg" alt="The Minister for Veterans' Affairs" style={{ display: "block", width: "100%", maxWidth: 400, height: "auto", WebkitMaskImage: "radial-gradient(ellipse 68% 82% at 50% 45%, black 52%, transparent 92%)", maskImage: "radial-gradient(ellipse 68% 82% at 50% 45%, black 52%, transparent 92%)" }} />
-          </div>
+          {/* The portrait is whoever config says it is, and nothing when it
+              says nobody. It used to be a hardcoded file that shipped with the
+              design handoff: stock footage of a man who is not the minister,
+              captioned as the minister, on the page that asks people to write
+              to him. An empty slot is better than the wrong face. */}
+          {m.portrait && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 340 }}>
+              <img src={m.portrait} alt={m.portraitAlt || m.recipientName} style={{ display: "block", width: "100%", maxWidth: 400, height: "auto", WebkitMaskImage: "radial-gradient(ellipse 68% 82% at 50% 45%, black 52%, transparent 92%)", maskImage: "radial-gradient(ellipse 68% 82% at 50% 45%, black 52%, transparent 92%)" }} />
+            </div>
+          )}
         </div>
         <div style={{ borderTop: "1px solid rgba(176,141,87,.3)" }}>
           <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "20px 28px", display: "flex", flexWrap: "wrap", gap: "20px 48px", fontFamily: MONO, fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", color: C.steel }}>
@@ -1137,8 +1144,8 @@ function MinisterPage({ site }) {
                   it, so an unset or missing photo costs nothing. A letter is
                   easier to write to a face than to a job title. */}
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                {m.recipientPhoto && (
-                  <img src={m.recipientPhoto} alt={m.recipientPhotoAlt || m.recipientName} width="56" height="56"
+                {m.portrait && (
+                  <img src={m.portrait} alt={m.portraitAlt || m.recipientName} width="56" height="56"
                        style={{ width: 56, height: 56, objectFit: "cover", objectPosition: "50% 22%", border: "1px solid " + C.line, flex: "none", background: C.creamMid }} />
                 )}
                 <div>

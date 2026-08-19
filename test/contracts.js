@@ -174,10 +174,15 @@ const appSrcTA = fs.readFileSync(ROOT + "/js/app.jsx", "utf8");
 const taFn = appSrcTA.slice(appSrcTA.indexOf("function TakeActionPage"), appSrcTA.indexOf("function MediaPage"));
 ok(/const hero = t\.heroImage/.test(taFn), "the take action hero image comes from config, not a literal");
 
-// The minister's portrait is optional. An unset photo must leave the goes-to
-// block reading correctly rather than rendering a broken image icon next to
-// the name of the person we are asking people to write to.
-ok(/\{m\.recipientPhoto && \(/.test(appSrcTA), "the minister portrait renders only when one is configured");
+// The minister's portrait is optional and comes from config. It was a literal
+// path to a stock photograph of a man who is not the minister, captioned as
+// the minister, on the page that asks supporters to write to him. Nothing may
+// hardcode a face again, and an unset photo must render nothing at all rather
+// than a broken image beside that person's name.
+ok(!/minister-portrait/.test(appSrcTA), "no hardcoded portrait file in the minister page");
+ok((appSrcTA.match(/\{m\.portrait && \(/g) || []).length === 2,
+   "both the large portrait and the small one render only when a photo is configured");
+ok(!fs.existsSync(ROOT + "/assets/minister-portrait.jpg"), "the stock placeholder portrait is gone from the repo");
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 

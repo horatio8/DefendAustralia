@@ -183,6 +183,16 @@ ok(!/minister-portrait/.test(appSrcTA), "no hardcoded portrait file in the minis
 ok((appSrcTA.match(/\{m\.portrait && \(/g) || []).length === 2,
    "both the large portrait and the small one render only when a photo is configured");
 ok(!fs.existsSync(ROOT + "/assets/minister-portrait.jpg"), "the stock placeholder portrait is gone from the repo");
+
+// A director's photo slot could only ever draw a dashed circle, so a supplied
+// portrait had nowhere to go. The placeholder is now the fallback, not the
+// only state, and the section is in the CMS so a photo can be added without
+// a deploy.
+ok(/dr\.photo \? \(/.test(appSrcTA), "a director's portrait renders when one is configured");
+ok(/aria-label=\{dr\.photoPlaceholder\}/.test(appSrcTA), "the dashed placeholder survives as the fallback");
+const cms = fs.readFileSync(ROOT + "/admin/config.yml", "utf8");
+ok(/name: about/.test(cms) && /name: photo, widget: image/.test(cms),
+   "the About page and its director photos are editable at /admin");
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 

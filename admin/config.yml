@@ -88,6 +88,33 @@ collections:
               - { label: "Sign button", name: submitLabel, widget: string, required: false, hint: "Wording on the button under the form. Leave blank for 'Add my signature ›'." }
               - { label: "Privacy note", name: privacyNote, widget: text }
 
+      - name: about
+        label: About us page
+        file: content/site.json
+        fields:
+          - label: About
+            name: about
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: Lede, name: lede, widget: text }
+              - { label: "Directors kicker", name: directorsKicker, widget: string }
+              - label: Directors
+                name: directors
+                widget: list
+                fields:
+                  - { label: Name, name: name, widget: string }
+                  - { label: Role, name: role, widget: string }
+                  # The photo is what makes this section worth exposing: the
+                  # slot on the page could only ever draw a dashed circle, so
+                  # there was no way to supply a face without a code change.
+                  - { label: Photo, name: photo, widget: image, required: false, hint: "Head and shoulders, square. Shown as a 120px circle. Leave blank to keep the dashed placeholder." }
+                  - { label: "Photo alt text", name: photoAlt, widget: string, required: false }
+                  - { label: "Placeholder caption", name: photoPlaceholder, widget: string, required: false, hint: "Only shown while there is no photo." }
+                  - { label: Bio, name: bio, widget: text }
+              - { label: "Entity note", name: entityNote, widget: text, required: false, hint: "Small print above the Stand with us panel. Appears on this page only." }
+
       - name: minister
         label: Minister page
         file: content/site.json

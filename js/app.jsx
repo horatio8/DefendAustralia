@@ -1813,10 +1813,18 @@ function AboutPage({ site }) {
         <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 32 }}>
           {a.directors.map((dr, i) => (
             <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, padding: 32, background: C.cream }}>
-              {/* Photo slot: swap the placeholder for an <img> when portraits are supplied. */}
-              <div role="img" aria-label={dr.photoPlaceholder} style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{dr.photoPlaceholder}</span>
-              </div>
+              {/* The portrait when there is one, the dashed circle when there
+                  is not. The placeholder was the only thing this slot could
+                  ever render, so a supplied photograph had nowhere to go. */}
+              {dr.photo ? (
+                <img src={dr.photo} alt={dr.photoAlt || dr.name}
+                     width="120" height="120"
+                     style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", objectFit: "cover", objectPosition: "50% 30%", display: "block", background: "#f2f1ef", border: "1px solid " + C.tan, boxSizing: "border-box" }} />
+              ) : (
+                <div role="img" aria-label={dr.photoPlaceholder} style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{dr.photoPlaceholder}</span>
+                </div>
+              )}
               <h3 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 6px", lineHeight: 1.1, fontWeight: 400 }}>{dr.name}</h3>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{dr.role}</div>
               <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{dr.bio}</p>

@@ -193,6 +193,21 @@ ok(/aria-label=\{dr\.photoPlaceholder\}/.test(appSrcTA), "the dashed placeholder
 const cms = fs.readFileSync(ROOT + "/admin/config.yml", "utf8");
 ok(/name: about/.test(cms) && /name: photo, widget: image/.test(cms),
    "the About page and its director photos are editable at /admin");
+
+// Every og:image has to be a file that exists. There is no build step to catch
+// a typo here, the tag is only read by a scraper, and the failure shows up as
+// a share card with a blank rectangle on somebody else's timeline. Nobody sees
+// it from our side, which is exactly why it needs a test.
+const badOg = [];
+for (const rel of shells) {
+  const html = fs.readFileSync(ROOT + "/" + rel, "utf8");
+  for (const m of html.matchAll(/og:image" content="([^"]+)"/g)) {
+    const p = m[1].replace(/^https?:\/\/[^/]+/, "");
+    if (!fs.existsSync(ROOT + p)) badOg.push(rel + " -> " + p);
+  }
+}
+ok(badOg.length === 0, "every og:image points at a file that exists" +
+   (badOg.length ? " (broken: " + badOg.join(", ") + ")" : " (" + shells.length + " shells)"));
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 

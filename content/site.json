@@ -638,7 +638,9 @@
         "name": "Peter O'Brien",
         "role": "Founder",
         "photoPlaceholder": "Peter's photo",
-        "bio": "Army veteran and writer. Peter drafted the campaign's statement and plan, and leads its dealings with parliamentarians of every party who believe the Memorial should stay above politics."
+        "bio": "Army veteran and writer. Peter drafted the campaign's statement and plan, and leads its dealings with parliamentarians of every party who believe the Memorial should stay above politics.",
+        "photo": "/assets/director-peter-obrien.jpg",
+        "photoAlt": "Peter O'Brien"
       }
     ],
     "principles": [

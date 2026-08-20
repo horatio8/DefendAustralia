@@ -208,6 +208,18 @@ for (const rel of shells) {
 }
 ok(badOg.length === 0, "every og:image points at a file that exists" +
    (badOg.length ? " (broken: " + badOg.join(", ") + ")" : " (" + shells.length + " shells)"));
+
+// The apex 308s to www. A scraper handed the apex follows the hop for the HTML
+// but Facebook's image fetcher is far less tolerant of a redirect on og:image,
+// which is exactly how a share picture fails to update while the page itself
+// looks correct. Every absolute self-reference names the host that serves.
+const apex = [];
+for (const rel of shells) {
+  const html = fs.readFileSync(ROOT + "/" + rel, "utf8");
+  if (/https:\/\/defendsacredground\.com/.test(html)) apex.push(rel);
+}
+ok(apex.length === 0, "no shell points at the apex, which redirects" +
+   (apex.length ? " (found in: " + apex.join(", ") + ")" : ""));
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 

@@ -1834,6 +1834,15 @@ function AboutPage({ site }) {
             </div>
           ))}
         </div>
+        {/* The entity disclosure, and only here. It is a statement about what
+            the company is, which belongs on the page about the company.
+            Repeating it beside every donate button would read as a warning
+            rather than a disclosure. Inside this container rather than its
+            own band, so it sits under the principles instead of floating in
+            the gap above the call to action. */}
+        {a.entityNote && (
+          <p style={{ fontSize: 12, lineHeight: 1.6, color: C.faint, margin: "28px 0 0", maxWidth: 760 }}>{a.entityNote}</p>
+        )}
       </div>
       <CtaBandDark title="Stand with us." />
     </div>

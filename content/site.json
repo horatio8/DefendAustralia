@@ -630,11 +630,13 @@
         "name": "Roger Karge",
         "role": "Founding director · Operations",
         "photoPlaceholder": "Roger's photo",
-        "bio": "Researcher and editor best known for the Dark Emu Exposed project, which tests popular claims about Australian history against the primary record. Roger runs the campaign's operations and keeps its claims anchored to evidence."
+        "bio": "Researcher and editor best known for the Dark Emu Exposed project, which tests popular claims about Australian history against the primary record. Roger runs the campaign's operations and keeps its claims anchored to evidence.",
+        "photo": "/assets/director-roger-karge.jpg",
+        "photoAlt": "Roger Karge"
       },
       {
         "name": "Peter O'Brien",
-        "role": "Founding director · Campaign statement",
+        "role": "Founder",
         "photoPlaceholder": "Peter's photo",
         "bio": "Army veteran and writer. Peter drafted the campaign's statement and plan, and leads its dealings with parliamentarians of every party who believe the Memorial should stay above politics."
       }
@@ -648,7 +650,7 @@
       {
         "numeral": "II",
         "title": "Funded by supporters",
-        "body": "The campaign is funded by donations from individual Australians."
+        "body": "Defending Australia operates its campaigns on a commercial basis and welcomes donations from supporters."
       },
       {
         "numeral": "III",
@@ -656,7 +658,13 @@
         "body": "Set up for one purpose: to defend Australia and its values, starting with the shrine that holds its war dead above politics."
       }
     ],
-    "entityNote": "Defend Sacred Ground is a for profit tax paying Pty Ltd entity and not a charity fundraiser. Donations are non tax deductible."
+    "entityNote": [
+      "Defending Australia Pty Ltd (ABN 21 701 117 160) is a tax-paying, commercial entity with limited liability and limited by shares.",
+      "It is the registered owner of the business name Defend Sacred Ground.",
+      "Contact: Roger Karge (Director)",
+      "Postal: PO Box 330, Lara, 3212, Vic",
+      "email: defending1901@gmail.com"
+    ]
   },
   "volunteer": {
     "kicker": "Volunteer",

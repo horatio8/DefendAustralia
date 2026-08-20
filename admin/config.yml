@@ -113,7 +113,12 @@ collections:
                   - { label: "Photo alt text", name: photoAlt, widget: string, required: false }
                   - { label: "Placeholder caption", name: photoPlaceholder, widget: string, required: false, hint: "Only shown while there is no photo." }
                   - { label: Bio, name: bio, widget: text }
-              - { label: "Entity note", name: entityNote, widget: text, required: false, hint: "Small print above the Stand with us panel. Appears on this page only." }
+              - label: "Entity statement"
+                name: entityNote
+                widget: list
+                required: false
+                field: { label: Line, name: line, widget: string }
+                hint: "Small print above the Stand with us panel, one line each. Appears on this page only. An email address on a line becomes a link automatically."
 
       - name: minister
         label: Minister page

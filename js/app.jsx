@@ -1794,6 +1794,23 @@ function IssuePage({ site }) {
   );
 }
 
+/* The entity statement is a list of lines: a company description, an ABN, a
+ * contact, a postal address and an email. Run together as one paragraph, the
+ * line somebody came looking for is the one they cannot find. Accepts the old
+ * single string too, so an edit through the CMS that flattens it still renders. */
+function entityLines(v) {
+  if (!v) return [];
+  return (Array.isArray(v) ? v : [v]).map((s) => String(s).trim()).filter(Boolean);
+}
+
+/* Make the address clickable without turning the line into markup in the CMS. */
+function linkEmail(line) {
+  const m = String(line).match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  if (!m) return line;
+  const [before, after] = line.split(m[0]);
+  return <>{before}<a href={"mailto:" + m[0]} className="hov-copy-red" style={{ color: "inherit", textDecoration: "underline" }}>{m[0]}</a>{after}</>;
+}
+
 function AboutPage({ site }) {
   const a = site.about;
   return (
@@ -1848,8 +1865,12 @@ function AboutPage({ site }) {
             rather than a disclosure. Inside this container rather than its
             own band, so it sits under the principles instead of floating in
             the gap above the call to action. */}
-        {a.entityNote && (
-          <p style={{ fontSize: 12, lineHeight: 1.6, color: C.faint, margin: "28px 0 0", maxWidth: 760 }}>{a.entityNote}</p>
+        {entityLines(a.entityNote).length > 0 && (
+          <div style={{ margin: "28px 0 0", maxWidth: 760, display: "flex", flexDirection: "column", gap: 4 }}>
+            {entityLines(a.entityNote).map((l, i) => (
+              <p key={i} style={{ fontSize: 12, lineHeight: 1.6, color: C.faint, margin: 0 }}>{linkEmail(l)}</p>
+            ))}
+          </div>
         )}
       </div>
       <CtaBandDark title="Stand with us." />

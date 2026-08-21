@@ -814,13 +814,18 @@ function HomePage({ site }) {
       {/* hero: bright editorial */}
       <div style={{ position: "relative", background: "#FFFFFF" }}>
         <div style={{ position: "relative" }}>
-          <img className="desk-only" src="/assets/hero-courtyard-wide.jpg" alt="The commemorative courtyard of the Australian War Memorial" style={{ width: "100%" }} />
-          <img className="mob-only" src="/assets/hero-courtyard-portrait.jpg" alt="The commemorative courtyard of the Australian War Memorial" style={{ width: "100%" }} />
+          <img className="desk-only" src="/assets/hero-hijacked-wide.jpg" alt="The Australian War Memorial courtyard hung with Aboriginal flags" style={{ width: "100%" }} />
+          <img className="mob-only" src="/assets/hero-hijacked-portrait.jpg" alt="The Australian War Memorial courtyard hung with Aboriginal flags" style={{ width: "100%" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom,rgba(255,255,255,0) 45%,rgba(255,255,255,.55) 72%,rgba(255,255,255,.92) 90%,#FFFFFF 100%)" }}></div>
           <div style={{ position: "absolute", top: 26, left: 0, right: 0 }}>
             <div className="m-pad" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 44, height: 1, background: C.gold, flex: "none" }}></div>
-              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.navy }}>{h.hero.kicker}</div>
+              {/* Navy on whatever the photograph puts behind it. On the old
+                  hero that was pale sky at every width; on this one the phone
+                  crop puts the dome here, and the kicker disappeared into the
+                  stonework. A white halo rather than a colour change, so it
+                  still reads as navy where the sky is behind it. */}
+              <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.navy, textShadow: "0 0 10px rgba(255,255,255,.95), 0 0 4px rgba(255,255,255,1)" }}>{h.hero.kicker}</div>
             </div>
           </div>
         </div>
@@ -957,8 +962,12 @@ function PetitionPage({ site }) {
     <div>
       {/* hero panel */}
       <div style={{ position: "relative", background: C.deepest, overflow: "hidden", minHeight: 320, display: "flex", alignItems: "flex-end" }}>
-        <img src="/assets/ww1-troops.jpg" alt="Australian soldiers of the First AIF on the Western Front" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", filter: "grayscale(1)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.92) 0%,rgba(10,18,34,.5) 60%,rgba(10,18,34,.25) 100%)" }}></div>
+        <img src="/assets/hero-hijacked-wide.jpg" alt="The Australian War Memorial courtyard hung with Aboriginal flags" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 32%" }} />
+        {/* Lighter than it was. The scrim was tuned for a greyscale trench
+            photograph, where crushing it cost nothing. Here the red, black and
+            yellow are the argument, and at .92 the arches went to mud. The
+            headline sits in the top half, where the gradient is faintest. */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,18,34,.82) 0%,rgba(10,18,34,.42) 60%,rgba(10,18,34,.2) 100%)" }}></div>
         <div className="m-pad m-col p-hero" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "110px 28px 44px", width: "100%", boxSizing: "border-box", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, letterSpacing: ".22em", textTransform: "uppercase", color: "#FFFFFF", textShadow: "0 1px 12px rgba(0,0,0,.7)", background: "rgba(158,27,36,.85)", display: "inline-block", padding: "7px 12px" }}>{p.badge}</div>

@@ -19,6 +19,11 @@
   "nav": {
     "links": [
       {
+        "label": "Home",
+        "href": "/",
+        "page": "home"
+      },
+      {
         "label": "Take action",
         "children": [
           {
@@ -466,7 +471,7 @@
         "1500": "https://donate.stripe.com/aFa8wOcFueE9ayw8gx3Ru0b"
       }
     },
-    "panelNote": "Secure checkout by Stripe. Card, PayPal, Apple Pay and Google Pay accepted.",
+    "panelNote": "Secure checkout by Stripe. Card, Apple Pay and Google Pay accepted.",
     "signedHeading": "Activists have hijacked our most sacred memorial. Only you can help fight back.",
     "signedBody": "They did it in secret, and secrecy is how it survives. Every dollar goes to helping Australians learn about this and stand up against it.",
     "signedSkip": "Not now, help me share it instead",

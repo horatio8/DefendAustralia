@@ -273,5 +273,28 @@ ok(vercel.rewrites.some((r) => r.source === "/take-action/:slug"), "an unknown p
 const dashes = (JSON.stringify(site).match(/[—–]/g) || []).length;
 ok(dashes === 0, "no em or en dashes in the copy" + (dashes ? " (found " + dashes + ")" : ""));
 
+console.log("\n-- Meta lead ads, the shapes that actually arrive --");
+// Every case below is taken from the live export of the connected form:
+// 468 leads, Meta's own field prefixes intact, one planted test lead, a
+// country code with no number behind it, and a sixth of the names in lower
+// case. The webhook is the near-real-time path for these, so it has to
+// survive them without a human reading the rows first.
+const leadSrc = fs.readFileSync(ROOT + "/api/meta-lead-webhook.js", "utf8");
+ok(/replace\(\/\^\(\?:l\|f\|ag\|as\|c\|p\|z\):\//.test(leadSrc),
+   "Meta's field prefixes are stripped on the way in");
+ok(/function isTestLead/.test(leadSrc) && /if \(isTestLead\(lead\.fields\)\) return;/.test(leadSrc),
+   "Meta's planted test lead never becomes a signature");
+ok(leadSrc.indexOf("isTestLead(lead.fields)") < leadSrc.indexOf("at.normEmail(lead.fields.email)"),
+   "the test lead is dropped before anything is written");
+ok(/first_name: titleName\(/.test(leadSrc), "names are title cased, not taken as typed");
+
+// A country code with no subscriber number reached the queue as a mobile.
+ok(h.e164("+61") === "", "a bare country code is not a phone number");
+ok(h.e164("p:+61".replace(/^p:/, "")) === "", "the same once the p: prefix is off");
+ok(h.e164("+61417860529") === "+61417860529", "a real mobile still passes");
+ok(h.e164("0421014682") === "+61421014682", "the one domestic-format number is normalised");
+ok(h.e164("+61893002949") === "+61893002949", "landlines pass rather than being dropped");
+ok(h.e164("") === "" && h.e164(null) === "", "an empty phone stays empty");
+
 console.log("\n" + (fails.length ? fails.length + " FAILED" : "all checks passed"));
 process.exit(fails.length ? 1 : 0);

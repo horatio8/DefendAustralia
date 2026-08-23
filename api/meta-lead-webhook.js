@@ -103,8 +103,8 @@ function normaliseLeads(b) {
     platform: str(b.platform), partner: str(b.partner || b.source),
     created_time: str(b.created_time),
     fields: {
-      first_name: str(f.first_name || f["First name"] || f.firstname),
-      last_name: str(f.last_name || f["Last name"] || f.lastname),
+      first_name: titleName(f.first_name || f["First name"] || f.firstname),
+      last_name: titleName(f.last_name || f["Last name"] || f.lastname),
       email: str(f.email || f["Email"]),
       phone: str(f.phone_number || f.phone || f["Phone number"] || f.mobile),
       postcode: str(f.post_code || f.postcode || f.zip || f["Post code"])
@@ -121,13 +121,14 @@ function fieldsFrom(fieldData) {
     o[String(f.name || "").toLowerCase()] = (f.values || [])[0] || "";
   }
   return {
-    first_name: o.first_name || "", last_name: o.last_name || "",
-    email: o.email || "", phone: o.phone_number || o.phone || "",
-    postcode: o.post_code || o.zip || ""
+    first_name: titleName(o.first_name), last_name: titleName(o.last_name),
+    email: str(o.email), phone: str(o.phone_number || o.phone),
+    postcode: str(o.post_code || o.zip)
   };
 }
 
 async function ingest(lead) {
+  if (isTestLead(lead.fields)) return;
   const email = at.normEmail(lead.fields.email);
   if (!email) throw new Error("lead has no email");
 
@@ -171,4 +172,37 @@ async function ingest(lead) {
   await queue.enqueue("meta_lead", p, { entryId: cnEntryId, error: cnError });
 }
 
-function str(v) { return v == null ? "" : String(v).trim(); }
+/* Meta prefixes its own exported values so a spreadsheet cannot mangle them:
+ * l: on the lead id, f: on the form, ag:/as:/c: on the ad ids, p: on the
+ * phone and z: on the postcode. The native webhook sends clean values, but a
+ * relay built on Meta's Google Sheets destination forwards the prefixes
+ * intact, and "z:5127" written into a postcode field is a silent corruption
+ * nobody notices until somebody tries to sort by state. Stripped on the way
+ * in, because the cost is nothing and the failure is invisible. */
+function str(v) {
+  return String(v == null ? "" : v).trim().replace(/^(?:l|f|ag|as|c|p|z):/, "").trim();
+}
+
+/* Meta writes one test lead into every destination the moment a form is first
+ * connected: dummy field values wrapped in angle brackets and test@meta.com.
+ * It is not a person, and left alone it becomes a signature on a public
+ * counter and an enrolment in the donation ask. */
+function isTestLead(fields) {
+  const email = String(fields.email || "").toLowerCase();
+  if (email === "test@meta.com" || email.endsWith("@meta.com")) return true;
+  return Object.values(fields).some((v) => /^<test lead:/i.test(String(v || "")));
+}
+
+/* Lead ad forms take whatever the keyboard gives them, so a sixth of the
+ * first names arrive entirely lower case. Titled per word rather than per
+ * string, since a real given name here can be two words. Anything already
+ * carrying an interior capital is left alone: McArthur and O'Brien are how
+ * people spell their own names and this must not "fix" them. */
+function titleName(s) {
+  const v = str(s);
+  if (!v) return "";
+  // Shouted names get fixed; mixed case is left exactly as given.
+  const shouted = v === v.toUpperCase() && /[A-Z]/.test(v);
+  if (!shouted && /[A-Z]/.test(v.slice(1))) return v;
+  return v.toLowerCase().replace(/(^|[\s'’-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+}

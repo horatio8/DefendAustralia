@@ -77,6 +77,11 @@ const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(e || "").trim
 function e164(mobile) {
   const digits = String(mobile || "").replace(/[^\d+]/g, "");
   if (!digits) return "";
+  // A country code on its own is not a phone number. Meta lead exports carry
+  // a "+61" with no subscriber number where somebody abandoned the field, and
+  // passed through it becomes a contactable-looking mobile that can never be
+  // texted. Seven digits is below any real Australian number.
+  if (digits.replace(/\D/g, "").length < 7) return "";
   if (digits.startsWith("+")) return digits.slice(0, 16);
   if (digits.startsWith("614")) return "+" + digits;
   if (digits.startsWith("04")) return "+61" + digits.slice(1);

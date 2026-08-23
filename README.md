@@ -90,11 +90,24 @@ is set and wrong from one that is right.
 `CN_HOSTED_PETITION_URL` (fallback form offered when a signature cannot be
 stored).
 
-**Meta lead ads.** `META_LEAD_VERIFY_TOKEN` (Meta's subscription handshake),
-`META_LEAD_SECRET` (shared secret on the relay; **without it the lead webhook is
-open**), `META_LEAD_FORM_MAP` (JSON, `{"<form id>":"<petition slug>"}`),
+**Meta lead ads.** `META_LEAD_VERIFY_TOKEN` (Meta's subscription handshake on
+`GET /api/meta-lead-webhook`; must match what is typed into Meta when the
+webhook is subscribed), `META_LEAD_SECRET` (shared secret checked against the
+`x-lead-token` header, for relays such as Zapier or Make that cannot sign the
+way Meta's own webhook does; **without it the lead webhook is open**),
+`META_LEAD_FORM_MAP` (JSON, `{"<form id>":"<petition slug>"}`, e.g.
+`{"1047890598229609":"defend-sacred-ground"}`; an unmapped form still lands
+under `DEFAULT_PETITION_SLUG` rather than being dropped),
 `META_TEST_EVENT_CODE` (routes events to Meta's test view; **remove before a
 real flight**).
+
+Leads are deduped on Meta's `leadgen_id`, so a redelivery cannot become a
+second signature, and the endpoint always answers 200 because Meta retries hard
+on anything else. Meta's own field prefixes (`l:` `f:` `ag:` `as:` `c:` `p:`
+`z:`) are stripped on the way in, since a relay built on Meta's Google Sheets
+destination forwards them intact and `z:5127` in a postcode field is a silent
+corruption. The test lead Meta plants when a form is first connected is dropped
+rather than becoming a signature.
 
 **Campaign Nucleus automations.** `CN_AUTOMATION_PETITION_LAPSE_A` / `_B` and
 `CN_AUTOMATION_DONATION_LAPSE_A` / `_B` are the two arms of each lapse test.

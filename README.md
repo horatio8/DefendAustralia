@@ -107,7 +107,28 @@ on anything else. Meta's own field prefixes (`l:` `f:` `ag:` `as:` `c:` `p:`
 `z:`) are stripped on the way in, since a relay built on Meta's Google Sheets
 destination forwards them intact and `z:5127` in a postcode field is a silent
 corruption. The test lead Meta plants when a form is first connected is dropped
-rather than becoming a signature.
+rather than becoming a signature. Meta's form builder offers "full name" as a
+single question and it is the default, so a lead may arrive with no first or
+last name at all; the whole name is split on the last space, which keeps
+two-word given names intact.
+
+Two routes reach this endpoint and it accepts either, so the choice is
+operational rather than a code change:
+
+1. **Meta's own webhook.** In the app's Webhooks product, subscribe the `page`
+   object to the `leadgen` field with the callback URL below and
+   `META_LEAD_VERIFY_TOKEN` as the verify token, then subscribe the Page. No
+   third party sits in the path and the lead arrives in about a second. This
+   is the route to prefer.
+2. **A relay.** Zapier's *Facebook Lead Ads → Webhooks by Zapier (POST)*
+   with `x-lead-token` set to `META_LEAD_SECRET`, body as JSON, fields mapped
+   flat. Slower (Zapier polls on the plan's interval) and it costs a task per
+   lead, but it needs no app review and it is how the sister campaign is
+   wired, so it is the fallback when app review is the blocker.
+
+Both shapes are normalised by the same function and both dedupe on
+`leadgen_id`, so running them side by side during a cutover cannot double a
+signature.
 
 **Campaign Nucleus automations.** `CN_AUTOMATION_PETITION_LAPSE_A` / `_B` and
 `CN_AUTOMATION_DONATION_LAPSE_A` / `_B` are the two arms of each lapse test.

@@ -297,7 +297,42 @@ ok(/function isTestLead/.test(leadSrc) && /if \(isTestLead\(lead\.fields\)\) ret
    "Meta's planted test lead never becomes a signature");
 ok(leadSrc.indexOf("isTestLead(lead.fields)") < leadSrc.indexOf("at.normEmail(lead.fields.email)"),
    "the test lead is dropped before anything is written");
-ok(/first_name: titleName\(/.test(leadSrc), "names are title cased, not taken as typed");
+ok(/function titleName/.test(leadSrc) && /titleName\(first\)/.test(leadSrc),
+   "names are title cased, not taken as typed");
+
+// The name helpers are internal to the handler, so they are lifted out and
+// run for real rather than asserted against by regex. A regex would have
+// happily passed the whole time full_name was being ignored.
+const nameFns = (function () {
+  const wanted = ["str", "titleName", "splitName"];
+  const src = wanted
+    .map((n) => leadSrc.slice(leadSrc.indexOf("function " + n + "(")).match(/^[\s\S]*?\n\}/)[0])
+    .join("\n");
+  return new Function(src + "\nreturn { str, titleName, splitName };")();
+})();
+
+// Meta's form builder defaults to one "full name" box. Half the forms in the
+// account are built that way, and before this those leads arrived nameless.
+const full = (s) => nameFns.splitName("", "", s);
+ok(full("jane citizen").first === "Jane" && full("jane citizen").last === "Citizen",
+   "a single full-name box is split into first and last");
+ok(full("Mary Anne Fitzgerald").first === "Mary Anne",
+   "a two-word given name stays with the given name, not the surname");
+ok(full("Mary Anne Fitzgerald").last === "Fitzgerald", "and the surname is the last word");
+ok(full("Sue").first === "Sue" && full("Sue").last === "",
+   "one word is a given name, not an invented surname");
+ok(full("PETER O'BRIEN").first === "Peter" && full("PETER O'BRIEN").last === "O'Brien",
+   "a shouted full name is fixed and the interior capital is kept");
+ok(full("").first === "" && full("").last === "", "no name given stays empty");
+
+// first/last still win when the form actually collected them.
+const both = nameFns.splitName("jane", "citizen", "Someone Else");
+ok(both.first === "Jane" && both.last === "Citizen",
+   "an explicit first and last name beats the full-name box");
+ok(nameFns.splitName("", "Citizen", "").last === "Citizen",
+   "a surname on its own is not overwritten");
+ok(nameFns.titleName("McArthur") === "McArthur" && nameFns.titleName("O'Brien") === "O'Brien",
+   "names people already spell with an interior capital are left alone");
 
 // A country code with no subscriber number reached the queue as a mobile.
 ok(h.e164("+61") === "", "a bare country code is not a phone number");

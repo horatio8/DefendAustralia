@@ -94,6 +94,11 @@ function normaliseLeads(b) {
 
   // Flat relay payload.
   const f = b.fields && typeof b.fields === "object" ? b.fields : b;
+  const named = splitName(
+    f.first_name || f["First name"] || f.firstname,
+    f.last_name || f["Last name"] || f.lastname,
+    f.full_name || f["Full name"] || f.fullname || f.name
+  );
   out.push({
     leadgen_id: str(b.leadgen_id || b.lead_id || b.id),
     form_id: str(b.form_id), form_name: str(b.form_name),
@@ -103,8 +108,8 @@ function normaliseLeads(b) {
     platform: str(b.platform), partner: str(b.partner || b.source),
     created_time: str(b.created_time),
     fields: {
-      first_name: titleName(f.first_name || f["First name"] || f.firstname),
-      last_name: titleName(f.last_name || f["Last name"] || f.lastname),
+      first_name: named.first,
+      last_name: named.last,
       email: str(f.email || f["Email"]),
       phone: str(f.phone_number || f.phone || f["Phone number"] || f.mobile),
       postcode: str(f.post_code || f.postcode || f.zip || f["Post code"])
@@ -120,8 +125,9 @@ function fieldsFrom(fieldData) {
   for (const f of fieldData || []) {
     o[String(f.name || "").toLowerCase()] = (f.values || [])[0] || "";
   }
+  const named = splitName(o.first_name, o.last_name, o.full_name);
   return {
-    first_name: titleName(o.first_name), last_name: titleName(o.last_name),
+    first_name: named.first, last_name: named.last,
     email: str(o.email), phone: str(o.phone_number || o.phone),
     postcode: str(o.post_code || o.zip)
   };
@@ -191,6 +197,28 @@ function isTestLead(fields) {
   const email = String(fields.email || "").toLowerCase();
   if (email === "test@meta.com" || email.endsWith("@meta.com")) return true;
   return Object.values(fields).some((v) => /^<test lead:/i.test(String(v || "")));
+}
+
+/* Meta's lead form builder offers "full name" as one question and it is the
+ * default, so a form built in a hurry collects one box and the first/last
+ * fields this endpoint was written around never arrive at all. Those leads
+ * used to land with no name whatever, which turns every later email into
+ * "Dear ," and makes the row useless for a phone bank.
+ *
+ * Split on the last space rather than the first: Australian given names run
+ * to two words far more often than surnames do, so "Mary Anne Fitzgerald"
+ * is Mary Anne Fitzgerald and not Mary Anne-Fitzgerald. A single word is a
+ * given name with no surname, which is what a supporter who typed only
+ * "Sue" actually gave us — inventing a surname from it would be worse. */
+function splitName(first, last, full) {
+  const f = titleName(first), l = titleName(last);
+  if (f || l) return { first: f, last: l };
+
+  const whole = titleName(full);
+  if (!whole) return { first: "", last: "" };
+  const cut = whole.lastIndexOf(" ");
+  if (cut < 0) return { first: whole, last: "" };
+  return { first: whole.slice(0, cut).trim(), last: whole.slice(cut + 1).trim() };
 }
 
 /* Lead ad forms take whatever the keyboard gives them, so a sixth of the

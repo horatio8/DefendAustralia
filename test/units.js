@@ -273,6 +273,17 @@ ok(vercel.rewrites.some((r) => r.source === "/take-action/:slug"), "an unknown p
 const dashes = (JSON.stringify(site).match(/[—–]/g) || []).length;
 ok(dashes === 0, "no em or en dashes in the copy" + (dashes ? " (found " + dashes + ")" : ""));
 
+// Thirty rows sat Waiting in the live queue from 14 August, retried every five
+// minutes, because a partial capture fires on blur and stores whatever was in
+// the box: "bmmarfleet", "jones.anthonyb@ gmail.com". Nucleus rejects those
+// 422 for ever, so the row never closed and the retry never stopped.
+ok(/if \(!h\.validEmail\(email\)\)/.test(lapseSrc), "the sweep drops an email that can never be valid");
+ok(/"Dropped", "not a usable email address"/.test(lapseSrc), "and says why it dropped it");
+ok(!h.validEmail("bmmarfleet") && !h.validEmail("jones.anthonyb@ gmail.com"),
+   "the real stuck values are recognised as unusable");
+ok(h.validEmail("x+y@z.co.uk") && h.validEmail("garry.swain@gmail.com"),
+   "ordinary addresses still pass");
+
 console.log("\n-- Meta lead ads, the shapes that actually arrive --");
 // Every case below is taken from the live export of the connected form:
 // 468 leads, Meta's own field prefixes intact, one planted test lead, a

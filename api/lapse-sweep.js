@@ -100,6 +100,15 @@ module.exports = async function handler(req, res) {
       await close(row, "Dropped", "no email to follow up").catch(() => {});
       continue;
     }
+    // A partial capture fires on blur, so it catches whatever was in the box
+    // at the time: "bmmarfleet", "jones.anthonyb@ gmail.com". Those are not
+    // addresses and never will be. Left Waiting they were retried every five
+    // minutes for ever, each pass spending a Nucleus call that can only ever
+    // come back 422, and the queue slowly filled with rows nobody could act on.
+    if (!h.validEmail(email)) {
+      await close(row, "Dropped", "not a usable email address").catch(() => {});
+      continue;
+    }
 
     try {
       // Re-checked now, not when the row was written.

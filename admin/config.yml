@@ -13,7 +13,11 @@
 backend:
   name: github
   repo: horatio8/DefendAustralia
-  branch: main
+  # The branch the CMS reads and writes has to be one that exists. There is no
+  # main on this remote: production deploys from the branch below, so that is
+  # what /admin has to target. Pointed at a missing branch, Decap loads to an
+  # error and every "editable at /admin" claim in here is false.
+  branch: claude/defend-sacred-ground-site-crk0lk
   # A campaign has volunteers, not GitHub accounts. The OAuth proxy lets them
   # sign in with a shared campaign login rather than each needing repo access.
   base_url: https://api.netlify.com

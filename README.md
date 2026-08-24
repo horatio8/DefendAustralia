@@ -98,8 +98,9 @@ way Meta's own webhook does; **without it the lead webhook is open**),
 `META_LEAD_FORM_MAP` (JSON, `{"<form id>":"<petition slug>"}`, e.g.
 `{"1047890598229609":"defend-sacred-ground"}`; an unmapped form still lands
 under `DEFAULT_PETITION_SLUG` rather than being dropped),
-`META_TEST_EVENT_CODE` (routes events to Meta's test view; **remove before a
-real flight**).
+`META_LEAD_PAGE_TOKEN` (page access token with `leads_retrieval`, for the
+puller below), `META_TEST_EVENT_CODE` (routes events to Meta's test view;
+**remove before a real flight**).
 
 Leads are deduped on Meta's `leadgen_id`, so a redelivery cannot become a
 second signature, and the endpoint always answers 200 because Meta retries hard
@@ -129,6 +130,27 @@ operational rather than a code change:
 Both shapes are normalised by the same function and both dedupe on
 `leadgen_id`, so running them side by side during a cutover cannot double a
 signature.
+
+**Pulling, not just receiving.** `GET /api/meta-lead-pull` fetches leads from
+the Graph API and runs them through the webhook's own `ingest`, so the two
+paths cannot drift. It exists because a webhook only ever delivers what
+happened after it was subscribed — Meta will not redeliver a `leadgen` event
+that predates the subscription, so every lead collected before the wiring was
+done is unreachable by push alone. It is also the safety net for a dropped
+delivery, and runs hourly over a two-day window for exactly that.
+
+Dry run unless `?apply=1`, like the Stripe backfill. `?days=` widens the
+window (max 400) and `?form=` limits it to one form. Behind admin basic auth
+or Vercel's cron header, and deliberately not behind `requireCron`, which
+treats an unset `CRON_SECRET` as open — fine for the idempotent sweeps, wrong
+for an endpoint that reads names, emails and phone numbers out of Meta. The
+dry-run examples report whether a lead has an email, never the address.
+
+Needs `META_LEAD_PAGE_TOKEN`: a page access token carrying `leads_retrieval`,
+which is a different grant from the CAPI token. It falls back to
+`META_CAPI_TOKEN` because on a small campaign they are often the same system
+user, but the fallback usually lacks the permission and the Graph error says
+so plainly.
 
 **Campaign Nucleus automations.** `CN_AUTOMATION_PETITION_LAPSE_A` / `_B` and
 `CN_AUTOMATION_DONATION_LAPSE_A` / `_B` are the two arms of each lapse test.
@@ -178,7 +200,8 @@ signature is recorded and nothing further is asked of that person.
 `meta-lead-webhook`.
 
 **Admin (basic auth):** `env-check`, `leaderboard`, `ab-report`,
-`stripe-backfill`, `lapse-reconcile`, `survey-uids`, `webinar-tokens`.
+`stripe-backfill`, `lapse-reconcile`, `survey-uids`, `webinar-tokens`,
+`meta-lead-pull`.
 
 **Crons:** see below.
 

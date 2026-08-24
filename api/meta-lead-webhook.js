@@ -64,6 +64,15 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({ ok: true, leads: leads.length, accepted });
 };
 
+// The puller in meta-lead-pull.js runs leads through this same function
+// rather than reimplementing it. Two paths that both create signatures must
+// not be able to drift: the dedupe, the test-lead drop, the name splitting
+// and the Nucleus call are the parts that matter, and there is exactly one
+// copy of each.
+module.exports.ingest = ingest;
+module.exports.fieldsFrom = fieldsFrom;
+module.exports.campaignFor = campaignFor;
+
 /* Two shapes arrive at this endpoint and they look nothing alike.
  *
  * Meta's own webhook nests everything under entry[].changes[].value and gives

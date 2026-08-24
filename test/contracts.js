@@ -56,7 +56,10 @@ console.log("      " + [...called].sort().join("  "));
 
 // ── 4. Every cron path in vercel.json is a real handler.
 const vercel = JSON.parse(fs.readFileSync(ROOT + "/vercel.json", "utf8"));
-const badCron = vercel.crons.filter((c) => !fs.existsSync(ROOT + c.path + ".js"));
+// A cron path may carry a query string — it is how a scheduled run passes
+// arguments a handler would otherwise have to hardcode. Only the path in
+// front of the ? is a file.
+const badCron = vercel.crons.filter((c) => !fs.existsSync(ROOT + c.path.split("?")[0] + ".js"));
 ok(badCron.length === 0, "every scheduled cron path exists" +
   (badCron.length ? " (missing: " + badCron.map((c) => c.path).join(", ") + ")" : ""));
 

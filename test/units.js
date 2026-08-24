@@ -267,7 +267,15 @@ ok(typeof site.org.metaPixelId === "string", "the pixel id has a config slot");
 const vercel = JSON.parse(fs.readFileSync(ROOT + "/vercel.json", "utf8"));
 const crons = vercel.crons.map((c) => c.path);
 ok(["/api/drain", "/api/lapse-sweep", "/api/sms-inbound-poll", "/api/nightly-rollup", "/api/survey-uid-topup"]
-  .every((c) => crons.includes(c)), "every cron is scheduled (" + crons.length + ")");
+  .every((c) => crons.some((p) => p.split("?")[0] === c)), "every cron is scheduled (" + crons.length + ")");
+
+// The lead puller is the webhook's safety net, so it is only worth having if
+// it actually runs. Scheduled with a narrow window: it exists to catch what a
+// missed delivery dropped, not to re-read the whole history every hour.
+const pull = crons.find((p) => p.startsWith("/api/meta-lead-pull"));
+ok(!!pull, "the Meta lead puller is scheduled");
+ok(/apply=1/.test(pull || ""), "and it is scheduled to write, not to dry run for ever");
+ok(/days=([1-7])\b/.test(pull || ""), "over a short window, not the whole backlog");
 ok(vercel.rewrites.some((r) => r.source === "/take-action/:slug"), "an unknown petition slug reaches the app");
 
 const dashes = (JSON.stringify(site).match(/[—–]/g) || []).length;
@@ -333,6 +341,36 @@ ok(nameFns.splitName("", "Citizen", "").last === "Citizen",
    "a surname on its own is not overwritten");
 ok(nameFns.titleName("McArthur") === "McArthur" && nameFns.titleName("O'Brien") === "O'Brien",
    "names people already spell with an interior capital are left alone");
+
+// The puller is the other half of the pathway: the webhook only ever delivers
+// what happened after it was subscribed, and Meta will not redeliver a
+// leadgen event that predates it.
+const pullSrc = fs.readFileSync(ROOT + "/api/meta-lead-pull.js", "utf8");
+ok(/require\("\.\/meta-lead-webhook"\)/.test(pullSrc) && /webhook\.ingest\(lead\)/.test(pullSrc),
+   "the puller writes through the webhook's own ingest, so the two cannot drift");
+ok(/webhook\.fieldsFrom\(/.test(pullSrc), "and parses Meta's field_data with the same parser");
+ok(/module\.exports\.ingest = ingest/.test(leadSrc), "which the webhook actually exports");
+
+// Dry run by default. Reading 467 leads costs nothing; writing them is a
+// decision that waits on the consent wording of the form.
+ok(/const apply = q\.apply === "1"/.test(pullSrc), "the puller only writes when asked to");
+ok(/if \(!apply\) return true;/.test(pullSrc), "and returns before ingest when it was not");
+ok(pullSrc.indexOf("out.missing++") < pullSrc.indexOf("if (!apply) return true;"),
+   "a dry run still counts what it would have written");
+
+// This endpoint reads every supporter's name, email and phone out of Meta.
+ok(/requireBasicAuth/.test(pullSrc), "the puller is behind admin auth");
+// Matched as a call, not a mention: the file explains in a comment why it
+// does not use requireCron, and a looser pattern fails on its own reasoning.
+ok(!/h\.requireCron\(/.test(pullSrc),
+   "and not behind requireCron, which treats an unset secret as open");
+ok(/has_email: !!lead\.fields\.email/.test(pullSrc) && !/email: lead\.fields\.email,\s*$/m.test(pullSrc),
+   "the dry-run examples report whether there is an email, never the address");
+
+// Deduped on the same key as the webhook, so running both cannot double a
+// signature and a rerun is a no-op.
+ok(/\{meta_leadgen_id\}='/.test(pullSrc) && /\{meta_leadgen_id\}='/.test(leadSrc),
+   "both paths dedupe on Meta's own leadgen id");
 
 // A country code with no subscriber number reached the queue as a mobile.
 ok(h.e164("+61") === "", "a bare country code is not a phone number");

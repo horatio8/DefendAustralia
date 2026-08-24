@@ -159,6 +159,10 @@
     {
       "path": "/api/survey-uid-topup",
       "schedule": "40 18 * * *"
+    },
+    {
+      "path": "/api/meta-lead-pull?apply=1&days=2",
+      "schedule": "20 * * * *"
     }
   ]
 }

@@ -23,8 +23,21 @@ function configured() {
   return !!process.env.CELLCAST_API_KEY;
 }
 
+/* The host, the path and the auth header all come from Cellcast's current
+ * documentation, which is not what this file was originally written against.
+ *
+ * It used https://api.cellcast.com.au/v1 with an APPKEY header and a "from"
+ * field. The documented API is https://api.cellcast.com/api/v1 with
+ * "Authorization: Bearer" and a "sender" field: different host, different
+ * path, different header, different field name. Four things wrong in one
+ * call, and every one of them fails the same silent way, because nothing had
+ * ever exercised this path — CELLCAST_API_KEY was unset until today, so the
+ * queue held messages and never tried to send one.
+ *
+ * Overridable, because a legacy key that still answers on the old host can be
+ * pointed back at it without a deploy. */
 function base() {
-  return (process.env.CELLCAST_API_BASE || "https://api.cellcast.com.au/v1").replace(/\/+$/, "");
+  return (process.env.CELLCAST_API_BASE || "https://api.cellcast.com/api/v1").replace(/\/+$/, "");
 }
 
 /* Quiet hours. Nothing goes out before 8am or after 8pm, Sydney time.
@@ -163,9 +176,19 @@ async function optedOut(phone) {
 async function send(phone, message) {
   if (!configured()) throw new Error("CELLCAST_API_KEY not set");
   const body = {
-    sms_text: message,
-    numbers: [phone],
-    from: process.env.CELLCAST_SENDER_ID || undefined
+    message,
+    contacts: [phone],
+    sender: process.env.CELLCAST_SENDER_ID || undefined,
+    /* Cellcast does NOT append an opt-out unless asked. It is a per-request
+     * flag and it defaults to false, so every message sent without it goes
+     * out with no unsubscribe of any kind.
+     *
+     * That matters here more than usual: the body was deliberately shortened
+     * on the understanding that the provider was adding one. It was not.
+     * Set explicitly rather than left to an account default, because an
+     * account default is a setting somebody can change without touching this
+     * repository, and the Spam Act obligation does not move with it. */
+    replyStopToOptOut: true
   };
   /* Sent once. Never retried at this layer, whatever comes back.
    *
@@ -183,7 +206,7 @@ async function send(phone, message) {
   const r = await withRetry(() => fetch(base() + "/gateway", {
     method: "POST",
     headers: {
-      "APPKEY": process.env.CELLCAST_API_KEY,
+      "Authorization": "Bearer " + process.env.CELLCAST_API_KEY,
       "Content-Type": "application/json",
       "Accept": "application/json"
     },
@@ -198,7 +221,17 @@ async function send(phone, message) {
     err.status = r.status;
     throw err;
   }
-  return (json && json.data && (json.data.message_id || json.data.messages)) || (json && json.message_id) || "";
+  // A 200 does not mean accepted. Cellcast answers 200 with status:false and
+  // the reason in message, so a body that says it failed is a failure however
+  // healthy the status line looks.
+  if (json && json.status === false) {
+    const err = new Error("cellcast refused: " + String(json.message || "unknown").slice(0, 200));
+    err.status = 400;   // refused for a stated reason, so not worth retrying
+    throw err;
+  }
+  const queued = json && json.data && json.data.queueResponse;
+  return (Array.isArray(queued) && queued[0] && queued[0].MessageId) ||
+    (json && json.data && json.data.message_id) || "";
 }
 
 /* Pull inbound messages. Used by the hourly poll, which exists because a
@@ -207,7 +240,13 @@ async function inbound(sinceIso) {
   if (!configured()) return [];
   const qs = sinceIso ? "?start=" + encodeURIComponent(sinceIso.slice(0, 10)) : "";
   const r = await withRetry(() => fetch(base() + "/responses" + qs, {
-    headers: { "APPKEY": process.env.CELLCAST_API_KEY, Accept: "application/json" }
+    // Same bearer as the send. The APPKEY header this used to carry is not
+    // in the current documentation at all, and an inbound poll that 401s is
+    // how a STOP goes unread for an hour at a time.
+    headers: {
+      "Authorization": "Bearer " + process.env.CELLCAST_API_KEY,
+      Accept: "application/json"
+    }
   }), { label: "cellcast inbound" });
   if (!r.ok) throw new Error("cellcast inbound " + r.status);
   const json = await r.json().catch(() => null);

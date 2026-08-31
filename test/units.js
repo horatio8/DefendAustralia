@@ -402,6 +402,33 @@ ok(queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("await due(") ||
    queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("rows = await due"),
    "the window is checked before any row is read or claimed");
 
+console.log("\n-- the Cellcast client matches the documented API --");
+// Every one of these was wrong, and all four fail the same silent way. The
+// path was never exercised: CELLCAST_API_KEY was unset, so the queue held
+// messages and never tried to send one.
+// Comments stripped first. The file explains what the old values were and
+// why they were wrong, and a naive search finds those and passes either way —
+// which is exactly how the previous version of this suite missed all four.
+const smsCode = smsLib
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .split("\n").filter((l) => !/^\s*\/\//.test(l)).join("\n");
+
+ok(/api\.cellcast\.com\/api\/v1/.test(smsCode), "the documented host and path");
+ok(!/api\.cellcast\.com\.au/.test(smsCode), "not the old .com.au host");
+ok(/"Authorization": "Bearer " \+ process\.env\.CELLCAST_API_KEY/.test(smsCode),
+   "a bearer token, not the old APPKEY header");
+ok(!/APPKEY/.test(smsCode), "and APPKEY is gone from the send and the inbound poll");
+ok(/^\s+message,$/m.test(smsLib) && /^\s+contacts: \[phone\],$/m.test(smsLib),
+   "message and contacts, not sms_text and numbers");
+ok(/sender: process\.env\.CELLCAST_SENDER_ID/.test(smsLib), "sender, not from");
+// The provider does not append an opt-out unless asked: it is a per-request
+// flag defaulting to false. The body was shortened on the belief that it did.
+ok(/replyStopToOptOut: true/.test(smsLib),
+   "the opt-out is requested explicitly, because it is off by default");
+// A 200 with status:false is a refusal wearing a healthy status line.
+ok(/json\.status === false/.test(smsLib), "a 200 that says it failed is treated as a failure");
+ok(/queueResponse/.test(smsLib), "the provider id is read from where the API actually puts it");
+
 console.log("\n-- one text, once, whatever the provider says --");
 // Live trial, 31 Aug: Cellcast answered HTTP 500 twice with a Redis
 // persistence error, and both texts arrived on the handset. A 500 from that

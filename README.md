@@ -170,28 +170,26 @@ signature is recorded and nothing further is asked of that person.
 campaign's dedicated number), `CELLCAST_API_BASE`, `CELLCAST_WEBHOOK_SECRET`
 (without it the inbound endpoint accepts anything).
 
-The sender being a number rather than a word is load-bearing. An alphanumeric
-sender ID cannot receive a reply, so STOP would go nowhere and the opt-out
-handling in here would be decorative. A virtual number takes replies, which is
-what `cellcast-inbound` and the hourly poll depend on.
+The client targets `https://api.cellcast.com/api/v1/gateway` with
+`Authorization: Bearer`, and sends `message` / `contacts` / `sender`.
+`CELLCAST_API_BASE` overrides the host for a legacy key that still answers on
+the old one.
 
-**One text, once.** Cellcast delivers the message and *then* answers HTTP 500
-when its own storage fails. Observed live on 31 Aug: two sends returned
-`MISCONF Redis ... not able to persist on disk`, and both texts arrived. So a
-500 from that endpoint means "probably sent and we could not write it down",
-not "not sent".
+**The sender ID must be registered before it will send.** An unregistered
+value is rejected `400 "Your sender id is not registered."` and no message
+goes out — confirmed live against `61494440874`. Register it in the dashboard,
+or `POST /api/v1/customNumber/add` with `{name, number}`; depending on account
+settings an OTP is sent to the number and has to be verified before it can be
+used. A custom sender also costs **1.3 credits per SMS** rather than 1.
+Numeric sender IDs are max 16 digits, alphanumeric max 11 characters, and an
+alphanumeric one cannot receive replies — which would leave STOP going
+nowhere, so the number is the right choice.
 
-Two consequences, both load-bearing. `sms.send` passes `attempts: 1` and is
-the only caller in the codebase that opts out of `withRetry` — the shared
-helper treats 500 as retryable, which is correct for Airtable and Nucleus and
-would be four texts to one person here. And the drain never requeues once the
-provider has been called: the row was claimed `Sent` before the call and stays
-`Sent`, annotated `possibly delivered:`, so a human can tell it from a clean
-send. A 4xx is marked `Failed` instead, because "your sender id is not
-registered" returns the same answer however many times it is asked.
-
-Under-delivering costs a donation. Over-delivering costs a supporter and
-invites a complaint. The queue is built to fail in the first direction.
+**The opt-out is not automatic.** `replyStopToOptOut` is a per-request flag
+that defaults to false, so a message sent without it carries no unsubscribe at
+all. It is set explicitly on every send rather than left to an account default,
+because an account default can be changed by anyone with a login and the Spam
+Act obligation does not move with it.
 
 **Quiet hours.** Nothing is sent before 8am or after 8pm, Sydney time.
 Enforced twice: `sms.queue` sets `not_before` to the next civil hour, and the

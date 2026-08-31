@@ -303,10 +303,27 @@ ok(/\{link\}/.test(welcome), "the link is substituted, not hardcoded to one doma
 // https:// is eight characters that buy nothing: handsets linkify a bare
 // domain, and eight characters is a third of the name budget.
 ok(!/https?:\/\//.test(welcomeBody), "the link carries no scheme");
-// The ask is money, so the link has to be the donate page and not the
-// petition somebody has this second finished signing.
-ok(/"\/fund"/.test(signupSrc) && !/WELCOME_SMS[\s\S]{0,240}\/fight/.test(signupSrc),
-   "and it points at the donate page");
+// The ask is money, so the link has to reach the donate page. It goes via
+// /give rather than /fund so clicks from the welcome text stay separable from
+// every other message that has ever used /fund.
+const links = require(ROOT + "/api/track-redirect").LINKS;
+ok(/"\/give"/.test(signupSrc), "the welcome text uses its own tracked link");
+ok(links.give && links.give.path === "/donate", "which reaches the donate page");
+ok(links.give.campaign !== links.fund.campaign,
+   "under its own campaign, so the two are not summed together");
+const rewrites = vercel.rewrites.map((r) => r.source);
+ok(rewrites.includes("/give"), "and /give is actually routed");
+ok(vercel.rewrites.find((r) => r.source === "/give").destination === "/api/track-redirect?l=give",
+   "to the tracked redirect, not straight to the donate page");
+// A bare /give in a text must not be a way to bounce people anywhere.
+ok(!/q\.(dest|url|to)\b/.test(fs.readFileSync(ROOT + "/api/track-redirect.js", "utf8")),
+   "the destination comes from the table, never from the query, so this is not an open redirect");
+
+// Sent a random moment later, so it reads as a person rather than a receipt.
+ok(/not_before:/.test(signupSrc) && /Math\.random\(\) \* 5 \* 60000/.test(signupSrc),
+   "the welcome text is held a random interval under five minutes");
+ok(/Math\.max\(/.test(fs.readFileSync(ROOT + "/api/_lib/sms.js", "utf8")),
+   "and the queue takes the later of that and the quiet-hours window");
 
 // The greeting is dropped rather than allowed to cost a second segment or to
 // address somebody as a fragment of their email.

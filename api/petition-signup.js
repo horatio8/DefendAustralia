@@ -181,12 +181,29 @@ module.exports = async function handler(req, res) {
   // wait, on an SMS gateway being slow.
   if (!duplicate && p.mobile && sms.configured()) {
     try {
-      const link = (process.env.SITE_DOMAIN || "defendsacredground.com") + "/fund";
+      const link = (process.env.SITE_DOMAIN || "defendsacredground.com") + "/give";
       const body = WELCOME_SMS.replace("{link}", link);
       const name = salutation(p.first_name, 160 - body.length - 2);
+
+      /* Held a random moment, up to five minutes.
+       *
+       * A text that lands the same second the form submits is a receipt, and
+       * it reads like one: nobody believes Peter typed it. The delay is what
+       * makes it read as a person who saw the signature come in. Random
+       * rather than fixed, because a constant ninety seconds is a pattern
+       * anyone who signs twice will notice.
+       *
+       * The queue drains on a minute cron, so in practice this lands
+       * somewhere between one and six minutes out. Quiet hours are applied on
+       * top: sms.queue takes the later of this and the next civil hour, so a
+       * signature at 7.58pm is not rescued by the jitter into an 8.01pm
+       * send. */
+      const jitterMs = Math.floor(Math.random() * 5 * 60000);
+
       await sms.queue({
         phone: h.e164(p.mobile),
         template: "petition_welcome",
+        not_before: new Date(Date.now() + jitterMs).toISOString(),
         message: name ? name + ", " + body : body
       });
     } catch (err) { console.error("SMS_WELCOME_FAIL", err.message); }

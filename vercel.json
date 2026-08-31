@@ -64,6 +64,10 @@
       "destination": "/api/track-redirect?l=fund"
     },
     {
+      "source": "/give",
+      "destination": "/api/track-redirect?l=give"
+    },
+    {
       "source": "/fight",
       "destination": "/api/track-redirect?l=fight"
     },

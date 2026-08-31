@@ -232,9 +232,24 @@ segment. Anything else — missing, junk like `bmmarfleet@gmail`, or long
 enough to spill — gets the unaddressed version rather than a message that
 costs twice as much or opens with a fragment of somebody's email address.
 
-The ask is money and the link is `/fund`. It goes out within a minute of the
-signature, which is the moment the person is most willing and the reason it
-is worth sending at all.
+The ask is money and the link is `/give`, which rewrites to the tracked
+redirect and 302s on to `/donate`. It has its own slug rather than reusing
+`/fund` so clicks from the welcome text stay separable from the lapse chases
+and everything else that has ever used `/fund`: "how many people gave because
+we texted them the moment they signed" is only a question with an answer if
+the link is its own. `GET /api/link-report` counts them, with sends beside
+them, because 300 clicks is excellent from 800 sends and dismal from 40,000.
+Bots are excluded at the redirect already — iMessage, WhatsApp and Slack all
+fetch a link the moment it appears in a message, and counting those roughly
+doubles the figure.
+
+It is held a random interval of up to five minutes rather than going out at
+once. A text that lands the same second the form submits reads as a receipt,
+and nobody believes a person typed it; random rather than fixed, because a
+constant delay is a pattern anyone who signs twice will spot. The queue drains
+on a minute cron, so in practice it lands one to six minutes out. Quiet hours
+apply on top — the queue takes the later of the two — so a signature at 7.58pm
+is not carried by the jitter into an 8.01pm send.
 
 **Ticketing.** `RALLY_STRIPE_SECRET_KEY`, `RALLY_STRIPE_WEBHOOK_SECRET`
 (without it no ticket is ever recorded), `RALLY_TICKET_PRICE_ID` or
@@ -268,7 +283,7 @@ is worth sending at all.
 
 **Admin (basic auth):** `env-check`, `leaderboard`, `ab-report`,
 `stripe-backfill`, `lapse-reconcile`, `survey-uids`, `webinar-tokens`,
-`meta-lead-pull`.
+`meta-lead-pull`, `link-report`.
 
 **Crons:** see below.
 

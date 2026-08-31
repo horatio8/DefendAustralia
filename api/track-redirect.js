@@ -20,6 +20,12 @@ const queue = require("./_lib/queue");
 // be used as an open redirect.
 const LINKS = {
   fund: { path: "/donate", medium: "sms", campaign: "sms_fund" },
+  // The welcome text, and only the welcome text. It could have reused fund
+  // and saved a line, and then every click from it would have been mixed in
+  // with the lapse chases and anything else that has ever used /fund. The
+  // point of a separate slug is that "how many people gave because we texted
+  // them the moment they signed" stays a question with an answer.
+  give: { path: "/donate", medium: "sms", campaign: "sms_welcome" },
   fight: { path: "/take-action/defend-sacred-ground", medium: "sms", campaign: "sms_fight" },
   sign: { path: "/take-action/defend-sacred-ground", medium: "sms", campaign: "sms_sign" },
   share: { path: "/share", medium: "sms", campaign: "sms_share" }

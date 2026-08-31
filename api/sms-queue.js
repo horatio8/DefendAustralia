@@ -83,10 +83,31 @@ async function drain() {
       out.sent++;
     } catch (err) {
       out.failed++;
-      const attempts = Number(f.attempts || 0) + 1;
+      const status = Number(err && err.status) || 0;
+
+      /* Never requeued once the provider has been called.
+       *
+       * The row was claimed as Sent before the call, and it stays Sent. That
+       * looks wrong until you know what Cellcast does: it delivers the
+       * message and then answers 500 when its own storage fails. A live trial
+       * on 31 Aug got two 500s and two texts on the handset. Requeueing on
+       * that error is how one supporter receives the same message every
+       * minute until the attempt cap runs out.
+       *
+       * A 4xx is different in cause and identical in treatment. "Your sender
+       * id is not registered" is a configuration fault: the next attempt
+       * returns the same answer, so retrying only burns the queue. It is
+       * marked Failed so it shows up as needing a human.
+       *
+       * Either way nothing is sent twice, which is the one outcome that
+       * cannot be undone. A message that genuinely did not arrive is a lost
+       * donation; a message that arrived four times is a lost supporter and a
+       * complaint to the ACMA. */
+      const configFault = status >= 400 && status < 500;
       await at.update(at.T.smsSends, row.id, {
-        status: attempts >= 3 ? "Failed" : "Queued",
-        error: String(err.message || err).slice(0, 250)
+        status: configFault ? "Failed" : "Sent",
+        error: (configFault ? "" : "possibly delivered: ") +
+          String(err.message || err).slice(0, 230)
       }).catch(() => {});
     }
   }

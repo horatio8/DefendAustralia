@@ -167,6 +167,19 @@ async function send(phone, message) {
     numbers: [phone],
     from: process.env.CELLCAST_SENDER_ID || undefined
   };
+  /* Sent once. Never retried at this layer, whatever comes back.
+   *
+   * Cellcast delivers the message and then answers 500 when its own storage
+   * fails. This is observed, not theorised: a live trial on 31 Aug returned
+   * "MISCONF Redis is configured to save RDB snapshots, but it is currently
+   * not able to persist on disk" twice, HTTP 500 both times, and both texts
+   * arrived on the handset. A 500 from this endpoint means "probably sent and
+   * we could not write it down", not "not sent".
+   *
+   * withRetry treats 500 as retryable, which is right for Airtable and
+   * Nucleus and dangerous here: four attempts inside one call is four texts to
+   * one person. So this is the one caller in the codebase that opts out.
+   * Under-delivering costs a donation; over-delivering costs a supporter. */
   const r = await withRetry(() => fetch(base() + "/gateway", {
     method: "POST",
     headers: {
@@ -175,7 +188,7 @@ async function send(phone, message) {
       "Accept": "application/json"
     },
     body: JSON.stringify(body)
-  }), { label: "cellcast send" });
+  }), { label: "cellcast send", attempts: 1 });
 
   const text = await r.text();
   let json = null;

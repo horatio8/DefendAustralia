@@ -385,6 +385,27 @@ ok(queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("await due(") ||
    queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("rows = await due"),
    "the window is checked before any row is read or claimed");
 
+console.log("\n-- one text, once, whatever the provider says --");
+// Live trial, 31 Aug: Cellcast answered HTTP 500 twice with a Redis
+// persistence error, and both texts arrived on the handset. A 500 from that
+// endpoint means "probably sent and we could not write it down".
+ok(/attempts: 1/.test(smsLib),
+   "the send is never retried inside one call, because 500 does not mean unsent");
+ok(/RETRYABLE = new Set\(\[[^\]]*500/.test(fs.readFileSync(ROOT + "/api/_lib/retry.js", "utf8")),
+   "which matters because withRetry does treat 500 as retryable by default");
+// Requeueing on that error is how one supporter is texted every minute until
+// the attempt cap runs out.
+ok(!/status: attempts >= 3 \? "Failed" : "Queued"/.test(queueSrc),
+   "a message is never requeued after the provider has been called");
+ok(/configFault \? "Failed" : "Sent"/.test(queueSrc),
+   "an unknown outcome stays Sent rather than being sent again");
+ok(/possibly delivered: /.test(queueSrc),
+   "and says so on the row, so a human can tell it apart from a clean send");
+// "Your sender id is not registered" is a config fault: the next attempt
+// returns the same answer.
+ok(/status >= 400 && status < 500/.test(queueSrc),
+   "a 4xx is marked Failed, because retrying a rejected sender cannot help");
+
 // The lead puller is the webhook's safety net, so it is only worth having if
 // it actually runs. Scheduled with a narrow window: it exists to catch what a
 // missed delivery dropped, not to re-read the whole history every hour.

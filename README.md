@@ -175,6 +175,24 @@ sender ID cannot receive a reply, so STOP would go nowhere and the opt-out
 handling in here would be decorative. A virtual number takes replies, which is
 what `cellcast-inbound` and the hourly poll depend on.
 
+**One text, once.** Cellcast delivers the message and *then* answers HTTP 500
+when its own storage fails. Observed live on 31 Aug: two sends returned
+`MISCONF Redis ... not able to persist on disk`, and both texts arrived. So a
+500 from that endpoint means "probably sent and we could not write it down",
+not "not sent".
+
+Two consequences, both load-bearing. `sms.send` passes `attempts: 1` and is
+the only caller in the codebase that opts out of `withRetry` — the shared
+helper treats 500 as retryable, which is correct for Airtable and Nucleus and
+would be four texts to one person here. And the drain never requeues once the
+provider has been called: the row was claimed `Sent` before the call and stays
+`Sent`, annotated `possibly delivered:`, so a human can tell it from a clean
+send. A 4xx is marked `Failed` instead, because "your sender id is not
+registered" returns the same answer however many times it is asked.
+
+Under-delivering costs a donation. Over-delivering costs a supporter and
+invites a complaint. The queue is built to fail in the first direction.
+
 **Quiet hours.** Nothing is sent before 8am or after 8pm, Sydney time.
 Enforced twice: `sms.queue` sets `not_before` to the next civil hour, and the
 drain refuses to send outside the window whatever `not_before` says. The

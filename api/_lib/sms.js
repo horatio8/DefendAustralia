@@ -19,6 +19,27 @@ const crypto = require("crypto");
 const at = require("./airtable");
 const { withRetry } = require("./retry");
 
+/* Sending is paused.
+ *
+ * Held here rather than by unsetting CELLCAST_API_KEY, because the key is
+ * also what the inbound poll and the opt-out reads use: pulling it would
+ * stop the campaign hearing a STOP, which is the one thing that must keep
+ * working while nothing is going out.
+ *
+ * The code default is the pause itself, so it takes effect on deploy without
+ * waiting for anyone to set a variable. Resuming does not need a code change:
+ * SMS_SENDING=on in the environment overrides it. Setting SMS_SENDING=off
+ * pauses again without a deploy, which is the switch to reach for in a hurry.
+ */
+const PAUSED_IN_CODE = true;
+
+function paused() {
+  const v = String(process.env.SMS_SENDING || "").trim().toLowerCase();
+  if (v === "on" || v === "1" || v === "true") return false;
+  if (v === "off" || v === "0" || v === "false") return true;
+  return PAUSED_IN_CODE;
+}
+
 function configured() {
   return !!process.env.CELLCAST_API_KEY;
 }
@@ -125,6 +146,12 @@ function dedupeKey(phone, template) {
  * every caller is a capture path that must not fail over an SMS. */
 async function queue(msg) {
   if (!at.configured()) return { queued: false, reason: "airtable not configured" };
+  // Nothing is written while paused, deliberately. Queueing through a pause
+  // builds a pile of "thanks for signing" texts addressed to people who
+  // signed days ago, and every one of them goes out the moment sending
+  // resumes. A welcome text nobody receives is a missed ask; a welcome text
+  // that arrives three days late is a campaign that looks broken.
+  if (paused()) return { queued: false, reason: "sending paused" };
   const phone = String(msg.phone || "").trim();
   if (!phone) return { queued: false, reason: "no phone" };
 
@@ -174,6 +201,10 @@ async function optedOut(phone) {
 
 /* Hand one message to the provider. */
 async function send(phone, message) {
+  // Last gate before the provider. The drain checks too, but this is the
+  // function that actually spends money and reaches a stranger's phone, so it
+  // refuses on its own account rather than trusting its caller.
+  if (paused()) throw new Error("sms sending is paused");
   if (!configured()) throw new Error("CELLCAST_API_KEY not set");
   const body = {
     message,
@@ -268,6 +299,6 @@ const STOP = /^(stop|stopall|unsub|unsubscribe|optout|opt out|quit|end|cancel)\b
 const isStop = (body) => STOP.test(String(body || "").trim().replace(/^[^\w]+/, ""));
 
 module.exports = {
-  configured, queue, send, inbound, isStop, dedupeKey, optedOut,
+  configured, queue, send, inbound, isStop, dedupeKey, optedOut, paused,
   withinSendingHours, nextSendableTime, sydneyParts, OPEN_HOUR, CLOSE_HOUR
 };

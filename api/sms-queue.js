@@ -19,6 +19,10 @@ const sms = require("./_lib/sms");
 
 const SLICE = 20;
 const TIME_BUDGET_MS = 40000;
+// Twelve hours. Long enough to ride out an overnight quiet-hours hold plus a
+// provider outage, short enough that nothing arrives on a different day from
+// the thing it is about.
+const STALE_MS = 12 * 3600000;
 
 module.exports = async function handler(req, res) {
   if (h.guard(req, res, "GET, POST")) return;
@@ -30,6 +34,10 @@ async function drain() {
   const out = { sent: 0, failed: 0, suppressed: 0 };
   if (!at.configured()) return { ...out, error: "airtable not configured" };
   if (!sms.configured()) return { ...out, error: "cellcast not configured" };
+
+  // Paused. Nothing is read, claimed or modified, so the queue is exactly as
+  // it was when sending resumes.
+  if (sms.paused()) return { ...out, paused: true };
 
   // Quiet hours, checked here as well as at queue time.
   //
@@ -55,6 +63,27 @@ async function drain() {
   for (const row of rows) {
     if (Date.now() - started > TIME_BUDGET_MS) break;
     const f = row.fields;
+
+    /* Too old to send.
+     *
+     * A row can sit long past its time for reasons that have nothing to do
+     * with the supporter: a pause, a provider outage, a key that lapsed over
+     * a weekend. Sending it on the far side of that is worse than not
+     * sending it. "Thanks for signing" three days after somebody signed
+     * reads as a campaign that has lost track of itself, and it arrives with
+     * an ask for money attached.
+     *
+     * Suppressed rather than deleted, so the row still shows what was meant
+     * to go and why it did not. */
+    const due = Date.parse(f.not_before || f.created_at || "") || 0;
+    if (due && Date.now() - due > STALE_MS) {
+      await at.update(at.T.smsSends, row.id, {
+        status: "Suppressed",
+        error: "too old to send, queued " + Math.round((Date.now() - due) / 3600000) + "h ago"
+      }).catch(() => {});
+      out.suppressed++;
+      continue;
+    }
 
     // Opt-out check two of two. Someone can reply STOP in the hours between
     // a message being queued and being due, and often does.

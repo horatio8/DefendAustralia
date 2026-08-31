@@ -195,6 +195,23 @@ all. It is set explicitly on every send rather than left to an account default,
 because an account default can be changed by anyone with a login and the Spam
 Act obligation does not move with it.
 
+**Sending is currently PAUSED.** `PAUSED_IN_CODE` in `api/_lib/sms.js` is
+`true`, so nothing goes out. `SMS_SENDING=on` in the environment resumes
+without a code change; `SMS_SENDING=off` pauses again without a deploy, which
+is the switch to reach for in a hurry.
+
+Paused this way rather than by unsetting `CELLCAST_API_KEY`, because the key
+is also what the inbound poll and the opt-out reads use — pulling it would
+stop the campaign hearing a STOP, which is the one thing that has to keep
+working while nothing is going out.
+
+While paused nothing is even queued. Queueing through a pause builds a pile of
+"thanks for signing" texts addressed to people who signed days ago, and every
+one of them goes out the moment sending resumes. Backing that up, the drain
+suppresses any row more than 12 hours past its due time: long enough to ride
+out an overnight quiet-hours hold plus a provider outage, short enough that
+nothing arrives on a different day from the thing it is about.
+
 **Quiet hours.** Nothing is sent before 8am or after 8pm, Sydney time.
 Enforced twice: `sms.queue` sets `not_before` to the next civil hour, and the
 drain refuses to send outside the window whatever `not_before` says. The

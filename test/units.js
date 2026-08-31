@@ -402,6 +402,31 @@ ok(queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("await due(") ||
    queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("rows = await due"),
    "the window is checked before any row is read or claimed");
 
+console.log("\n-- sending is paused --");
+// Paused in code so it takes effect on deploy rather than waiting for anyone
+// to set a variable, and resumable from the environment without a deploy.
+ok(sms.paused() === true, "nothing sends right now");
+process.env.SMS_SENDING = "on";
+ok(sms.paused() === false, "SMS_SENDING=on resumes without a code change");
+process.env.SMS_SENDING = "off";
+ok(sms.paused() === true, "and SMS_SENDING=off pauses again without a deploy");
+delete process.env.SMS_SENDING;
+ok(sms.paused() === true, "unset falls back to the code default");
+
+// The key stays set: it is also what the inbound poll and the opt-out reads
+// use, and the campaign must keep hearing a STOP while nothing goes out.
+ok(/if \(paused\(\)\) return \{ queued: false/.test(smsLib),
+   "nothing is queued while paused, so no stale backlog builds up");
+ok(/if \(paused\(\)\) throw new Error\("sms sending is paused"\)/.test(smsLib),
+   "and the send itself refuses, rather than trusting its caller");
+ok(/if \(sms\.paused\(\)\) return \{ \.\.\.out, paused: true \}/.test(queueSrc),
+   "the drain returns before reading or claiming any row");
+
+// A message that sat through a pause or an outage must not go out on the far
+// side of it. "Thanks for signing" three days late, with an ask attached.
+ok(/STALE_MS/.test(queueSrc) && /too old to send/.test(queueSrc),
+   "anything long past its time is suppressed rather than sent late");
+
 console.log("\n-- the Cellcast client matches the documented API --");
 // Every one of these was wrong, and all four fail the same silent way. The
 // path was never exercised: CELLCAST_API_KEY was unset, so the queue held

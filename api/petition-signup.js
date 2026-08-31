@@ -22,18 +22,21 @@ const { refCodeFor, normCode } = require("./_lib/refcode");
  * style preference: Cellcast bills per segment, so 161 characters is double
  * the cost of 160 for every signature the campaign ever takes.
  *
- * It names the campaign because an unidentified marketing SMS is a breach of
- * the Spam Act, and it carries the opt-out because that Act wants a
- * functional unsubscribe in the message itself, not only in a reply handler
- * the recipient cannot see. STOP replies are honoured by the inbound poll.
+ * No opt-out line. Cellcast appends one on the way out, and paying for the
+ * same fourteen words twice on every message is the sort of thing nobody
+ * notices until the invoice. STOP replies are still honoured either way, by
+ * the inbound poll and the two opt-out checks in the queue.
  *
- * The ask is a share rather than a donation. The donation ask is already
- * going out by email through the signature automation, and a text for money
- * within a minute of somebody giving you their number is how a campaign
- * teaches people to ignore its texts. */
+ * It still names the campaign. That is not decoration: an unidentified
+ * commercial SMS is a Spam Act problem, and a text from an unknown number
+ * asking for money is a text people report.
+ *
+ * The ask is money. It goes out within a minute of the signature, which is
+ * the moment the person is most willing and the reason it is worth sending
+ * at all. */
 const WELCOME_SMS =
-  "Thanks for signing. Welcome to Defend Sacred Ground. " +
-  "Send this to anyone else who would sign: {link} Reply STOP to opt out.";
+  "Thanks for signing. Signatures alone will not win this. " +
+  "Defend Sacred Ground runs on donations. Giving takes a minute: {link}";
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
@@ -164,7 +167,7 @@ module.exports = async function handler(req, res) {
       await sms.queue({
         phone: h.e164(p.mobile),
         template: "petition_welcome",
-        message: WELCOME_SMS.replace("{link}", site + "/fight")
+        message: WELCOME_SMS.replace("{link}", site + "/fund")
       });
     } catch (err) { console.error("SMS_WELCOME_FAIL", err.message); }
   }

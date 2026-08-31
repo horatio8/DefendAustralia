@@ -273,17 +273,22 @@ console.log("\n-- the welcome text --");
 const signupSrc = fs.readFileSync(ROOT + "/api/petition-signup.js", "utf8");
 const welcome = (signupSrc.match(/const WELCOME_SMS =\s*([\s\S]*?);\n/) || [])[1] || "";
 const welcomeBody = new Function("return " + welcome)()
-  .replace("{link}", "https://defendsacredground.com/fight");
+  .replace("{link}", "https://defendsacredground.com/fund");
 
 // Cellcast bills per segment, so 161 characters costs double 160 on every
 // signature the campaign ever takes.
 ok(welcomeBody.length <= 160,
    "the welcome text is one segment (" + welcomeBody.length + " chars)");
-// Spam Act 2003: a commercial electronic message has to identify the sender
-// and carry a functional unsubscribe in the message itself.
+// A text from an unknown number asking for money is a text people report.
 ok(/Defend Sacred Ground/.test(welcomeBody), "it says who is texting");
-ok(/STOP/.test(welcomeBody), "and how to stop");
+// No opt-out line of our own: Cellcast appends one, and paying for the same
+// words twice on every message is a cost nobody notices until the invoice.
+ok(!/STOP/i.test(welcomeBody), "it does not pay to repeat the opt-out Cellcast adds");
 ok(/\{link\}/.test(welcome), "the link is substituted, not hardcoded to one domain");
+// The ask is money, so the link has to be the donate page and not the
+// petition somebody has this second finished signing.
+ok(/"\/fund"/.test(signupSrc) && !/WELCOME_SMS[\s\S]{0,200}\/fight/.test(signupSrc),
+   "and it points at the donate page");
 
 // Only a new signature, and only someone who gave a number.
 ok(/if \(!duplicate && p\.mobile && sms\.configured\(\)\)/.test(signupSrc),

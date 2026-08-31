@@ -31,6 +31,18 @@ async function drain() {
   if (!at.configured()) return { ...out, error: "airtable not configured" };
   if (!sms.configured()) return { ...out, error: "cellcast not configured" };
 
+  // Quiet hours, checked here as well as at queue time.
+  //
+  // not_before holds a message that was queued overnight, but it is not the
+  // only way a row becomes due at 3am: a send that fails is written back as
+  // Queued with its original not_before already in the past, so it would
+  // retry on the very next pass whatever the hour. That is the case this
+  // catches. Nothing is claimed or modified — the rows stay exactly as they
+  // are and go out after eight.
+  if (!sms.withinSendingHours()) {
+    return { ...out, deferred: true, until: new Date(sms.nextSendableTime()).toISOString() };
+  }
+
   const started = Date.now();
   let rows = [];
   try {

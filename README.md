@@ -166,8 +166,27 @@ a first signature: a duplicate is a second press of the button, and enrolling
 again is how one person receives the same appeal twice in a minute. Unset, the
 signature is recorded and nothing further is asked of that person.
 
-**SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID`, `CELLCAST_API_BASE`,
-`CELLCAST_WEBHOOK_SECRET` (without it the inbound endpoint accepts anything).
+**SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID` (`61494440874`, the
+campaign's dedicated number), `CELLCAST_API_BASE`, `CELLCAST_WEBHOOK_SECRET`
+(without it the inbound endpoint accepts anything).
+
+The sender being a number rather than a word is load-bearing. An alphanumeric
+sender ID cannot receive a reply, so STOP would go nowhere and the opt-out
+handling in here would be decorative. A virtual number takes replies, which is
+what `cellcast-inbound` and the hourly poll depend on.
+
+**Quiet hours.** Nothing is sent before 8am or after 8pm, Sydney time.
+Enforced twice: `sms.queue` sets `not_before` to the next civil hour, and the
+drain refuses to send outside the window whatever `not_before` says. The
+second check is not redundant — a failed send is written back as `Queued`
+with its `not_before` already in the past, so without it a retry would go out
+at 3am. The zone is named, not an offset, because Sydney observes daylight
+saving and a hardcoded `+10` sends an hour early for half the year.
+
+Sydney rather than the supporter's own state, deliberately: we have a
+postcode at best, and Sydney is the latest mainland clock, so holding to it
+means a supporter in Perth is texted no earlier than 5am their time. Erring
+the other way would let an 8am Sydney send land at 5am in Perth.
 
 A new signature with a mobile number is queued a welcome text
 (`petition_welcome`), sent within the minute by the `sms-queue` cron. It is

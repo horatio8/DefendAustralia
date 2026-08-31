@@ -342,6 +342,49 @@ ok(/optedOut\(phone\)/.test(smsLib) && /sms\.optedOut\(f\.phone\)/.test(queueSrc
 ok(crons.some((p) => p.split("?")[0] === "/api/sms-queue"),
    "the SMS queue has a cron of its own, not only opportunistic kicks");
 
+console.log("\n-- quiet hours, Sydney --");
+// Nothing before 8am or after 8pm. A signature at midnight is exactly when
+// this matters: the welcome text would otherwise go out sixty seconds later.
+const at_ = (iso) => new Date(iso);
+const sydHour = (iso) => sms.sydneyParts(at_(iso)).hour;
+const nextIso = (iso) => new Date(sms.nextSendableTime(at_(iso))).toISOString();
+
+// Daylight saving is the whole difficulty: Sydney is +11 in January and +10
+// in June, so a hardcoded offset is wrong for half the year.
+ok(sydHour("2026-01-15T00:00:00Z") === 11, "January is read as AEDT, +11");
+ok(sydHour("2026-06-15T00:00:00Z") === 10, "June is read as AEST, +10");
+
+ok(sms.withinSendingHours(at_("2026-06-15T09:59:00Z")), "19:59 Sydney is inside the window");
+ok(!sms.withinSendingHours(at_("2026-06-15T10:00:00Z")), "20:00 Sydney is not");
+ok(!sms.withinSendingHours(at_("2026-06-15T21:59:00Z")), "07:59 Sydney is not");
+ok(sms.withinSendingHours(at_("2026-06-15T22:00:00Z")), "08:00 Sydney is");
+
+// Held to the next morning, not the next hour.
+ok(nextIso("2026-06-15T12:00:00Z") === "2026-06-15T22:00:00.000Z",
+   "22:00 Sydney in winter waits for 08:00, ten hours later");
+ok(nextIso("2026-01-15T20:00:00Z") === "2026-01-15T21:00:00.000Z",
+   "07:00 Sydney in summer waits one hour, not until tomorrow");
+ok(sms.nextSendableTime(at_("2026-01-15T00:00:00Z")) === at_("2026-01-15T00:00:00Z").getTime(),
+   "a message inside the window is not delayed at all");
+
+// The two days a year the clocks move. Stepping by 86400000ms across these
+// lands an hour out, which is why the next day is found in calendar space.
+ok(sms.sydneyParts(new Date(nextIso("2026-04-05T16:00:00Z"))).hour === 8,
+   "the morning after daylight saving ends is still 08:00");
+ok(sms.sydneyParts(new Date(nextIso("2026-10-04T16:00:00Z"))).hour === 8,
+   "and the morning after it starts");
+
+// Checked twice, like the opt-out, and for the same reason: a send that fails
+// is written back as Queued with its not_before already in the past, so it
+// would retry on the next pass whatever the hour.
+ok(/not_before: notBefore/.test(smsLib) && /nextSendableTime\(/.test(smsLib),
+   "queueing holds a message to the window");
+ok(/sms\.withinSendingHours\(\)/.test(queueSrc),
+   "and the drain refuses to send outside it regardless of not_before");
+ok(queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("await due(") ||
+   queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("rows = await due"),
+   "the window is checked before any row is read or claimed");
+
 // The lead puller is the webhook's safety net, so it is only worth having if
 // it actually runs. Scheduled with a narrow window: it exists to catch what a
 // missed delivery dropped, not to re-read the whole history every hour.

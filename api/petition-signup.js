@@ -38,7 +38,7 @@ const { refCodeFor, normCode } = require("./_lib/refcode");
  * message that costs twice as much or opens "bmmarfleet,". */
 const WELCOME_SMS =
   "Peter O'Brien here. They have millions. But we have Australians like you. " +
-  "Will you defend the war memorial? {link}";
+  "Will you defend the War Memorial? {link}";
 
 /* A first name is only worth using if it reads as one.
  *

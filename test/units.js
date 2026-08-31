@@ -292,6 +292,10 @@ ok(withName("W".repeat(NAME_ROOM)).length <= 160,
 
 // A text from an unknown number asking for money is a text people report.
 ok(/Peter O'Brien/.test(welcomeBody), "it says who is texting");
+// The Australian War Memorial is a proper noun and the site capitalises it
+// everywhere else. A text that lower-cases it reads as a different building.
+ok(/War Memorial/.test(welcomeBody) && !/war memorial/.test(welcomeBody),
+   "the War Memorial keeps its capitals");
 // No opt-out line of our own: Cellcast appends one, and paying for the same
 // words twice on every message is a cost nobody notices until the invoice.
 ok(!/STOP/i.test(welcomeBody), "it does not pay to repeat the opt-out Cellcast adds");

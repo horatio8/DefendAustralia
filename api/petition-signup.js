@@ -18,25 +18,43 @@ const meta = require("./_lib/meta");
 const sms = require("./_lib/sms");
 const { refCodeFor, normCode } = require("./_lib/refcode");
 
-/* The welcome text. One segment with the link substituted, which is not a
- * style preference: Cellcast bills per segment, so 161 characters is double
- * the cost of 160 for every signature the campaign ever takes.
+/* The welcome text. One segment, always, which is not a style preference:
+ * Cellcast bills per segment, so 161 characters is double the cost of 160 on
+ * every signature the campaign ever takes.
+ *
+ * The link carries no https://. Handsets linkify a bare domain, and the eight
+ * characters buy a longer first name instead.
  *
  * No opt-out line. Cellcast appends one on the way out, and paying for the
- * same fourteen words twice on every message is the sort of thing nobody
- * notices until the invoice. STOP replies are still honoured either way, by
- * the inbound poll and the two opt-out checks in the queue.
+ * same words twice on every message is the sort of thing nobody notices until
+ * the invoice. STOP replies are honoured either way, by the inbound poll and
+ * the two opt-out checks in the queue.
  *
- * It still names the campaign. That is not decoration: an unidentified
- * commercial SMS is a Spam Act problem, and a text from an unknown number
- * asking for money is a text people report.
+ * It is signed, which is what an unidentified number asking for money is not.
  *
- * The ask is money. It goes out within a minute of the signature, which is
- * the moment the person is most willing and the reason it is worth sending
- * at all. */
+ * The greeting is separate from the body so the body can stand alone. A
+ * supporter whose first name is missing, junk, or long enough to push the
+ * message into a second segment gets the unaddressed version rather than a
+ * message that costs twice as much or opens "bmmarfleet,". */
 const WELCOME_SMS =
-  "Thanks for signing. Signatures alone will not win this. " +
-  "Defend Sacred Ground runs on donations. Giving takes a minute: {link}";
+  "Peter O'Brien here. They have millions. But we have Australians like you. " +
+  "Will you defend the war memorial? {link}";
+
+/* A first name is only worth using if it reads as one.
+ *
+ * Lead ad and form fields collect whatever the keyboard gave them, and the
+ * queue has held values like "bmmarfleet" in name positions. Addressing
+ * somebody by a fragment of their email address is worse than not addressing
+ * them at all, so anything that is not letters and ordinary name punctuation
+ * falls through to the unaddressed version. */
+function salutation(first, budget) {
+  const v = String(first || "").trim();
+  if (v.length < 2 || v.length > budget) return "";
+  if (!/^[A-Za-z][A-Za-z'’\- ]*$/.test(v)) return "";
+  // Sent as typed apart from the first letter. "sarah" is a real submission
+  // and "sarah, Peter O'Brien here" reads as a mail merge that went wrong.
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
@@ -163,11 +181,13 @@ module.exports = async function handler(req, res) {
   // wait, on an SMS gateway being slow.
   if (!duplicate && p.mobile && sms.configured()) {
     try {
-      const site = "https://" + (process.env.SITE_DOMAIN || "defendsacredground.com");
+      const link = (process.env.SITE_DOMAIN || "defendsacredground.com") + "/fund";
+      const body = WELCOME_SMS.replace("{link}", link);
+      const name = salutation(p.first_name, 160 - body.length - 2);
       await sms.queue({
         phone: h.e164(p.mobile),
         template: "petition_welcome",
-        message: WELCOME_SMS.replace("{link}", site + "/fund")
+        message: name ? name + ", " + body : body
       });
     } catch (err) { console.error("SMS_WELCOME_FAIL", err.message); }
   }

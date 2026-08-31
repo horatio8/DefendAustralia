@@ -178,18 +178,26 @@ one text. Opt-outs are checked when queueing and again immediately before
 sending, because people reply STOP in between. Without `CELLCAST_API_KEY`
 nothing is queued and the signature is unaffected.
 
-The body is one segment with the link substituted, which is a cost decision
-rather than a style one: Cellcast bills per segment, so 161 characters is
-double the price of 160 on every signature the campaign takes. For the same
-reason it carries no opt-out line of its own — Cellcast appends one — but it
-does name the campaign, because an unidentified commercial SMS is a Spam Act
-problem and a text from an unknown number asking for money is a text people
-report. STOP replies are honoured regardless, by the inbound poll and the two
-opt-out checks in the queue.
+The body is one segment even with a first name in front of it, which is a
+cost decision rather than a style one: Cellcast bills per segment, so 161
+characters is double the price of 160 on every signature the campaign takes.
+The link carries no `https://` because handsets linkify a bare domain and
+those eight characters buy a longer name instead. For the same reason it
+carries no opt-out line of its own — Cellcast appends one — but it is signed,
+because an unidentified number asking for money is a number people report.
+STOP replies are honoured regardless, by the inbound poll and the two opt-out
+checks in the queue.
 
-The ask is a donation and the link is `/fund`. It goes out within a minute of
-the signature, which is the moment the person is most willing and the reason
-it is worth sending at all.
+The greeting is separate from the body so the body can stand alone. A first
+name is used only if it reads as one: two characters or more, letters and
+ordinary name punctuation, and short enough to leave the message inside one
+segment. Anything else — missing, junk like `bmmarfleet@gmail`, or long
+enough to spill — gets the unaddressed version rather than a message that
+costs twice as much or opens with a fragment of somebody's email address.
+
+The ask is money and the link is `/fund`. It goes out within a minute of the
+signature, which is the moment the person is most willing and the reason it
+is worth sending at all.
 
 **Ticketing.** `RALLY_STRIPE_SECRET_KEY`, `RALLY_STRIPE_WEBHOOK_SECRET`
 (without it no ticket is ever recorded), `RALLY_TICKET_PRICE_ID` or

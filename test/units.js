@@ -273,22 +273,48 @@ console.log("\n-- the welcome text --");
 const signupSrc = fs.readFileSync(ROOT + "/api/petition-signup.js", "utf8");
 const welcome = (signupSrc.match(/const WELCOME_SMS =\s*([\s\S]*?);\n/) || [])[1] || "";
 const welcomeBody = new Function("return " + welcome)()
-  .replace("{link}", "https://defendsacredground.com/fund");
+  .replace("{link}", "defendsacredground.com/fund");
+
+// The greeting, the guards and the budget, lifted out and run for real.
+const salute = new Function(
+  (signupSrc.match(/function salutation\(first, budget\) \{[\s\S]*?\n\}/) || [""])[0] +
+  "\nreturn salutation;")();
+const NAME_ROOM = 160 - welcomeBody.length - 2;
+const withName = (n) => (salute(n, NAME_ROOM) ? salute(n, NAME_ROOM) + ", " : "") + welcomeBody;
 
 // Cellcast bills per segment, so 161 characters costs double 160 on every
-// signature the campaign ever takes.
+// signature the campaign ever takes. Checked at the longest name that is
+// allowed through, which is the only case that can spill.
 ok(welcomeBody.length <= 160,
-   "the welcome text is one segment (" + welcomeBody.length + " chars)");
+   "the unaddressed welcome text is one segment (" + welcomeBody.length + " chars)");
+ok(withName("W".repeat(NAME_ROOM)).length <= 160,
+   "and still one segment at the longest name it will use (" + NAME_ROOM + " chars)");
+
 // A text from an unknown number asking for money is a text people report.
-ok(/Defend Sacred Ground/.test(welcomeBody), "it says who is texting");
+ok(/Peter O'Brien/.test(welcomeBody), "it says who is texting");
 // No opt-out line of our own: Cellcast appends one, and paying for the same
 // words twice on every message is a cost nobody notices until the invoice.
 ok(!/STOP/i.test(welcomeBody), "it does not pay to repeat the opt-out Cellcast adds");
 ok(/\{link\}/.test(welcome), "the link is substituted, not hardcoded to one domain");
+// https:// is eight characters that buy nothing: handsets linkify a bare
+// domain, and eight characters is a third of the name budget.
+ok(!/https?:\/\//.test(welcomeBody), "the link carries no scheme");
 // The ask is money, so the link has to be the donate page and not the
 // petition somebody has this second finished signing.
-ok(/"\/fund"/.test(signupSrc) && !/WELCOME_SMS[\s\S]{0,200}\/fight/.test(signupSrc),
+ok(/"\/fund"/.test(signupSrc) && !/WELCOME_SMS[\s\S]{0,240}\/fight/.test(signupSrc),
    "and it points at the donate page");
+
+// The greeting is dropped rather than allowed to cost a second segment or to
+// address somebody as a fragment of their email.
+ok(/^Charlotte, /.test(withName("Charlotte")), "an ordinary first name is used");
+ok(/^Sarah, /.test(withName("sarah")), "a lower-case name is capitalised, not sent as typed");
+ok(/^O'Connor, /.test(withName("O'Connor")) && /^Mary-Jane, /.test(withName("Mary-Jane")),
+   "apostrophes and hyphens are names, not junk");
+ok(withName("") === welcomeBody, "no name means no greeting, not an empty one");
+ok(withName("bmmarfleet@gmail") === welcomeBody, "an email fragment is not a name");
+ok(withName("x") === welcomeBody, "a single character is not a name");
+ok(withName("W".repeat(NAME_ROOM + 1)) === welcomeBody,
+   "a name one character past the budget is dropped rather than costing a segment");
 
 // Only a new signature, and only someone who gave a number.
 ok(/if \(!duplicate && p\.mobile && sms\.configured\(\)\)/.test(signupSrc),

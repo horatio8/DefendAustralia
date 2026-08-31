@@ -37,7 +37,7 @@ const { refCodeFor, normCode } = require("./_lib/refcode");
  * message into a second segment gets the unaddressed version rather than a
  * message that costs twice as much or opens "bmmarfleet,". */
 const WELCOME_SMS =
-  "Peter O'Brien here. They have millions. But we have Australians like you. " +
+  "Peter O'Brien here. The activists have millions. But we have Aussies like you. " +
   "Will you defend the War Memorial? {link}";
 
 /* A first name is only worth using if it reads as one.

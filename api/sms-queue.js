@@ -1,9 +1,13 @@
 // GET/POST /api/sms-queue — send what is due.
 //
-// No cron of its own. It is kicked from the tail of the lapse sweep and
-// opportunistically by traffic on the signature counter, which means the queue
-// drains continuously during a campaign surge without a scheduled job billing
-// for the quiet hours. A bearer call drains it by hand.
+// Kicked from the tail of the lapse sweep and opportunistically by traffic on
+// the signature counter, and since the welcome text was added, also on a
+// minute cron. The opportunistic kicks are what keep the queue moving during a
+// surge, but they are not a delivery guarantee: they only fire when somebody
+// happens to load a page. That was fine when everything in here was a
+// follow-up hours after the fact, and is not fine for a text that says
+// "thanks for signing" — at three in the morning, with no traffic, it would
+// have sat until dawn. A bearer call drains it by hand.
 //
 // A message is claimed before it is sent and the row is written before the
 // provider is called, so a crash mid-send leaves a row that reads Sent with no

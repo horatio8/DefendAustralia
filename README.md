@@ -169,6 +169,22 @@ signature is recorded and nothing further is asked of that person.
 **SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID`, `CELLCAST_API_BASE`,
 `CELLCAST_WEBHOOK_SECRET` (without it the inbound endpoint accepts anything).
 
+A new signature with a mobile number is queued a welcome text
+(`petition_welcome`), sent within the minute by the `sms-queue` cron. It is
+not A/B split: a welcome has nothing to test. Deduped twice — once on the
+signature being new, once in the queue on phone plus template — so signing
+from two devices, or signing again under a different email, still produces
+one text. Opt-outs are checked when queueing and again immediately before
+sending, because people reply STOP in between. Without `CELLCAST_API_KEY`
+nothing is queued and the signature is unaffected.
+
+The body is one segment with the link substituted, which is a cost decision
+rather than a style one: Cellcast bills per segment, so 161 characters is
+double the price of 160 on every signature the campaign takes. It names the
+campaign and carries the opt-out because the Spam Act 2003 wants a
+commercial electronic message to identify its sender and offer a functional
+unsubscribe in the message itself.
+
 **Ticketing.** `RALLY_STRIPE_SECRET_KEY`, `RALLY_STRIPE_WEBHOOK_SECRET`
 (without it no ticket is ever recorded), `RALLY_TICKET_PRICE_ID` or
 `RALLY_TICKET_CENTS` (defaults to 2500).

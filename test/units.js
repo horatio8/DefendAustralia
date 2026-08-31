@@ -269,6 +269,44 @@ const crons = vercel.crons.map((c) => c.path);
 ok(["/api/drain", "/api/lapse-sweep", "/api/sms-inbound-poll", "/api/nightly-rollup", "/api/survey-uid-topup"]
   .every((c) => crons.some((p) => p.split("?")[0] === c)), "every cron is scheduled (" + crons.length + ")");
 
+console.log("\n-- the welcome text --");
+const signupSrc = fs.readFileSync(ROOT + "/api/petition-signup.js", "utf8");
+const welcome = (signupSrc.match(/const WELCOME_SMS =\s*([\s\S]*?);\n/) || [])[1] || "";
+const welcomeBody = new Function("return " + welcome)()
+  .replace("{link}", "https://defendsacredground.com/fight");
+
+// Cellcast bills per segment, so 161 characters costs double 160 on every
+// signature the campaign ever takes.
+ok(welcomeBody.length <= 160,
+   "the welcome text is one segment (" + welcomeBody.length + " chars)");
+// Spam Act 2003: a commercial electronic message has to identify the sender
+// and carry a functional unsubscribe in the message itself.
+ok(/Defend Sacred Ground/.test(welcomeBody), "it says who is texting");
+ok(/STOP/.test(welcomeBody), "and how to stop");
+ok(/\{link\}/.test(welcome), "the link is substituted, not hardcoded to one domain");
+
+// Only a new signature, and only someone who gave a number.
+ok(/if \(!duplicate && p\.mobile && sms\.configured\(\)\)/.test(signupSrc),
+   "a duplicate signature is not texted again");
+ok(/template: "petition_welcome"/.test(signupSrc),
+   "one template name, which is half the queue's dedupe key");
+// No A/B: the lapse texts are split, this one is not.
+ok(!/variant/.test(signupSrc) && !/ab\.assign/.test(signupSrc),
+   "the welcome text is not split into arms");
+ok(/await sms\.queue\(/.test(signupSrc) && !/sms\.send\(/.test(signupSrc),
+   "it is queued, never handed straight to the provider from a capture path");
+
+// The queue is where the opt-out check lives, and it is checked twice.
+const smsLib = fs.readFileSync(ROOT + "/api/_lib/sms.js", "utf8");
+const queueSrc = fs.readFileSync(ROOT + "/api/sms-queue.js", "utf8");
+ok(/optedOut\(phone\)/.test(smsLib) && /sms\.optedOut\(f\.phone\)/.test(queueSrc),
+   "opt-out is checked when queueing and again before sending");
+
+// A welcome text that waits for someone to load the homepage is not a
+// welcome text. At 3am with no traffic it sat until dawn.
+ok(crons.some((p) => p.split("?")[0] === "/api/sms-queue"),
+   "the SMS queue has a cron of its own, not only opportunistic kicks");
+
 // The lead puller is the webhook's safety net, so it is only worth having if
 // it actually runs. Scheduled with a narrow window: it exists to catch what a
 // missed delivery dropped, not to re-read the whole history every hour.

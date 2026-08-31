@@ -10,11 +10,30 @@
 // The supporter is told they signed when at least one durable store accepted
 // them. If neither did, the payload is logged in full for replay and the form
 // says so rather than thanking them for nothing.
+const h = require("./_lib/http");
 const nucleus = require("./_lib/nucleus");
 const queue = require("./_lib/queue");
 const at = require("./_lib/airtable");
 const meta = require("./_lib/meta");
+const sms = require("./_lib/sms");
 const { refCodeFor, normCode } = require("./_lib/refcode");
+
+/* The welcome text. One segment with the link substituted, which is not a
+ * style preference: Cellcast bills per segment, so 161 characters is double
+ * the cost of 160 for every signature the campaign ever takes.
+ *
+ * It names the campaign because an unidentified marketing SMS is a breach of
+ * the Spam Act, and it carries the opt-out because that Act wants a
+ * functional unsubscribe in the message itself, not only in a reply handler
+ * the recipient cannot see. STOP replies are honoured by the inbound poll.
+ *
+ * The ask is a share rather than a donation. The donation ask is already
+ * going out by email through the signature automation, and a text for money
+ * within a minute of somebody giving you their number is how a campaign
+ * teaches people to ignore its texts. */
+const WELCOME_SMS =
+  "Thanks for signing. Welcome to Defend Sacred Ground. " +
+  "Send this to anyone else who would sign: {link} Reply STOP to opt out.";
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
@@ -121,6 +140,33 @@ module.exports = async function handler(req, res) {
         tags: ["Defend Sacred Ground", "Signed petition"]
       });
     } catch (err) { console.error("CN_SIGNATURE_ASK_FAIL", err.message); }
+  }
+
+  // 5. The welcome text.
+  //
+  // Same rule as the ask above: new signatures only. It is also deduped a
+  // second time inside the queue on phone plus template, which is what stops
+  // one person who signs from two devices, or signs again with a different
+  // email, from being texted twice. Belt and braces on purpose, because a
+  // duplicate text is the one mistake a supporter cannot unsee.
+  //
+  // No A/B here. The lapse texts are split because there is a real question
+  // about which appeal recovers more people; a welcome has nothing to test
+  // and splitting it would only make the reporting harder to read.
+  //
+  // Queued rather than sent. The queue is where the opt-out check, the
+  // dedupe and the retry live, and a capture path must never be the thing
+  // that talks to a provider: a signature cannot be allowed to fail, or to
+  // wait, on an SMS gateway being slow.
+  if (!duplicate && p.mobile && sms.configured()) {
+    try {
+      const site = "https://" + (process.env.SITE_DOMAIN || "defendsacredground.com");
+      await sms.queue({
+        phone: h.e164(p.mobile),
+        template: "petition_welcome",
+        message: WELCOME_SMS.replace("{link}", site + "/fight")
+      });
+    } catch (err) { console.error("SMS_WELCOME_FAIL", err.message); }
   }
 
   return res.status(200).json({

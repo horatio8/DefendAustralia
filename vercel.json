@@ -163,6 +163,10 @@
     {
       "path": "/api/meta-lead-pull?apply=1&days=2",
       "schedule": "20 * * * *"
+    },
+    {
+      "path": "/api/sms-queue",
+      "schedule": "* * * * *"
     }
   ]
 }

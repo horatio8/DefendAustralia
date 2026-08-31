@@ -166,7 +166,7 @@ a first signature: a duplicate is a second press of the button, and enrolling
 again is how one person receives the same appeal twice in a minute. Unset, the
 signature is recorded and nothing further is asked of that person.
 
-**SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID` (`61494440874`, the
+**SMS.** `CELLCAST_API_KEY`, `CELLCAST_SENDER_ID` (`61494440870`, the
 campaign's dedicated number), `CELLCAST_API_BASE`, `CELLCAST_WEBHOOK_SECRET`
 (without it the inbound endpoint accepts anything).
 
@@ -177,7 +177,11 @@ the old one.
 
 **The sender ID must be registered before it will send.** An unregistered
 value is rejected `400 "Your sender id is not registered."` and no message
-goes out — confirmed live against `61494440874`. Register it in the dashboard,
+goes out. Confirm the exact digits against
+`GET /api/v1/apiClient/virtual-number/dedicated`, which lists what the account
+actually owns, rather than reading them off the dashboard: `61494440874` was
+rejected `400` and `61494440870` was accepted, and the two differ only in the
+last digit. Register a number you own elsewhere in the dashboard,
 or `POST /api/v1/customNumber/add` with `{name, number}`; depending on account
 settings an OTP is sent to the number and has to be verified before it can be
 used. A custom sender also costs **1.3 credits per SMS** rather than 1.

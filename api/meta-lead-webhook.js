@@ -101,14 +101,28 @@ function normaliseLeads(b) {
     return out;
   }
 
-  // Flat relay payload.
+  // A batch of flat leads. The Apps Script that reads Meta's Google Sheets
+  // export sends these: one request per row would be several hundred calls to
+  // clear a backlog, and Apps Script is billed in execution minutes.
+  if (Array.isArray(b.leads)) {
+    for (const lead of b.leads) out.push(flatLead(lead));
+    return out;
+  }
+
+  out.push(flatLead(b));
+  return out;
+}
+
+/* One lead in the shape a relay sends: everything at the top level, human
+ * labels, and whatever casing the source felt like using. */
+function flatLead(b) {
   const f = b.fields && typeof b.fields === "object" ? b.fields : b;
   const named = splitName(
     f.first_name || f["First name"] || f.firstname,
     f.last_name || f["Last name"] || f.lastname,
     f.full_name || f["Full name"] || f.fullname || f.name
   );
-  out.push({
+  return {
     leadgen_id: str(b.leadgen_id || b.lead_id || b.id),
     form_id: str(b.form_id), form_name: str(b.form_name),
     ad_id: str(b.ad_id), ad_name: str(b.ad_name),
@@ -124,8 +138,7 @@ function normaliseLeads(b) {
       postcode: str(f.post_code || f.postcode || f.zip || f["Post code"])
     },
     raw: b
-  });
-  return out;
+  };
 }
 
 // Meta's field_data is an array of {name, values:[]} rather than an object.

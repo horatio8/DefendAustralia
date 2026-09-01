@@ -113,7 +113,7 @@ single question and it is the default, so a lead may arrive with no first or
 last name at all; the whole name is split on the last space, which keeps
 two-word given names intact.
 
-Two routes reach this endpoint and it accepts either, so the choice is
+Three routes reach this endpoint and it accepts all of them, so the choice is
 operational rather than a code change:
 
 1. **Meta's own webhook.** In the app's Webhooks product, subscribe the `page`
@@ -126,10 +126,20 @@ operational rather than a code change:
    flat. Slower (Zapier polls on the plan's interval) and it costs a task per
    lead, but it needs no app review and it is how the sister campaign is
    wired, so it is the fallback when app review is the blocker.
+3. **The Google Sheet, polled.** Meta's Sheets destination writes each lead
+   into a spreadsheet; `tools/leads-to-nucleus.gs` reads it on a one-minute
+   Apps Script trigger and posts new rows here as `{leads: [...]}`. Free, runs
+   inside the campaign's own Google account, nothing in the path but Google
+   and us. It **polls rather than hooking an event** because `onChange` and
+   `onEdit` do not fire for API writes, which is exactly what Meta's export
+   is — there is no event to hook, and one minute is the shortest interval
+   Apps Script offers.
 
-Both shapes are normalised by the same function and both dedupe on
+All three shapes are normalised by the same function and all three dedupe on
 `leadgen_id`, so running them side by side during a cutover cannot double a
-signature.
+signature. The script's cursor advances only after a successful post, so a
+failure means the next run re-sends the same rows, which is safe for exactly
+that reason.
 
 **Pulling, not just receiving.** `GET /api/meta-lead-pull` fetches leads from
 the Graph API and runs them through the webhook's own `ingest`, so the two

@@ -557,6 +557,45 @@ ok(/require\("\.\/meta-lead-webhook"\)/.test(pullSrc) && /webhook\.ingest\(lead\
 ok(/webhook\.fieldsFrom\(/.test(pullSrc), "and parses Meta's field_data with the same parser");
 ok(/module\.exports\.ingest = ingest/.test(leadSrc), "which the webhook actually exports");
 
+// The Apps Script that reads Meta's Sheets export posts batches: one request
+// per row is several hundred calls to clear a backlog, and Apps Script is
+// billed in execution minutes.
+const leadFns = (function () {
+  const src = ["str", "titleName", "splitName", "flatLead", "normaliseLeads"]
+    .map((n) => leadSrc.slice(leadSrc.indexOf("function " + n + "(")).match(/^[\s\S]*?\n\}/)[0])
+    .join("\n");
+  return new Function(src + "\nreturn { normaliseLeads };")();
+})();
+
+// A real row off the sheet, prefixes and all.
+const sheetRow = {
+  id: "l:1504704175028710", created_time: "2026-08-23T02:33:46-05:00",
+  ad_id: "ag:120247219882540571", form_id: "f:1047890598229609",
+  form_name: "220826_PetitionSignatory", platform: "ig",
+  first_name: "Mark", last_name: "Watkins", email: "mwatk2@gmail.com",
+  phone_number: "p:+61457712565", post_code: "z:7007"
+};
+const one = leadFns.normaliseLeads(sheetRow);
+ok(one.length === 1 && one[0].leadgen_id === "1504704175028710",
+   "a single flat lead still parses, prefix stripped");
+ok(one[0].fields.postcode === "7007", "and z: never reaches a postcode field");
+
+const many = leadFns.normaliseLeads({ leads: [sheetRow, { ...sheetRow, id: "l:99", first_name: "norm" }] });
+ok(many.length === 2, "a batch of leads is accepted in one request");
+ok(many[1].fields.first_name === "Norm", "and every row in it is cleaned the same way");
+ok(leadFns.normaliseLeads({ leads: [] }).length === 0, "an empty batch is not an error");
+
+// The script itself, since a broken one fails silently on a timer nobody
+// watches.
+const gs = fs.readFileSync(ROOT + "/tools/leads-to-nucleus.gs", "utf8");
+ok(/headers\.indexOf\(name\)/.test(gs),
+   "columns are found by name, because Meta has reordered this export before");
+ok(/LockService/.test(gs), "one run at a time, so a slow batch is not read twice");
+ok(/props\.setProperty\('lastRow'/.test(gs) && gs.indexOf("post(leads.slice") < gs.indexOf("props.setProperty('lastRow'"),
+   "the cursor advances only after the posts succeeded");
+ok(/throw new Error\('lead sync failed/.test(gs),
+   "a failed post throws rather than being swallowed, so the next run retries");
+
 // Dry run by default. Reading 467 leads costs nothing; writing them is a
 // decision that waits on the consent wording of the form.
 ok(/const apply = q\.apply === "1"/.test(pullSrc), "the puller only writes when asked to");

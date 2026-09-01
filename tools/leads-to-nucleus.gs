@@ -69,38 +69,55 @@ function syncLeads() {
 
     var rows = sheet.getRange(cursor + 1, 1, lastRow - cursor, sheet.getLastColumn()).getValues();
 
-    var leads = rows.map(function (r) { return toLead(headers, r); })
-                    .filter(function (l) { return l && l.email; });
+    /* Each lead keeps the row it came from.
+     *
+     * Rows without an email are dropped, so the leads array is shorter than
+     * the rows array and its indexes mean nothing back in the sheet. Carrying
+     * the row number is what lets the cursor advance to a real position after
+     * a run that only got partway. */
+    var items = [];
+    for (var r = 0; r < rows.length; r++) {
+      var lead = toLead(headers, rows[r]);
+      if (lead && lead.email) items.push({ row: cursor + 1 + r, lead: lead });
+    }
 
     // Apps Script kills an execution at six minutes. Stopping at five leaves
     // room to finish the batch in hand and log what happened, rather than
     // being cut off mid-request with nothing written down.
     var deadline = Date.now() + 5 * 60 * 1000;
-    var sent = 0, short = false;
+    var sent = 0, short = false, doneThrough = cursor;
 
-    for (var i = 0; i < leads.length; i += BATCH_SIZE) {
+    for (var i = 0; i < items.length; i += BATCH_SIZE) {
       if (Date.now() > deadline) { short = true; break; }
-      var slice = leads.slice(i, i + BATCH_SIZE);
-      var res = post(slice);
-      sent += slice.length;
-      // The server stops when it runs out of time and says how much it did
-      // not get to. Anything left is not lost, it is simply not done yet.
+      var slice = items.slice(i, i + BATCH_SIZE);
+      var res = post(slice.map(function (x) { return x.lead; }));
+
+      // The server ran out of time inside this batch. It reports how many it
+      // accepted but not which, so this batch is not credited: the next run
+      // re-sends it and the dedupe absorbs the overlap.
       if (res && res.remaining > 0) { short = true; break; }
+
+      sent += slice.length;
+      doneThrough = slice[slice.length - 1].row;
+
+      /* Saved every batch, not once at the end.
+       *
+       * Four thousand rows do not fit in one execution, and an all-or-nothing
+       * cursor never advances at all: every run starts from row two, re-walks
+       * everything it already did, and gets a little less far each time until
+       * it cannot reach new rows inside the limit and stalls for good. Saving
+       * here makes progress monotonic, and it survives Apps Script killing the
+       * execution mid-loop. */
+      props.setProperty('lastRow', String(doneThrough));
     }
 
     if (short) {
-      // Cursor deliberately not advanced. The next run sends these rows
-      // again, and everything already written is skipped on its leadgen_id,
-      // so a run that only gets halfway still makes progress.
-      Logger.log('partial: sent %s of %s leads, cursor left at %s', sent, leads.length, cursor);
+      Logger.log('partial: sent %s leads, now through row %s of %s', sent, doneThrough, lastRow);
       return;
     }
 
-    // Advanced only after every batch came back complete. A throw above
-    // leaves the cursor where it was and the next run picks the same rows up,
-    // which is safe precisely because the endpoint deduplicates.
     props.setProperty('lastRow', String(lastRow));
-    Logger.log('sent %s leads, rows %s to %s', leads.length, cursor + 1, lastRow);
+    Logger.log('sent %s leads, rows %s to %s', items.length, cursor + 1, lastRow);
   } finally {
     lock.releaseLock();
   }

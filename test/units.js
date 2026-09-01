@@ -619,8 +619,22 @@ ok(/remaining: leads\.length - processed/.test(leadSrc),
    "and reports what it did not get to");
 ok(/res && res\.remaining > 0/.test(gs),
    "the script reads that and stops rather than losing the rest");
-ok(gs.indexOf("if (short)") < gs.indexOf("props.setProperty('lastRow'"),
-   "leaving the cursor put, so the next run resumes instead of skipping them");
+
+/* The sheet is thousands of rows, not hundreds, and no single Apps Script
+ * execution can clear it. An all-or-nothing cursor therefore never advances
+ * at all: every run restarts at row two, re-walks everything it already did,
+ * and gets a little less far each time until it cannot reach new rows inside
+ * the six-minute limit and stalls for good. Progress has to be saved as it
+ * happens. */
+ok(/items\.push\(\{ row: cursor \+ 1 \+ r, lead: lead \}\)/.test(gs),
+   "each lead carries the sheet row it came from");
+ok(/doneThrough = slice\[slice\.length - 1\]\.row/.test(gs),
+   "so the cursor can be moved to a real position mid-run");
+ok(gs.indexOf("props.setProperty('lastRow', String(doneThrough))") < gs.indexOf("if (short)"),
+   "and it is saved after every batch, not once at the end");
+// Rows with no email are filtered out, so lead indexes and row numbers differ.
+ok(!/leads\.slice\(/.test(gs),
+   "batching is over the row-carrying items, never the filtered lead array");
 
 // Dry run by default. Reading 467 leads costs nothing; writing them is a
 // decision that waits on the consent wording of the form.

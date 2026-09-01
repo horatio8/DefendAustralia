@@ -596,6 +596,17 @@ ok(/props\.setProperty\('lastRow'/.test(gs) && gs.indexOf("post(leads.slice") < 
 ok(/throw new Error\('lead sync failed/.test(gs),
    "a failed post throws rather than being swallowed, so the next run retries");
 
+// Leads are ingested one after another, each costing an Airtable dedupe read,
+// a Nucleus write and a queue write. A batch has to fit inside the function's
+// time limit or it times out, fails, and retries the same rows for ever.
+const batchSize = Number((gs.match(/var BATCH_SIZE = (\d+)/) || [])[1]);
+const maxDuration = vercel.functions
+  && vercel.functions["api/meta-lead-webhook.js"]
+  && vercel.functions["api/meta-lead-webhook.js"].maxDuration;
+ok(maxDuration >= 30, "the lead webhook is given room to run (" + maxDuration + "s)");
+ok(batchSize > 0 && batchSize <= maxDuration / 2,
+   "and a batch of " + batchSize + " fits inside it at a second a lead");
+
 // Dry run by default. Reading 467 leads costs nothing; writing them is a
 // decision that waits on the consent wording of the form.
 ok(/const apply = q\.apply === "1"/.test(pullSrc), "the puller only writes when asked to");

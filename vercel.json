@@ -143,6 +143,10 @@
       ]
     }
   ],
+  "functions": {
+    "api/meta-lead-webhook.js": { "maxDuration": 60 },
+    "api/meta-lead-pull.js": { "maxDuration": 60 }
+  },
   "crons": [
     {
       "path": "/api/drain",

@@ -30,7 +30,15 @@
 var ENDPOINT   = 'https://www.defendsacredground.com/api/meta-lead-webhook';
 var LEAD_TOKEN = '';   // must equal META_LEAD_SECRET in Vercel. Leave '' only while that is unset.
 var SHEET_NAME = '';   // '' means the first sheet
-var BATCH_SIZE = 50;   // rows per request
+/* Rows per request.
+ *
+ * Ten, not fifty. Every lead in a batch is processed one after another on the
+ * server and each one costs an Airtable dedupe read, a Nucleus write and a
+ * queue write — roughly a second. Fifty is a minute of work inside a function
+ * that is not allowed to run that long, so the batch times out, the whole
+ * request fails, and the script retries the same fifty next minute and times
+ * out again. Ten finishes comfortably. */
+var BATCH_SIZE = 10;
 
 // Only used by sendDirectToNucleus(), which is the fallback, not the path.
 var RECEIVER_URL = 'https://teller.campaignnucleus.com/forms/receiver/0ea069ec-0257-4b7c-81c3-a8e6cc3a0f28';

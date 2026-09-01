@@ -144,6 +144,21 @@ function showCursor() {
   Logger.log('lastRow = %s', PropertiesService.getScriptProperties().getProperty('lastRow'));
 }
 
+/* The opposite of backfillAll: treat everything currently in the sheet as
+ * already handled, and sync only what arrives from here on.
+ *
+ * This is the one to run if the rows already sitting there were collected
+ * under consent wording that has not been checked yet. Getting a name into
+ * the CRM is not neutral — it is the list that later gets emailed. */
+function skipBacklog() {
+  var sheet = SHEET_NAME
+    ? SpreadsheetApp.getActive().getSheetByName(SHEET_NAME)
+    : SpreadsheetApp.getActive().getSheets()[0];
+  var lastRow = sheet.getLastRow();
+  PropertiesService.getScriptProperties().setProperty('lastRow', String(lastRow));
+  Logger.log('cursor set to %s; the %s rows already in the sheet will not be sent', lastRow, lastRow - 1);
+}
+
 /* The fallback: post straight at the Nucleus form receiver.
  *
  * No deduplication, no attribution, no test-lead drop — the name goes in and

@@ -657,6 +657,54 @@ ok(/has_email: !!lead\.fields\.email/.test(pullSrc) && !/email: lead\.fields\.em
 ok(/\{meta_leadgen_id\}='/.test(pullSrc) && /\{meta_leadgen_id\}='/.test(leadSrc),
    "both paths dedupe on Meta's own leadgen id");
 
+console.log("\n-- the dedupe reads what this endpoint actually writes --");
+/* The bug this section exists for: the check read Petition Signatures, which
+ * this endpoint never writes. It appends to the Ingest Queue and the drain
+ * expands that into a signature later, 25 rows a minute against a relay
+ * pushing nearer 200. The signature row for a lead received a minute ago did
+ * not exist yet, so a re-send found nothing and wrote a second Nucleus entry.
+ * A 4,150 row spreadsheet became a petition counting 12,185. */
+ok(/at\.findOne\(at\.T\.queue,/.test(leadSrc),
+   "the queue is checked, not only the table the drain populates later");
+ok(/SEARCH\('\\"meta_leadgen_id\\":\\"/.test(leadSrc),
+   "searched inside the payload, since the queue stores the submission as JSON");
+ok(/queue\.enqueue\("meta_lead"/.test(leadSrc),
+   "which is the same table this endpoint writes on the request path");
+
+// Simulated: a lead already sitting in the queue must not be ingested again.
+const seenFn = (function () {
+  const src = leadSrc.slice(leadSrc.indexOf("async function seenBefore(")).match(/^[\s\S]*?\n\}/)[0];
+  return (hits) => {
+    const at_ = {
+      esc: (s) => String(s).replace(/'/g, "\\'"),
+      T: { signatures: "Petition Signatures", queue: "Ingest Queue" },
+      findOne: async (t) => (hits[t] ? { id: "rec1" } : null)
+    };
+    return new Function("at", src + "\nreturn seenBefore;")(at_);
+  };
+})();
+Promise.all([
+  seenFn({ "Petition Signatures": true })("1"),
+  seenFn({ "Ingest Queue": true })("1"),
+  seenFn({})("1")
+]).then(([bySig, byQueue, neither]) => {
+  ok(bySig === true, "a drained lead is recognised from the signatures table");
+  ok(byQueue === true, "and one still waiting in the queue is recognised too");
+  ok(neither === false, "a genuinely new lead is not blocked");
+
+  // Nucleus is the store that was being duplicated, so it is asked directly.
+  ok(/nucleus\.entryExists\("petition", email\)/.test(leadSrc),
+     "Nucleus is asked whether it already holds this person");
+  ok(leadSrc.indexOf("nucleus.entryExists") < leadSrc.indexOf("nucleus.submitEntry"),
+     "before being told about them");
+  ok(/cnDuplicate = true;/.test(leadSrc),
+     "and a failed lookup counts as a duplicate, never as a reason to write");
+
+  console.log("\n" + (fails.length ? fails.length + " FAILED" : "all checks passed"));
+  process.exit(fails.length ? 1 : 0);
+});
+return;
+
 // A country code with no subscriber number reached the queue as a mobile.
 ok(h.e164("+61") === "", "a bare country code is not a phone number");
 ok(h.e164("p:+61".replace(/^p:/, "")) === "", "the same once the p: prefix is off");

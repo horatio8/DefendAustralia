@@ -185,11 +185,10 @@ async function ingest(lead) {
   if (!email) throw new Error("lead has no email");
 
   // leadgen_id is Meta's own id for this submission and is the idempotency
-  // key: Meta redelivers, and a redelivery must not become a second signature.
+  // key: Meta redelivers, a relay re-sends, and neither may become a second
+  // signature.
   if (lead.leadgen_id && at.configured()) {
-    const seen = await at.findOne(at.T.signatures,
-      "{meta_leadgen_id}='" + at.esc(lead.leadgen_id) + "'");
-    if (seen) return;
+    if (await seenBefore(lead.leadgen_id)) return;
   }
 
   const campaign = campaignFor(lead.form_id);
@@ -209,19 +208,73 @@ async function ingest(lead) {
 
   // Nucleus first, exactly as a website signature does, so the counter on the
   // site and the CRM stay one number.
-  let cnEntryId = null, cnError = "";
+  //
+  // Asked whether it already has this person before being told about them.
+  // The website signup has always done this; the lead path never did, and
+  // Nucleus is the store that was actually being duplicated, so the check
+  // belongs here more than anywhere.
+  let cnEntryId = null, cnError = "", cnDuplicate = false;
   try {
+    cnDuplicate = await nucleus.entryExists("petition", email);
+  } catch (err) {
+    // Unknown rather than false. A failed lookup must not become a reason to
+    // write a second entry.
+    console.error("CN_LEAD_DUP_CHECK_FAIL", err.message);
+    cnDuplicate = true;
+  }
+
+  try {
+    if (cnDuplicate) throw { skip: true };
     cnEntryId = await nucleus.submitEntry("petition", {
       first_name: p.first_name, last_name: p.last_name, email: p.email,
       phone: p.mobile, postcode: p.postcode,
       utm_source: "meta", utm_medium: "lead_ad", utm_campaign: lead.campaign_name || campaign
     });
   } catch (err) {
-    cnError = err.status === 422 ? "" : String(err.message || err);
-    if (cnError) console.error("CN_META_LEAD_FAIL", cnError);
+    // A duplicate is not a failure, and neither is a 422: Nucleus answers
+    // that when it already holds the address.
+    if (!err || !err.skip) {
+      cnError = err.status === 422 ? "" : String(err.message || err);
+      if (cnError) console.error("CN_META_LEAD_FAIL", cnError);
+    }
   }
 
+  // Queued regardless, so Airtable keeps the ad attribution for a supporter
+  // Nucleus already had. The drain dedupes on leadgen_id before it writes a
+  // signature row, so this cannot double the count either.
   await queue.enqueue("meta_lead", p, { entryId: cnEntryId, error: cnError });
+}
+
+/* Has this exact submission been through here before?
+ *
+ * Two tables, because the answer is in neither one alone.
+ *
+ * Petition Signatures is the durable record and the obvious place to look. It
+ * is also the wrong place to look on its own, because this endpoint does not
+ * write it: it appends to the Ingest Queue and the drain expands that into a
+ * signature later. The drain moves 25 rows a minute. A relay clearing a
+ * backlog moves nearer 200. So the queue grows about eight times faster than
+ * it drains, the signature row for a lead received a minute ago does not
+ * exist yet, and a re-send of that same lead finds nothing and writes a
+ * second Nucleus entry.
+ *
+ * That is not a hypothetical. It is what emptied a 4,150 row spreadsheet into
+ * a petition that counted 12,185.
+ *
+ * The queue is the missing half: its rows are written synchronously, on this
+ * request, so anything already accepted is visible immediately. Searched
+ * inside the stored payload because the queue keeps the submission as JSON
+ * rather than as columns.
+ */
+async function seenBefore(leadgenId) {
+  const id = at.esc(leadgenId);
+
+  const signed = await at.findOne(at.T.signatures, "{meta_leadgen_id}='" + id + "'");
+  if (signed) return true;
+
+  const pending = await at.findOne(at.T.queue,
+    "AND({type}='meta_lead',SEARCH('\"meta_leadgen_id\":\"" + id + "\"',{payload}))");
+  return !!pending;
 }
 
 /* Meta prefixes its own exported values so a spreadsheet cannot mangle them:

@@ -607,6 +607,21 @@ ok(maxDuration >= 30, "the lead webhook is given room to run (" + maxDuration + 
 ok(batchSize > 0 && batchSize <= maxDuration / 2,
    "and a batch of " + batchSize + " fits inside it at a second a lead");
 
+// Batch sizing alone is a guess about latency. Airtable throttles at five
+// requests a second and the retry helper backs off when it does, so a batch
+// that is fine at noon is a 504 at eight. The server stops on the clock.
+const budget = Number((leadSrc.match(/TIME_BUDGET_MS = (\d+)/) || [])[1]);
+ok(budget > 0 && budget < maxDuration * 1000,
+   "the webhook stops on its own clock before the platform kills it");
+ok(/if \(Date\.now\(\) - started > TIME_BUDGET_MS\) break;/.test(leadSrc),
+   "so a long batch returns a count instead of a gateway timeout");
+ok(/remaining: leads\.length - processed/.test(leadSrc),
+   "and reports what it did not get to");
+ok(/res && res\.remaining > 0/.test(gs),
+   "the script reads that and stops rather than losing the rest");
+ok(gs.indexOf("if (short)") < gs.indexOf("props.setProperty('lastRow'"),
+   "leaving the cursor put, so the next run resumes instead of skipping them");
+
 // Dry run by default. Reading 467 leads costs nothing; writing them is a
 // decision that waits on the consent wording of the form.
 ok(/const apply = q\.apply === "1"/.test(pullSrc), "the puller only writes when asked to");

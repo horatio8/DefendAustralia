@@ -72,12 +72,32 @@ function syncLeads() {
     var leads = rows.map(function (r) { return toLead(headers, r); })
                     .filter(function (l) { return l && l.email; });
 
+    // Apps Script kills an execution at six minutes. Stopping at five leaves
+    // room to finish the batch in hand and log what happened, rather than
+    // being cut off mid-request with nothing written down.
+    var deadline = Date.now() + 5 * 60 * 1000;
+    var sent = 0, short = false;
+
     for (var i = 0; i < leads.length; i += BATCH_SIZE) {
-      post(leads.slice(i, i + BATCH_SIZE));
+      if (Date.now() > deadline) { short = true; break; }
+      var slice = leads.slice(i, i + BATCH_SIZE);
+      var res = post(slice);
+      sent += slice.length;
+      // The server stops when it runs out of time and says how much it did
+      // not get to. Anything left is not lost, it is simply not done yet.
+      if (res && res.remaining > 0) { short = true; break; }
     }
 
-    // Advanced only after the posts succeeded. A throw above leaves the
-    // cursor where it was and the next run picks the same rows up again,
+    if (short) {
+      // Cursor deliberately not advanced. The next run sends these rows
+      // again, and everything already written is skipped on its leadgen_id,
+      // so a run that only gets halfway still makes progress.
+      Logger.log('partial: sent %s of %s leads, cursor left at %s', sent, leads.length, cursor);
+      return;
+    }
+
+    // Advanced only after every batch came back complete. A throw above
+    // leaves the cursor where it was and the next run picks the same rows up,
     // which is safe precisely because the endpoint deduplicates.
     props.setProperty('lastRow', String(lastRow));
     Logger.log('sent %s leads, rows %s to %s', leads.length, cursor + 1, lastRow);
@@ -135,6 +155,7 @@ function post(leads) {
     // run, so failing loudly here is what makes the next run retry.
     throw new Error('lead sync failed: HTTP ' + code + ' ' + res.getContentText().slice(0, 300));
   }
+  try { return JSON.parse(res.getContentText()); } catch (e) { return null; }
 }
 
 // ── One-off helpers, run by hand from the editor ─────────────────────────────

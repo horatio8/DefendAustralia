@@ -20,6 +20,11 @@ const nucleus = require("./_lib/nucleus");
 const queue = require("./_lib/queue");
 const { refCodeFor } = require("./_lib/refcode");
 
+// Well inside the 60s maxDuration in vercel.json, so the answer goes back as
+// a 200 with a count rather than as a gateway timeout with no information in
+// it at all.
+const TIME_BUDGET_MS = 45000;
+
 // Which Meta form feeds which petition. Without a mapping a lead still lands,
 // under the default campaign, rather than being dropped for being unexpected.
 function campaignFor(formId) {
@@ -53,15 +58,34 @@ module.exports = async function handler(req, res) {
   const leads = normaliseLeads(b);
   if (!leads.length) return res.status(200).json({ ok: true, leads: 0 });
 
-  let accepted = 0;
+  /* Bounded by the clock, not by the size of the batch.
+   *
+   * Each lead costs an Airtable dedupe read, a Nucleus write and a queue
+   * write, and none of those has a guaranteed latency: Airtable throttles at
+   * five requests a second per base and the retry helper backs off when it
+   * does. A batch that is fine at noon is a timeout at eight, and a timeout
+   * returns 504 having already written some of the leads, with no way for
+   * the caller to know which.
+   *
+   * So the loop stops while there is still time to answer. What did not fit
+   * is reported as remaining, and the caller sends the same rows again —
+   * free, because everything already written is skipped on its leadgen_id.
+   */
+  const started = Date.now();
+  let accepted = 0, processed = 0;
   for (const lead of leads) {
+    if (Date.now() - started > TIME_BUDGET_MS) break;
+    processed++;
     try { await ingest(lead); accepted++; }
     catch (err) { console.error("META_LEAD_FAIL", err.message, JSON.stringify(lead).slice(0, 500)); }
   }
 
   // Always 200. Meta retries aggressively on anything else and every lead here
   // is deduped on leadgen_id, so a retry is safe but a retry storm is not.
-  return res.status(200).json({ ok: true, leads: leads.length, accepted });
+  return res.status(200).json({
+    ok: true, leads: leads.length, accepted,
+    remaining: leads.length - processed
+  });
 };
 
 // The puller in meta-lead-pull.js runs leads through this same function

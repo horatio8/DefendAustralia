@@ -671,6 +671,27 @@ ok(/SEARCH\('\\"meta_leadgen_id\\":\\"/.test(leadSrc),
 ok(/queue\.enqueue\("meta_lead"/.test(leadSrc),
    "which is the same table this endpoint writes on the request path");
 
+
+// A country code with no subscriber number reached the queue as a mobile.
+ok(h.e164("+61") === "", "a bare country code is not a phone number");
+ok(h.e164("p:+61".replace(/^p:/, "")) === "", "the same once the p: prefix is off");
+ok(h.e164("+61417860529") === "+61417860529", "a real mobile still passes");
+ok(h.e164("0421014682") === "+61421014682", "the one domestic-format number is normalised");
+ok(h.e164("+61893002949") === "+61893002949", "landlines pass rather than being dropped");
+ok(h.e164("") === "" && h.e164(null) === "", "an empty phone stays empty");
+
+console.log("\n-- addresses that must not reach Nucleus --");
+// peter@.com.au sat in the lapse queue for a day being retried every five
+// minutes. The old pattern allowed a dot anywhere in the domain, so an empty
+// label before one slipped through.
+ok(!h.validEmail("peter@.com.au"), "an empty domain label is not an address");
+ok(!h.validEmail("frank@kin..net.au"), "nor is a doubled dot");
+ok(!h.validEmail("trail@x.com."), "nor a trailing dot");
+ok(!h.validEmail("bad@-x.com"), "nor a label that starts with a hyphen");
+ok(h.validEmail("o.k@sub.example.com.au"), "a multi-label Australian domain still passes");
+ok(h.validEmail("ok@x-y.org"), "and a hyphen inside a label is fine");
+
+// Async checks last, and they own the tally: nothing may sit below this.
 // Simulated: a lead already sitting in the queue must not be ingested again.
 const seenFn = (function () {
   const src = leadSrc.slice(leadSrc.indexOf("async function seenBefore(")).match(/^[\s\S]*?\n\}/)[0];
@@ -700,18 +721,7 @@ Promise.all([
   ok(/cnDuplicate = true;/.test(leadSrc),
      "and a failed lookup counts as a duplicate, never as a reason to write");
 
+
   console.log("\n" + (fails.length ? fails.length + " FAILED" : "all checks passed"));
   process.exit(fails.length ? 1 : 0);
 });
-return;
-
-// A country code with no subscriber number reached the queue as a mobile.
-ok(h.e164("+61") === "", "a bare country code is not a phone number");
-ok(h.e164("p:+61".replace(/^p:/, "")) === "", "the same once the p: prefix is off");
-ok(h.e164("+61417860529") === "+61417860529", "a real mobile still passes");
-ok(h.e164("0421014682") === "+61421014682", "the one domestic-format number is normalised");
-ok(h.e164("+61893002949") === "+61893002949", "landlines pass rather than being dropped");
-ok(h.e164("") === "" && h.e164(null) === "", "an empty phone stays empty");
-
-console.log("\n" + (fails.length ? fails.length + " FAILED" : "all checks passed"));
-process.exit(fails.length ? 1 : 0);

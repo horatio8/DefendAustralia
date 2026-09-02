@@ -71,7 +71,19 @@ function cleanMultiline(v, max) {
     .slice(0, max || 4000);
 }
 
-const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(e || "").trim());
+/* Not a full RFC 5322 parser, and deliberately not: the point is to reject
+ * the things the capture paths actually receive. The previous pattern let
+ * "peter@.com.au" through, because a dot was allowed anywhere in the domain
+ * and so an empty label before it passed. That one address then sat in the
+ * lapse queue being retried every five minutes, and every retry cost a
+ * Nucleus call that could only ever come back 422.
+ *
+ * The domain is now a run of labels separated by single dots, each label
+ * non-empty and beginning and ending in a letter or digit. That is the shape
+ * of every real hostname, and nothing a keyboard produces by accident. */
+const LABEL = "[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?";
+const EMAIL_RE = new RegExp("^[^@\\s]+@" + LABEL + "(?:\\." + LABEL + ")+$");
+const validEmail = (e) => EMAIL_RE.test(String(e || "").trim());
 
 // Australian mobiles, stored E.164 so the CRM and the SMS provider agree.
 function e164(mobile) {

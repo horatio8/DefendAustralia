@@ -113,6 +113,10 @@ async function drain() {
     } catch (err) {
       out.failed++;
       const status = Number(err && err.status) || 0;
+      // Logged as well as written to the row. A refusal that only lives in
+      // an Airtable cell is invisible to anyone reading the runtime logs,
+      // and that is where an outage is first looked for.
+      console.error("SMS_SEND_FAIL", status || "network", String(err.message || err).slice(0, 200));
 
       /* Never requeued once the provider has been called.
        *

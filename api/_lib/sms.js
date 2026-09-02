@@ -249,7 +249,11 @@ async function send(phone, message) {
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON error body */ }
   if (!r.ok) {
-    const err = new Error("cellcast " + r.status + ": " + (text || "").slice(0, 200));
+    // The envelope is 200 characters of boilerplate before the part that
+    // says why. Surface the message itself, so "Your sender id is not
+    // registered" is what reaches the row and the log, not app_version:1.0.
+    const why = (json && (json.message || (json.error && (json.error.sender || json.error.errorMessage || json.error.error)))) || (text || "").slice(0, 200);
+    const err = new Error("cellcast " + r.status + ": " + String(why).slice(0, 200));
     err.status = r.status;
     throw err;
   }
@@ -270,28 +274,56 @@ async function send(phone, message) {
  * webhook that is down for an hour must not mean an hour of ignored STOPs. */
 async function inbound(sinceIso) {
   if (!configured()) return [];
-  const qs = sinceIso ? "?start=" + encodeURIComponent(sinceIso.slice(0, 10)) : "";
-  const r = await withRetry(() => fetch(base() + "/responses" + qs, {
-    // Same bearer as the send. The APPKEY header this used to carry is not
-    // in the current documentation at all, and an inbound poll that 401s is
-    // how a STOP goes unread for an hour at a time.
-    headers: {
-      "Authorization": "Bearer " + process.env.CELLCAST_API_KEY,
-      Accept: "application/json"
+  /* Documented path is /apiClient/getResponses, paged, newest first. The
+   * previous /responses answered 404 on the current host, which meant the
+   * hourly poll failed every hour and a STOP could sit unread indefinitely.
+   * Paged until the oldest item on a page predates the window, so a burst of
+   * replies larger than one page is not silently cut off at the first. */
+  const since = sinceIso ? Date.parse(sinceIso) : 0;
+  const out = [];
+  for (let page = 1; page <= 20; page++) {
+    const r = await withRetry(() => fetch(base() + "/apiClient/getResponses?page=" + page, {
+      headers: {
+        "Authorization": "Bearer " + process.env.CELLCAST_API_KEY,
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    }), { label: "cellcast inbound" });
+    if (!r.ok) throw new Error("cellcast inbound " + r.status);
+    const json = await r.json().catch(() => null);
+    const d = (json && json.data) || {};
+    const items = Array.isArray(d.items) ? d.items : (Array.isArray(d) ? d : []);
+    let older = false;
+    for (const it of items) {
+      const row = normaliseInbound(it);
+      if (!row.phone) continue;
+      if (since && Date.parse(row.received_at) < since) { older = true; continue; }
+      out.push(row);
     }
-  }), { label: "cellcast inbound" });
-  if (!r.ok) throw new Error("cellcast inbound " + r.status);
-  const json = await r.json().catch(() => null);
-  const rows = (json && (json.data || json.responses)) || [];
-  return rows.map(normaliseInbound).filter((x) => x.phone);
+    if (older || !d.hasNextPage || !items.length) break;
+  }
+  return out;
 }
 
 function normaliseInbound(r) {
+  // Cellcast returns the sender as nine national digits, "419648602", with
+  // no country code. Everything else in this codebase stores E.164, and the
+  // opt-out lookup matches on {mobile} exactly, so a STOP from a nine-digit
+  // "from" would never find the contact it belongs to.
   return {
-    phone: String(r.from || r.sender || r.number || "").trim(),
+    phone: e164Inbound(r.from || r.sender || r.number || ""),
     message: String(r.body || r.message || r.sms_text || "").trim(),
     received_at: r.received_at || r.date_received || r.timestamp || new Date().toISOString()
   };
+}
+
+function e164Inbound(v) {
+  const d = String(v || "").replace(/[^\d+]/g, "");
+  if (!d) return "";
+  if (d.startsWith("+")) return d;
+  if (/^61\d{9}$/.test(d)) return "+" + d;
+  if (/^0?4\d{8}$/.test(d)) return "+61" + d.replace(/^0/, "");
+  return "+" + d;
 }
 
 // STOP, STOPALL, UNSUB, UNSUBSCRIBE, OPTOUT, QUIT, END, CANCEL. Case and

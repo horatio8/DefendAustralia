@@ -453,6 +453,19 @@ ok(/replyStopToOptOut: true/.test(smsLib),
 // A 200 with status:false is a refusal wearing a healthy status line.
 ok(/json\.status === false/.test(smsLib), "a 200 that says it failed is treated as a failure");
 ok(/queueResponse/.test(smsLib), "the provider id is read from where the API actually puts it");
+// The inbound poll answered 404 every hour on the old /responses path, so a
+// STOP could sit unread indefinitely. The documented path is paged and puts
+// the rows under data.items.
+ok(/\/apiClient\/getResponses\?page=/.test(smsCode), "the inbound poll uses the documented path");
+ok(/d\.items/.test(smsCode) && /hasNextPage/.test(smsCode), "and reads data.items, following pages");
+// Cellcast returns the sender as nine national digits; the opt-out lookup
+// matches {mobile} exactly, so an unnormalised STOP never finds its contact.
+const e164In = new Function(smsLib.slice(smsLib.indexOf("function e164Inbound(")).match(/^[\s\S]*?\n\}/)[0] + "\nreturn e164Inbound;")();
+ok(e164In("419648602") === "+61419648602", "a nine-digit inbound sender is normalised to E.164");
+ok(e164In("61419648602") === "+61419648602" && e164In("+61419648602") === "+61419648602", "as are the other shapes Cellcast might use");
+// A refusal surfaces the provider's own message, not 250 chars of envelope.
+ok(/json\.message \|\| \(json\.error && /.test(smsLib), "a provider refusal surfaces its message");
+ok(/SMS_SEND_FAIL/.test(queueSrc), "and a failed send is logged, not only written to the row");
 
 console.log("\n-- one text, once, whatever the provider says --");
 // Live trial, 31 Aug: Cellcast answered HTTP 500 twice with a Redis

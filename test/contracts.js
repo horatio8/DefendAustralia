@@ -226,5 +226,25 @@ ok(apex.length === 0, "no shell points at the apex, which redirects" +
 ok(/\{hero && \(/.test(taFn), "an unset hero image leaves the heading standing");
 ok(/heroAlt \|\| ""/.test(taFn), "the hero image always carries an alt attribute");
 
+// ── The suggested donation amount.
+// The chips are links straight to Stripe, so there is no selection to
+// preselect; one chip is drawn as already chosen. It has to be one of the
+// presets, or the mark points at an amount that is not on the page.
+const siteCfg = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8"));
+const dp = siteCfg.donate.defaultPreset;
+ok(dp === 65, "the suggested amount is $65");
+ok(siteCfg.donate.presets.includes(dp), "and it is one of the presets, so the mark lands on a real chip");
+const panelFn = (appSrc.match(/function DonatePanel\(\{ site, innerRef \}\) \{[\s\S]*?\n\}/) || [""])[0];
+ok(/Number\(d\.defaultPreset\) \|\| 0/.test(panelFn), "the panel reads it from config, not a constant");
+ok(/const on = v === suggested;/.test(panelFn) && /style=\{on \? chipOn : chip\}/.test(panelFn),
+   "and draws that chip as chosen");
+ok(/aria-current=\{on \? "true" : undefined\}/.test(panelFn), "with aria-current for screen readers");
+ok(/\{on && <div[^>]*>Suggested<\/div>\}/.test(panelFn), "and a visible label, since a border alone reads as a hover state");
+// Every donation surface goes through the one panel, so one mark covers all.
+ok((appSrc.match(/<DonatePanel /g) || []).length >= 3,
+   "the home ask, the post-signature screen and the donate page all use the same panel");
+ok(/name: defaultPreset, widget: number/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")),
+   "and it is editable at /admin");
+
 console.log("\n" + (bad ? bad + " FAILED" : "every contract holds"));
 process.exit(bad ? 1 : 0);

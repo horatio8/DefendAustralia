@@ -442,6 +442,7 @@
       550,
       1500
     ],
+    "defaultPreset": 65,
     "outcomes": {
       "35": "Puts the story in front of 1,400 Australians online.",
       "65": "A letterbox run through one Canberra street.",

@@ -1250,7 +1250,17 @@ function DonatePanel({ site, innerRef }) {
   });
 
   const toggle = (which) => ({ flex: 1, padding: 15, fontSize: 14, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", border: "none", cursor: "pointer", background: freq === which ? C.navy : "transparent", color: freq === which ? C.cream : C.mut });
-  const chip = { padding: "22px 10px", textAlign: "center", border: "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer", textDecoration: "none", display: "block", boxSizing: "border-box" };
+  const chip = { padding: "22px 10px", textAlign: "center", border: "1px solid " + C.tan, background: "#FFFFFF", cursor: "pointer", textDecoration: "none", display: "block", boxSizing: "border-box", position: "relative" };
+
+  /* The suggested amount.
+   *
+   * The chips are links straight to Stripe, so there is no selection to
+   * preselect: the nearest thing is one chip drawn as already chosen. Config
+   * rather than a constant, because the right anchor moves with the ask —
+   * a rally week and a quiet week want different numbers, and neither should
+   * need a deploy. Unset, every chip is equal. */
+  const suggested = Number(d.defaultPreset) || 0;
+  const chipOn = { ...chip, border: "2px solid " + C.navy, background: C.cream, padding: "21px 9px" };
 
   return (
     <div className="pad-card" style={{ border: "1px solid " + C.tan, background: C.creamCard, boxShadow: "0 1px 0 " + C.tanLine, padding: 36 }} ref={innerRef}>
@@ -1259,12 +1269,16 @@ function DonatePanel({ site, innerRef }) {
         <button onClick={() => { setFreq("monthly"); setShowOther(false); setOther(""); }} style={toggle("monthly")}>Monthly</button>
       </div>
       <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-        {d.presets.map((v) => (
-          <a key={v} href={links[String(v)] || "#"} onClick={() => initiate(v)} className="hov-border-red" style={chip}>
-            <div style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
-            {freq === "monthly" && <div style={{ fontSize: 11, color: C.faint, marginTop: 5, letterSpacing: ".04em" }}>a month</div>}
-          </a>
-        ))}
+        {d.presets.map((v) => {
+          const on = v === suggested;
+          return (
+            <a key={v} href={links[String(v)] || "#"} onClick={() => initiate(v)} className="hov-border-red" style={on ? chipOn : chip} aria-current={on ? "true" : undefined}>
+              {on && <div style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", fontFamily: MONO, fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: C.cream, background: C.navy, padding: "3px 8px", whiteSpace: "nowrap" }}>Suggested</div>}
+              <div style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, lineHeight: 1 }}>{"$" + fmt(v)}</div>
+              {freq === "monthly" && <div style={{ fontSize: 11, color: C.faint, marginTop: 5, letterSpacing: ".04em" }}>a month</div>}
+            </a>
+          );
+        })}
       </div>
       {freq === "once" ? (
         <a href={customLink || "#"} onClick={() => initiate(0)} className="hov-border-navy" style={{ display: "block", width: "100%", marginTop: 12, fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: C.mut, background: "transparent", border: "1px dashed " + C.tan, padding: 16, cursor: "pointer", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Other amount</a>

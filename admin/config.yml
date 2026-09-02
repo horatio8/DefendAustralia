@@ -159,6 +159,7 @@ collections:
             fields:
               - { label: Kicker, name: kicker, widget: string }
               - { label: Heading, name: heading, widget: text }
+              - { label: "Suggested amount", name: defaultPreset, widget: number, value_type: int, required: false, hint: "One of the preset amounts. It is drawn as the selected choice on every donation panel: the home page ask, the post-signature screen and the donate page. Leave blank for no suggestion." }
               - { label: "Post-signature heading", name: signedHeading, widget: text }
               - { label: "Post-signature body", name: signedBody, widget: text }
               - { label: "Post-signature kicker", name: signedKicker, widget: string }

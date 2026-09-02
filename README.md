@@ -205,10 +205,9 @@ all. It is set explicitly on every send rather than left to an account default,
 because an account default can be changed by anyone with a login and the Spam
 Act obligation does not move with it.
 
-**Sending is currently PAUSED.** `PAUSED_IN_CODE` in `api/_lib/sms.js` is
-`true`, so nothing goes out. `SMS_SENDING=on` in the environment resumes
-without a code change; `SMS_SENDING=off` pauses again without a deploy, which
-is the switch to reach for in a hurry.
+**The sending switch.** `SMS_SENDING=off` pauses all outbound SMS without a
+deploy, which is the switch to reach for in a hurry. Sending is on by default;
+`SMS_SENDING=on` is explicit on.
 
 Paused this way rather than by unsetting `CELLCAST_API_KEY`, because the key
 is also what the inbound poll and the opt-out reads use — pulling it would

@@ -402,16 +402,16 @@ ok(queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("await due(") ||
    queueSrc.indexOf("withinSendingHours") < queueSrc.indexOf("rows = await due"),
    "the window is checked before any row is read or claimed");
 
-console.log("\n-- sending is paused --");
-// Paused in code so it takes effect on deploy rather than waiting for anyone
-// to set a variable, and resumable from the environment without a deploy.
-ok(sms.paused() === true, "nothing sends right now");
-process.env.SMS_SENDING = "on";
-ok(sms.paused() === false, "SMS_SENDING=on resumes without a code change");
-process.env.SMS_SENDING = "off";
-ok(sms.paused() === true, "and SMS_SENDING=off pauses again without a deploy");
+console.log("\n-- the sending switch --");
+// On by default: a default that silently re-pauses on any deploy lacking the
+// variable is a way to lose a week of welcome texts without an error.
 delete process.env.SMS_SENDING;
-ok(sms.paused() === true, "unset falls back to the code default");
+ok(sms.paused() === false, "sending is on by default");
+process.env.SMS_SENDING = "off";
+ok(sms.paused() === true, "SMS_SENDING=off pauses without a deploy");
+process.env.SMS_SENDING = "on";
+ok(sms.paused() === false, "and SMS_SENDING=on is explicit on");
+delete process.env.SMS_SENDING;
 
 // The key stays set: it is also what the inbound poll and the opt-out reads
 // use, and the campaign must keep hearing a STOP while nothing goes out.

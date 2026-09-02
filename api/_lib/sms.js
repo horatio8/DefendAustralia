@@ -19,19 +19,20 @@ const crypto = require("crypto");
 const at = require("./airtable");
 const { withRetry } = require("./retry");
 
-/* Sending is paused.
+/* The sending switch.
  *
- * Held here rather than by unsetting CELLCAST_API_KEY, because the key is
- * also what the inbound poll and the opt-out reads use: pulling it would
- * stop the campaign hearing a STOP, which is the one thing that must keep
- * working while nothing is going out.
+ * SMS_SENDING=off pauses without a deploy, which is the switch to reach for
+ * in a hurry. It is a switch here rather than unsetting CELLCAST_API_KEY,
+ * because the key is also what the inbound poll and the opt-out reads use:
+ * pulling it would stop the campaign hearing a STOP, which is the one thing
+ * that must keep working while nothing is going out.
  *
- * The code default is the pause itself, so it takes effect on deploy without
- * waiting for anyone to set a variable. Resuming does not need a code change:
- * SMS_SENDING=on in the environment overrides it. Setting SMS_SENDING=off
- * pauses again without a deploy, which is the switch to reach for in a hurry.
- */
-const PAUSED_IN_CODE = true;
+ * The code default is on. It was the pause for a night while the sender id
+ * and the provider's opt-out behaviour were sorted out; both are now
+ * confirmed live, and a default that silently re-pauses on any deploy that
+ * happens to lack the variable is a way to lose a week of welcome texts
+ * without a single error. */
+const PAUSED_IN_CODE = false;
 
 function paused() {
   const v = String(process.env.SMS_SENDING || "").trim().toLowerCase();

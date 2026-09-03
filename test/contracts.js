@@ -246,5 +246,18 @@ ok((appSrc.match(/<DonatePanel /g) || []).length >= 3,
 ok(/name: defaultPreset, widget: number/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")),
    "and it is editable at /admin");
 
+// ── The News page video rail follows the channel.
+ok(siteCfg.news.youtubeChannelId === "UCv5OV5miOYgx7uJfcXvSgMw", "the channel id is set");
+ok(siteCfg.news.youtubeHandle === "@DefendSacredGround", "and the handle sits beside it so a human can tell which channel");
+const newsFn = (appSrc.match(/function NewsPage\(\{ site \}\) \{[\s\S]*?const videos = /) || [""])[0];
+ok(/n\.youtubeChannelId \? "channelId="/.test(newsFn) && /n\.youtubeHandle \? "handle="/.test(newsFn),
+   "the page sends whichever of id or handle the config carries");
+ok(/apiGet\("\/api\/youtube\?" \+ q\)/.test(newsFn), "to the feed endpoint");
+const ytSocial = (siteCfg.news.socials || []).find((s) => s.icon === "youtube") || {};
+ok(ytSocial.url === "https://www.youtube.com/@DefendSacredGround", "and Visit channel links to the real channel");
+ok(/name: news\n/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")) &&
+   /name: youtubeHandle/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")),
+   "the channel is editable at /admin");
+
 console.log("\n" + (bad ? bad + " FAILED" : "every contract holds"));
 process.exit(bad ? 1 : 0);

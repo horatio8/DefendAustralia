@@ -211,6 +211,19 @@ collections:
               - { label: "X", name: x, widget: text }
               - { label: "Email subject", name: emailSubject, widget: string }
 
+      - name: news
+        label: News page
+        file: content/site.json
+        fields:
+          - label: News
+            name: news
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lede, name: lede, widget: text }
+              - { label: "YouTube handle", name: youtubeHandle, widget: string, required: false, hint: "e.g. @DefendSacredGround. The Latest videos rail follows this channel automatically; new uploads appear within about ten minutes." }
+              - { label: "YouTube channel id", name: youtubeChannelId, widget: string, required: false, hint: "The UC… id. Optional if the handle is set; the site resolves it. Filling this in skips that lookup." }
+
       - name: media
         label: Press kit
         file: content/site.json

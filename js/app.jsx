@@ -1667,10 +1667,15 @@ function NewsPage({ site }) {
   const [feedError, setFeedError] = useState("");
   const [toast, flash] = useToast();
   useEffect(() => {
-    if (!n.youtubeChannelId) return;
+    // Either the channel id or the @handle is enough; the endpoint resolves
+    // a handle itself, so whichever a human had to hand works.
+    const q = n.youtubeChannelId ? "channelId=" + encodeURIComponent(n.youtubeChannelId)
+      : n.youtubeHandle ? "handle=" + encodeURIComponent(String(n.youtubeHandle).replace(/^@/, ""))
+      : "";
+    if (!q) return;
     // The endpoint answers {items:[…]}; each item already carries its id, its
     // thumbnail and its nocookie embed URL, so nothing is rebuilt here.
-    apiGet("/api/youtube?channelId=" + encodeURIComponent(n.youtubeChannelId))
+    apiGet("/api/youtube?" + q)
       .then((d) => {
         const items = (d && d.items) || [];
         if (!items.length) throw new Error("The channel returned no videos.");

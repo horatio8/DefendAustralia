@@ -427,6 +427,30 @@ ok(/if \(sms\.paused\(\)\) return \{ \.\.\.out, paused: true \}/.test(queueSrc),
 ok(/STALE_MS/.test(queueSrc) && /too old to send/.test(queueSrc),
    "anything long past its time is suppressed rather than sent late");
 
+console.log("\n-- the News page follows the YouTube channel --");
+// Parsed against a fixture cut from the channel's real feed, Shorts included,
+// so the rail is tested against what YouTube actually sends and not against
+// a guess at its shape.
+const yt = require(ROOT + "/api/youtube.js");
+const feedItems = yt.parseFeed(fs.readFileSync(ROOT + "/test/fixtures/youtube-feed.xml", "utf8"));
+ok(feedItems.length === 3, "every entry in the feed becomes a video (" + feedItems.length + ")");
+ok(feedItems[0].id === "ObBLRWT-yLk" && feedItems[0].published === "2026-09-03T05:52:08+00:00",
+   "newest first, with its id and date");
+ok(/hijacked it as a soapbox/.test(feedItems[0].title), "the title is read");
+ok(feedItems[1].title === 'DEFEND SACRED GROUND Eipsode 4 The "Frontier Wars"', "and entities are decoded");
+ok(feedItems.every((v) => v.embed === "https://www.youtube-nocookie.com/embed/" + v.id),
+   "every video gets a nocookie embed");
+ok(feedItems.some((v) => v.id === "XegvzUqX6xI"), "Shorts are included, not filtered out");
+// A handle is what a human knows; the id is what the feed needs.
+ok(yt.channelIdFrom('<link rel="alternate" type="application/rss+xml" href="https://www.youtube.com/feeds/videos.xml?channel_id=UCv5OV5miOYgx7uJfcXvSgMw">') === "UCv5OV5miOYgx7uJfcXvSgMw",
+   "the channel id is read off the channel page's own feed link");
+ok(yt.channelIdFrom('{"externalId":"UCv5OV5miOYgx7uJfcXvSgMw"}') === "UCv5OV5miOYgx7uJfcXvSgMw",
+   "or from the page's bootstrap JSON");
+ok(yt.channelIdFrom("<html>nothing</html>") === "", "and a page without one yields nothing, not a guess");
+const ytSrc = fs.readFileSync(ROOT + "/api/youtube.js", "utf8");
+ok(/req\.query\.handle/.test(ytSrc) && /resolveHandle\(handle\)/.test(ytSrc), "the endpoint accepts a handle and resolves it");
+ok(/HANDLE_MEMO_MS = 86400000/.test(ytSrc), "memoised for a day, so it is one fetch a day, not one a visitor");
+
 console.log("\n-- the Cellcast client matches the documented API --");
 // Every one of these was wrong, and all four fail the same silent way. The
 // path was never exercised: CELLCAST_API_KEY was unset, so the queue held

@@ -17,9 +17,26 @@ const MEMO_MS = 300000;
 module.exports = async function handler(req, res) {
   if (h.guard(req, res, "GET")) return;
 
-  const channelId = h.clean((req.query && req.query.channelId) || "", 40);
+  /* Either a channel id or a handle.
+   *
+   * The RSS feed only takes a UC… id, but nobody who runs a campaign knows
+   * their channel id; they know it is @DefendSacredGround. A handle is
+   * resolved by reading the channel page for the feed link it advertises, and
+   * the answer is memoised, so the cost is one extra fetch a day rather than
+   * one per visitor. Both are accepted so the config can carry whichever a
+   * human has to hand. */
+  let channelId = h.clean((req.query && req.query.channelId) || "", 40);
+  const handle = h.clean((req.query && req.query.handle) || "", 60).replace(/^@/, "");
   if (!/^UC[A-Za-z0-9_-]{20,30}$/.test(channelId)) {
-    return res.status(400).json({ error: "bad channel id" });
+    if (!/^[A-Za-z0-9._-]{3,50}$/.test(handle)) {
+      return res.status(400).json({ error: "bad channel id or handle" });
+    }
+    try {
+      channelId = await resolveHandle(handle);
+    } catch (err) {
+      console.error("YOUTUBE_HANDLE_FAIL", err.message);
+      return res.status(502).json({ error: "could not resolve channel handle", items: [] });
+    }
   }
 
   if (memo && memo.key === channelId && Date.now() - memo.at < MEMO_MS) {
@@ -55,13 +72,38 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({ items });
 };
 
+/* @handle → UC… id, from the feed link the channel page itself advertises.
+ * Memoised per handle: a handle-to-id mapping changes about never. */
+const handleMemo = {}; // handle -> { id, at }
+const HANDLE_MEMO_MS = 86400000;
+async function resolveHandle(handle) {
+  const hit = handleMemo[handle];
+  if (hit && Date.now() - hit.at < HANDLE_MEMO_MS) return hit.id;
+  const r = await fetch("https://www.youtube.com/@" + encodeURIComponent(handle), {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; DefendSacredGround/1.0)", "Accept-Language": "en" }
+  });
+  if (!r.ok) throw new Error("channel page HTTP " + r.status);
+  const id = channelIdFrom(await r.text());
+  if (!id) throw new Error("no channel id on page");
+  handleMemo[handle] = { id, at: Date.now() };
+  return id;
+}
+
+function channelIdFrom(html) {
+  const m = String(html).match(/feeds\/videos\.xml\?channel_id=(UC[A-Za-z0-9_-]{20,30})/) ||
+    String(html).match(/"(?:externalId|channelId)":"(UC[A-Za-z0-9_-]{20,30})"/);
+  return m ? m[1] : "";
+}
+
 async function fromFeed(channelId) {
   const r = await fetch("https://www.youtube.com/feeds/videos.xml?channel_id=" + encodeURIComponent(channelId), {
     headers: { "User-Agent": "DefendSacredGround/1.0" }
   });
   if (!r.ok) throw new Error("feed HTTP " + r.status);
-  const xml = await r.text();
+  return parseFeed(await r.text());
+}
 
+function parseFeed(xml) {
   const out = [];
   const entries = xml.split("<entry>").slice(1);
   for (const e of entries.slice(0, MAX)) {
@@ -124,3 +166,6 @@ function decode(s) {
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&");
 }
+
+module.exports.parseFeed = parseFeed;
+module.exports.channelIdFrom = channelIdFrom;

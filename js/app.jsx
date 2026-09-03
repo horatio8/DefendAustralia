@@ -1664,7 +1664,20 @@ function NewsPage({ site }) {
   const n = site.news;
   const [active, setActive] = useState(null);
   const [ytVideos, setYtVideos] = useState(null);
+  const [igPosts, setIgPosts] = useState(null);
   const [feedError, setFeedError] = useState("");
+  useEffect(() => {
+    // The Instagram grid, when a token is configured. Until then the endpoint
+    // answers 503 and the curated tiles in site.json stay up, so this is a
+    // quiet upgrade rather than a dependency.
+    apiGet("/api/instagram")
+      .then((d) => {
+        const items = (d && d.items) || [];
+        if (!items.length) return;
+        setIgPosts(items.slice(0, 8).map((it) => ({ img: it.image, title: it.title || "", url: it.url })));
+      })
+      .catch(() => {});
+  }, []);
   const [toast, flash] = useToast();
   useEffect(() => {
     // Either the channel id or the @handle is enough; the endpoint resolves
@@ -1712,8 +1725,8 @@ function NewsPage({ site }) {
         {sectionHead("On Instagram", "Follow " + n.instagramHandle + " →", () => openSocial(n.socials.find((x) => x.icon === "instagram") || { platform: "Instagram" }))}
         <p style={{ fontSize: 15, color: C.mut, margin: "0 0 28px" }}>Latest from {n.instagramHandle}. Tap any tile to open the post.</p>
         <div className="m-col2" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-          {n.posts.map((p, i) => (
-            <button key={i} onClick={() => openSocial(n.socials.find((x) => x.icon === "instagram") || { platform: "Instagram" })} style={{ position: "relative", aspectRatio: "1", overflow: "hidden", border: "1px solid " + C.line, padding: 0, background: C.deep, cursor: "pointer", textAlign: "left" }}>
+          {(igPosts || n.posts).map((p, i) => (
+            <button key={i} onClick={() => p.url ? window.open(p.url, "_blank", "noopener") : openSocial(n.socials.find((x) => x.icon === "instagram") || { platform: "Instagram" })} style={{ position: "relative", aspectRatio: "1", overflow: "hidden", border: "1px solid " + C.line, padding: 0, background: C.deep, cursor: "pointer", textAlign: "left" }}>
               <img src={p.img} alt={p.title} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: .85 }} />
               <span style={{ position: "absolute", inset: "auto 0 0 0", background: "linear-gradient(to top,rgba(10,18,34,.9),rgba(10,18,34,0))", color: C.cream, fontSize: 13, fontWeight: 600, padding: "36px 14px 12px", display: "block", lineHeight: 1.35 }}>{p.title}</span>
             </button>

@@ -259,5 +259,16 @@ ok(/name: news\n/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")) &&
    /name: youtubeHandle/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")),
    "the channel is editable at /admin");
 
+// ── The Instagram grid.
+ok(siteCfg.news.instagramHandle === "@defend.australia", "the Instagram handle is the real one");
+const igSocial = (siteCfg.news.socials || []).find((s) => s.icon === "instagram") || {};
+ok(igSocial.url === "https://www.instagram.com/defend.australia/", "and Follow links to the real profile");
+// The grid renders inside the JSX, below the hooks the shorter slice covers.
+const newsAll = (appSrc.match(/function NewsPage\(\{ site \}\) \{[\s\S]*?\n\}\n/) || [""])[0];
+ok(/apiGet\("\/api\/instagram"\)/.test(newsAll), "the page asks the feed endpoint");
+ok(/\(igPosts \|\| n\.posts\)\.map/.test(newsAll), "and falls back to the curated tiles when there is nothing live");
+ok(/p\.url \? window\.open\(p\.url/.test(newsAll), "a live tile opens its own post");
+ok(/name: instagramHandle/.test(fs.readFileSync(ROOT + "/admin/config.yml", "utf8")), "the handle is editable at /admin");
+
 console.log("\n" + (bad ? bad + " FAILED" : "every contract holds"));
 process.exit(bad ? 1 : 0);

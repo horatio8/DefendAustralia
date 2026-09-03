@@ -221,6 +221,7 @@ collections:
             fields:
               - { label: Heading, name: heading, widget: string }
               - { label: Lede, name: lede, widget: text }
+              - { label: "Instagram handle", name: instagramHandle, widget: string, hint: "e.g. @defend.australia. Shown in the On Instagram heading. The grid itself follows the account whose token is configured in Vercel (INSTAGRAM_ACCESS_TOKEN); without one it shows the curated tiles below." }
               - { label: "YouTube handle", name: youtubeHandle, widget: string, required: false, hint: "e.g. @DefendSacredGround. The Latest videos rail follows this channel automatically; new uploads appear within about ten minutes." }
               - { label: "YouTube channel id", name: youtubeChannelId, widget: string, required: false, hint: "The UC… id. Optional if the handle is set; the site resolves it. Filling this in skips that lookup." }
 

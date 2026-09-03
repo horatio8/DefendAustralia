@@ -451,6 +451,23 @@ const ytSrc = fs.readFileSync(ROOT + "/api/youtube.js", "utf8");
 ok(/req\.query\.handle/.test(ytSrc) && /resolveHandle\(handle\)/.test(ytSrc), "the endpoint accepts a handle and resolves it");
 ok(/HANDLE_MEMO_MS = 86400000/.test(ytSrc), "memoised for a day, so it is one fetch a day, not one a visitor");
 
+console.log("\n-- the News page follows Instagram --");
+const ig = require(ROOT + "/api/instagram.js");
+const igItems = ig.parseMedia(JSON.parse(fs.readFileSync(ROOT + "/test/fixtures/instagram-media.json", "utf8")));
+ok(igItems.length === 3, "every post with an image becomes a tile, and one with none is dropped (" + igItems.length + ")");
+ok(igItems[0].title === "They turned our most sacred shrine into a soapbox.", "a tile title is the caption's first real line");
+ok(igItems[1].image === "https://scontent.cdninstagram.com/v/t51/2-thumb.jpg", "a Reel's tile is its thumbnail, not the video file");
+ok(igItems[1].title === "Kim Beazley said so himself.", "a leading hashtag line is skipped for the title");
+ok(igItems[2].title === "" && igItems[2].image.endsWith("3.jpg"), "a carousel with no caption still gets its first image");
+ok(igItems.every((p) => /instagram\.com\/(p|reel)\//.test(p.url)), "every tile links to the post itself, not the profile");
+ok(ig.pickInstagram({ data: [{ name: "Other" }, { name: "DSG", instagram_business_account: { id: "17841400000000000", username: "defend.australia" } }] }).id === "17841400000000000",
+   "the account id is found on whichever Page carries the link");
+ok(ig.pickInstagram({ data: [{ name: "Other" }] }) === null, "and a token that sees no linked account says so rather than guessing");
+const igSrc = fs.readFileSync(ROOT + "/api/instagram.js", "utf8");
+ok(/INSTAGRAM_ACCESS_TOKEN \|\| process\.env\.META_LEAD_PAGE_TOKEN/.test(igSrc), "the lead page token is reused when no dedicated one is set");
+ok(/status\(503\)/.test(igSrc), "an unconfigured grid answers 503 with a reason, not an empty 200");
+ok(/instagram_business_account\{id,username\}/.test(igSrc), "the account is resolved from the token, not typed in");
+
 console.log("\n-- the Cellcast client matches the documented API --");
 // Every one of these was wrong, and all four fail the same silent way. The
 // path was never exercised: CELLCAST_API_KEY was unset, so the queue held

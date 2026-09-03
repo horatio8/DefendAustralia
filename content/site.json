@@ -489,7 +489,7 @@
   "news": {
     "heading": "News from the campaign.",
     "lede": "Updates, social posts, and videos, straight from the campaign. Updated as the fight moves.",
-    "instagramHandle": "@defendsacredground",
+    "instagramHandle": "@defend.australia",
     "youtubeChannelId": "UCv5OV5miOYgx7uJfcXvSgMw",
     "youtubeHandle": "@DefendSacredGround",
     "posts": [
@@ -574,10 +574,10 @@
       },
       {
         "platform": "Instagram",
-        "handle": "@defendsacredground",
+        "handle": "@defend.australia",
         "color": "#E4405F",
         "icon": "instagram",
-        "url": ""
+        "url": "https://www.instagram.com/defend.australia/"
       },
       {
         "platform": "Facebook",

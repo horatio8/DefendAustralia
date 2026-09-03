@@ -162,6 +162,22 @@ which is a different grant from the CAPI token. It falls back to
 user, but the fallback usually lacks the permission and the Graph error says
 so plainly.
 
+**Instagram.** `INSTAGRAM_ACCESS_TOKEN` (falls back to `META_LEAD_PAGE_TOKEN`),
+optionally `INSTAGRAM_USER_ID`. Instagram publishes no feed, so unlike the
+YouTube rail the News page grid needs a Meta Graph token before it shows
+anything; until then it keeps the curated tiles from `site.json` and
+`/api/instagram` answers 503 with the reason.
+
+The token is a Page access token carrying `instagram_basic` (plus
+`pages_show_list`, `pages_read_engagement`) for a Page the Instagram account is
+**linked to** — Business Settings → Instagram accounts → Connected assets. A
+System User token never expires; a Graph Explorer one dies in an hour. The
+account id is resolved from the token at runtime (`/me/accounts` →
+`instagram_business_account`), memoised for a day, so nothing has to be
+looked up by hand; `INSTAGRAM_USER_ID` short-cuts that if it is known. Posts,
+Reels and carousels all come through; a Reel's tile is its thumbnail, a tap
+opens the post itself. Refreshes every ten minutes.
+
 **Campaign Nucleus automations.** `CN_AUTOMATION_PETITION_LAPSE_A` / `_B` and
 `CN_AUTOMATION_DONATION_LAPSE_A` / `_B` are the two arms of each lapse test.
 Nucleus has no create-automation endpoint, so these ids are copied out of the

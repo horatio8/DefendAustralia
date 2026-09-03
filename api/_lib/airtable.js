@@ -40,6 +40,7 @@ const T = {
   // migrated.
   adPerformance: "Ad Performance",
   syncState: "Sync State",
+  socialIdentities: "Identities",
   socialMessages: "Social Messages",
   socialDaily: "Social Daily",
   receptionInvites: "Reception Invites"

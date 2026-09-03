@@ -22,6 +22,7 @@ const sms = require("./_lib/sms");
 const econ = require("./_lib/econ");
 const ab = require("./_lib/ab");
 const milestones = require("./_lib/milestones");
+const social = require("./_lib/social");
 
 const set = (n) => process.env[n] !== undefined && process.env[n] !== "";
 const num = (n, d) => (set(n) && Number.isFinite(Number(process.env[n])) ? Number(process.env[n]) : d);
@@ -109,6 +110,18 @@ function register(live) {
   add("Growth", "Referral integrity", "Repairing missing and colliding referral codes.",
     at.configured(), null, "Cron /api/referral-integrity",
     "Needs the Sync State table to remember its sweep clock.");
+
+  // ---- Listening ----
+  add("Listening", "Social inbox", "Capturing comments and direct messages people send the campaign.",
+    social.configured() && !!process.env.ZERNIO_WEBHOOK_SECRET, null,
+    "ZERNIO_API_KEY and ZERNIO_WEBHOOK_SECRET (env, needs redeploy)",
+    process.env.ZERNIO_WEBHOOK_SECRET ? null : "Without the secret the webhook answers 404, because an unsigned endpoint that writes to the identity graph can be filled with invented people.");
+  add("Listening", "Message analysis", "Scoring tone, stance and escalation on what arrives.",
+    !!process.env.ANTHROPIC_API_KEY, null, "ANTHROPIC_API_KEY (env); cron /api/social-analyse",
+    "Capture never waits for the model. A message lands unscored and is scored later, so a slow model cannot cost a message.");
+  add("Listening", "Identity resolution", "Linking a commenter to a supporter we already know.",
+    at.configured(), null, "Nightly cron /api/identity-resolver",
+    "Email and mobile only, never a name. Most identities stay unresolved, which is the correct outcome.");
 
   // ---- Money ----
   add("Donations", "Checkout", "Taking a card at all.",

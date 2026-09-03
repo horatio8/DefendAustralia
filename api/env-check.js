@@ -125,6 +125,9 @@ const GROUPS = [
       { key: "MILESTONE_WEBHOOK_URL", need: "optional", why: "Posted to when a milestone is crossed. Unset still records the event." },
       { key: "SHOPIFY_STORE_DOMAIN", need: "optional", why: "Merchandise store host, e.g. shop.example.com. Unset leaves the shop page dormant." },
       { key: "SHOPIFY_STOREFRONT_TOKEN", need: "optional", why: "Storefront API token for the merchandise catalogue." },
+      { key: "ZERNIO_API_KEY", need: "optional", why: "Reads the social inbox: comments, direct messages and lead forms. Unset means the campaign never sees what people say to it." },
+      { key: "ZERNIO_WEBHOOK_SECRET", need: "optional", why: "Signs the social webhook. Unset makes /api/zernio-webhook answer 404, because an unsigned endpoint that writes to the identity graph is a way to fill it with invented people." },
+      { key: "ZERNIO_API_BASE", need: "optional", why: "Only for a non-standard host." },
     ]
   },
   {

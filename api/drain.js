@@ -289,6 +289,19 @@ const EXPAND = {
     });
   },
 
+  /* A tap on /wa1 or /wa2, the two tracked ways into the messaging channel.
+   *
+   * No contact is attached and none is looked up. Channel followers are
+   * anonymous by design, and inventing an identity from a user agent to make
+   * the row look richer would be a fiction that later gets counted. The row
+   * exists to answer one question: which message wording brought more people
+   * in. */
+  wa_click: async (p) => {
+    await at.logEvent({
+      event_type: "WhatsApp Click", source_channel: "Other", payload: p
+    });
+  },
+
   // A visitor who asked for a share link without ever having signed.
   share_signup: async (p) => {
     const contact = await at.upsertContact({

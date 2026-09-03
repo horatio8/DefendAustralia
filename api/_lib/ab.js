@@ -123,4 +123,30 @@ async function allRows(table, formula, cap) {
   return out;
 }
 
-module.exports = { assign, rollupDay, allRows };
+/* Where a supporter lands after signing.
+ *
+ * A campaign has two things to ask for the moment somebody signs, and can
+ * only ask one: give us money, or bring us another supporter. Which is worth
+ * more is not answerable from first principles — it depends on the list, the
+ * moment, and how much the ads cost that week — so it is a dial rather than a
+ * decision baked into the page.
+ *
+ * PETITION_SHARE_PERCENT is the percentage sent to the share page; everyone
+ * else gets the donation ask. Unset, negative or unparseable reads as 0,
+ * which is the safe default: the donation ask is the one that pays for the
+ * advertising. Above 100 clamps.
+ *
+ * Rolled per person rather than assigned deterministically, unlike the SMS
+ * tests above. There is no identity to hash at the moment of the roll for the
+ * flows that need this, and a signature happens once — there is no resend
+ * that could move somebody between arms.
+ *
+ * Vercel bakes environment variables at build time, so changing the dial
+ * needs a redeploy to take effect. */
+function rollThanksDestination(rand) {
+  const raw = Number(process.env.PETITION_SHARE_PERCENT);
+  const pct = Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 0;
+  return (rand === undefined ? Math.random() : rand) * 100 < pct ? "/share" : "/donate";
+}
+
+module.exports = { assign, rollupDay, allRows, rollThanksDestination };

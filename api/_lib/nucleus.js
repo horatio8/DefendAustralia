@@ -165,4 +165,25 @@ async function automationAdd(automationId, p) {
   }
 }
 
-module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile, automationAdd };
+/* One profile by its own id.
+ *
+ * Read-only, and the only caller is the prefill path. Nucleus is asked rather
+ * than Airtable because Airtable holds only the people who have interacted
+ * with this site, and an email goes to everyone on the list — most of whom
+ * this site has never seen.
+ *
+ * A missing profile is null, not a throw. The caller must not be able to tell
+ * "no such profile" from "malformed id", so both have to reach the same
+ * uniform answer. */
+async function profile(id) {
+  try {
+    const json = await call("GET", "/profiles/" + encodeURIComponent(id));
+    const p = (json && (json.data || json)) || null;
+    return p && p.id ? p : null;
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+}
+
+module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile, automationAdd, profile };

@@ -33,7 +33,16 @@ const T = {
   questions: "Questions",
   surveyContacts: "Survey Contacts",
   surveyResponses: "Survey Responses",
-  rallyTickets: "Rally Tickets"
+  rallyTickets: "Rally Tickets",
+  // Added with the economics and listening work. Every one of these is
+  // optional: the endpoint that reads it answers "not configured" when the
+  // table is absent, rather than the site breaking because a base was not
+  // migrated.
+  adPerformance: "Ad Performance",
+  syncState: "Sync State",
+  socialMessages: "Social Messages",
+  socialDaily: "Social Daily",
+  receptionInvites: "Reception Invites"
 };
 
 function configured() {
@@ -176,6 +185,115 @@ async function markFanout(eventRecId, ok, error) {
   } catch (e) { /* the log row already exists; the status flag is best effort */ }
 }
 
+/* Paging and batching.
+ *
+ * The single-record helpers above are what a form submission needs. Everything
+ * that rolls up — spend against signups, donations against contacts — has to
+ * walk a whole table, and Airtable hands that back 100 rows at a time behind
+ * an opaque offset. Doing it by hand in each cron is how one of them ends up
+ * silently reading only the first page and reporting a tenth of the truth.
+ *
+ * Every walk takes a deadline. A serverless function is killed at its
+ * maxDuration with no chance to write, so a rollup that cannot finish must
+ * stop early and say so rather than be cut off mid-write. `done` is the
+ * caller's signal that the answer is complete; a watermark must never be
+ * advanced on a walk that came back false. */
+function qs(params) {
+  const parts = [];
+  for (const k of Object.keys(params)) {
+    const v = params[k];
+    if (v === undefined || v === null || v === "") continue;
+    if (k === "fields") {
+      for (const f of v) parts.push("fields%5B%5D=" + encodeURIComponent(f));
+    } else if (k === "sort") {
+      v.forEach((sortSpec, i) => {
+        parts.push("sort%5B" + i + "%5D%5Bfield%5D=" + encodeURIComponent(sortSpec.field));
+        parts.push("sort%5B" + i + "%5D%5Bdirection%5D=" + encodeURIComponent(sortSpec.direction || "asc"));
+      });
+    } else {
+      parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(v));
+    }
+  }
+  return parts.join("&");
+}
+
+async function page(table, opts) {
+  const o = opts || {};
+  const res = await call("GET", table, qs({
+    pageSize: o.pageSize || 100,
+    maxRecords: o.maxRecords,
+    filterByFormula: o.filterByFormula,
+    fields: o.fields,
+    sort: o.sort,
+    view: o.view,
+    offset: o.offset
+  }));
+  return { records: (res && res.records) || [], offset: (res && res.offset) || null };
+}
+
+/* Walk every page, calling back per record. Returns { done, seen, pages }.
+ * `done` is false when the deadline stopped the walk with pages still to
+ * read — the caller then knows its totals are partial. */
+async function walk(table, opts, onRecord) {
+  const o = opts || {};
+  const deadline = o.deadline || Infinity;
+  let offset = null, seen = 0, pages = 0;
+  do {
+    if (Date.now() > deadline) return { done: false, seen, pages };
+    const p = await page(table, { ...o, offset });
+    for (const r of p.records) { onRecord(r); seen++; }
+    pages++;
+    offset = p.offset;
+  } while (offset);
+  return { done: true, seen, pages };
+}
+
+// Airtable takes ten records per write. Anything larger is chunked here so a
+// caller cannot accidentally send eleven and lose the eleventh.
+async function inChunks(items, size, fn) {
+  let n = 0;
+  for (let i = 0; i < items.length; i += size) {
+    await fn(items.slice(i, i + size));
+    n += Math.min(size, items.length - i);
+  }
+  return n;
+}
+
+async function createMany(table, rows) {
+  return inChunks(rows, 10, (batch) =>
+    call("POST", table, null, { records: batch.map((fields) => ({ fields })), typecast: true }));
+}
+
+async function updateMany(table, items) {
+  return inChunks(items, 10, (batch) =>
+    call("PATCH", table, null, { records: batch, typecast: true }));
+}
+
+/* Upsert on a natural key. Airtable matches on fieldsToMergeOn and creates
+ * what it cannot match, which is what makes a poller safe to re-run: the same
+ * hour of ad spend fetched twice updates one row instead of making two. */
+async function upsertBy(table, rows, mergeOn) {
+  return inChunks(rows, 10, (batch) =>
+    call("PATCH", table, null, {
+      records: batch.map((fields) => ({ fields })),
+      typecast: true,
+      performUpsert: { fieldsToMergeOn: mergeOn }
+    }));
+}
+
+/* Does this base have the table at all? A deployment that predates a
+ * migration should report "not configured" from the one endpoint that needs
+ * it, not 500 on a cron every five minutes. */
+async function hasTable(table) {
+  try {
+    await call("GET", table, "maxRecords=1");
+    return true;
+  } catch (err) {
+    if (err.status === 404 || /NOT_FOUND|TABLE_NOT_FOUND/i.test(err.message || "")) return false;
+    throw err;
+  }
+}
+
 // Key-value read/write for the numbers the site serves.
 async function getStat(key) {
   const rec = await findOne(T.stats, "{key}='" + esc(key) + "'");
@@ -191,5 +309,6 @@ async function setStat(key, num, text) {
 
 module.exports = {
   T, configured, call, create, update, findOne, upsertContact, logEvent,
-  markFanout, getStat, setStat, uuid, nowIso, esc, normEmail
+  markFanout, getStat, setStat, uuid, nowIso, esc, normEmail,
+  page, walk, createMany, updateMany, upsertBy, hasTable
 };

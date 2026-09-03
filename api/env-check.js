@@ -221,7 +221,22 @@ async function probe() {
   await time("cellcast", async () => {
     const sms = require("./_lib/sms");
     if (!sms.configured()) throw new Error("CELLCAST_API_KEY not set");
-    return "inbound reachable, " + (await sms.inbound(new Date(Date.now() - 86400000).toISOString())).length + " message(s) in 24h";
+    // The question this probe has to answer is not "is the key valid" but
+    // "can this key send from the configured sender". Those are different
+    // accounts' questions: a valid key for one Cellcast account paired with
+    // a number owned by another passes every check except the send itself.
+    const owned = await sms.ownedNumbers();
+    const sender = process.env.CELLCAST_SENDER_ID || "";
+    const numbers = owned.length ? owned.map((n) => n.number + " (" + n.status + ")").join(", ") : "none";
+    const verdict = !sender ? "no CELLCAST_SENDER_ID; texts go out from Cellcast's shared number"
+      : owned.some((n) => n.number === sender && /active/i.test(n.status)) ? "sender " + sender + " is active on this key's account"
+      : owned.some((n) => n.number === sender) ? "sender " + sender + " is on this key's account but not active"
+      : /^[A-Za-z]/.test(sender) ? "alphanumeric sender " + sender + "; not checkable here"
+      : "SENDER MISMATCH: " + sender + " is not a number on this key's account";
+    const inboundCount = (await sms.inbound(new Date(Date.now() - 86400000).toISOString())).length;
+    const detail = verdict + "; key owns " + numbers + "; " + inboundCount + " inbound message(s) in 24h";
+    if (/^SENDER MISMATCH/.test(verdict)) throw new Error(detail);
+    return detail;
   });
 
   return out;

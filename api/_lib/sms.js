@@ -253,6 +253,12 @@ async function send(phone, message) {
     // says why. Surface the message itself, so "Your sender id is not
     // registered" is what reaches the row and the log, not app_version:1.0.
     const why = (json && (json.message || (json.error && (json.error.sender || json.error.errorMessage || json.error.error)))) || (text || "").slice(0, 200);
+    // The one refusal that has cost a day: the key and the sender belong to
+    // different Cellcast accounts. Say which numbers this key's account
+    // actually owns, next to the sender that was tried, so the log answers
+    // the question instead of restating it. Once an hour at most, since the
+    // answer does not change between one queued text and the next.
+    if (/sender id is not registered/i.test(String(why))) await explainSender();
     const err = new Error("cellcast " + r.status + ": " + String(why).slice(0, 200));
     err.status = r.status;
     throw err;
@@ -268,6 +274,37 @@ async function send(phone, message) {
   const queued = json && json.data && json.data.queueResponse;
   return (Array.isArray(queued) && queued[0] && queued[0].MessageId) ||
     (json && json.data && json.data.message_id) || "";
+}
+
+let senderExplainedAt = 0;
+async function explainSender() {
+  if (Date.now() - senderExplainedAt < 3600000) return;
+  senderExplainedAt = Date.now();
+  try {
+    const owned = await ownedNumbers();
+    console.error("SMS_SENDER_MISMATCH",
+      "configured sender " + (process.env.CELLCAST_SENDER_ID || "(unset)") +
+      " is not registered on this key's account; it owns " +
+      (owned.length ? owned.map((n) => n.number + " (" + n.status + ")").join(", ") : "no dedicated numbers"));
+  } catch (e) {
+    console.error("SMS_SENDER_MISMATCH", "could not list this key's numbers: " + e.message);
+  }
+}
+
+/* The dedicated numbers the configured key can send from. Read off the API
+ * rather than a dashboard, because a dashboard shows whichever account is
+ * logged in and the API shows the account the key belongs to, and those have
+ * already been different once. */
+async function ownedNumbers() {
+  if (!configured()) return [];
+  const r = await fetch(base() + "/apiClient/virtual-number/dedicated", {
+    headers: { "Authorization": "Bearer " + process.env.CELLCAST_API_KEY, Accept: "application/json" }
+  });
+  if (!r.ok) throw new Error("dedicated numbers " + r.status);
+  const json = await r.json().catch(() => null);
+  return ((json && json.data) || []).map((n) => ({
+    number: String(n.audNumber || ""), status: String(n.status || ""), isDefault: !!n.isDefault
+  })).filter((n) => n.number);
 }
 
 /* Pull inbound messages. Used by the hourly poll, which exists because a
@@ -332,6 +369,6 @@ const STOP = /^(stop|stopall|unsub|unsubscribe|optout|opt out|quit|end|cancel)\b
 const isStop = (body) => STOP.test(String(body || "").trim().replace(/^[^\w]+/, ""));
 
 module.exports = {
-  configured, queue, send, inbound, isStop, dedupeKey, optedOut, paused,
+  configured, queue, send, inbound, isStop, dedupeKey, optedOut, paused, ownedNumbers,
   withinSendingHours, nextSendableTime, sydneyParts, OPEN_HOUR, CLOSE_HOUR
 };

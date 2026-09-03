@@ -529,6 +529,35 @@ ok(/possibly delivered: /.test(queueSrc),
 ok(/status >= 400 && status < 500/.test(queueSrc),
    "a 4xx is marked Failed, because retrying a rejected sender cannot help");
 
+console.log("\n-- a sender the key cannot use says which numbers it can --");
+// Cellcast, 2 Sep: two accounts. The master owns 61494440870, the sub-client
+// 61494440874, and a key from one with a number from the other is refused as
+// "Your sender id is not registered" on every send. The refusal names the
+// symptom; the log has to name the cause, which is the list of numbers the
+// key's own account holds.
+ok(/sender id is not registered/i.test(smsCode) && /explainSender\(\)/.test(smsCode),
+   "that exact refusal triggers the explanation");
+ok(/SMS_SENDER_MISMATCH/.test(smsCode) && /process\.env\.CELLCAST_SENDER_ID \|\| "\(unset\)"/.test(smsCode),
+   "which logs the sender that was tried next to the numbers the key owns");
+ok(/\/apiClient\/virtual-number\/dedicated/.test(smsCode), "read from the documented dedicated-numbers endpoint");
+const ownedFn = new Function("fetch", "process",
+  smsLib.slice(smsLib.indexOf("async function ownedNumbers(")).match(/^[\s\S]*?\n\}/)[0] +
+  "\nfunction configured(){return true}\nfunction base(){return 'https://api.cellcast.com/api/v1'}\nreturn ownedNumbers;");
+(async () => {
+  const fake = async () => ({ ok: true, json: async () => ({ data: [
+    { audNumber: "61494440874", status: "Active", isDefault: true },
+    { audNumber: "", status: "Active" }
+  ] }) });
+  const got = await ownedFn(fake, { env: { CELLCAST_API_KEY: "k" } })();
+  ok(got.length === 1 && got[0].number === "61494440874" && got[0].status === "Active",
+     "and the numbers come back as the API shapes them, blanks dropped");
+})();
+const envCheck = fs.readFileSync(ROOT + "/api/env-check.js", "utf8");
+ok(/sms\.ownedNumbers\(\)/.test(envCheck) && /SENDER MISMATCH/.test(envCheck),
+   "the ?live=1 probe answers the same question before a supporter has to");
+ok(/n\.number === sender && \/active\/i\.test\(n\.status\)/.test(envCheck),
+   "and only an active number on this key's account passes");
+
 // The lead puller is the webhook's safety net, so it is only worth having if
 // it actually runs. Scheduled with a narrow window: it exists to catch what a
 // missed delivery dropped, not to re-read the whole history every hour.

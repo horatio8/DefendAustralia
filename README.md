@@ -215,7 +215,11 @@ reads use the same key, so a STOP sent to a number lands only in the inbox of
 the account that owns that number. Splitting key and number across accounts
 means STOPs arrive where nothing is listening. Read the digits off
 `GET /api/v1/apiClient/virtual-number/dedicated` with the key in use, not off
-a dashboard that may be showing a different login.
+a dashboard that may be showing a different login. `/api/env-check?live=1`
+does exactly that: it lists the numbers the configured key's account owns and
+fails the Cellcast row with `SENDER MISMATCH` when `CELLCAST_SENDER_ID` is not
+one of them. A send refused as "not registered" logs the same comparison as
+`SMS_SENDER_MISMATCH`, at most once an hour.
 
 A custom sender costs **1.3 credits per SMS** rather than 1. Numeric sender IDs
 are max 16 digits, alphanumeric max 11 characters, and an alphanumeric one

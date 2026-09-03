@@ -63,6 +63,20 @@ const badCron = vercel.crons.filter((c) => !fs.existsSync(ROOT + c.path.split("?
 ok(badCron.length === 0, "every scheduled cron path exists" +
   (badCron.length ? " (missing: " + badCron.map((c) => c.path).join(", ") + ")" : ""));
 
+// A function budget for a path that no longer exists is a note about a file
+// somebody deleted, and it silently stops applying to whatever replaced it.
+const badFn = Object.keys(vercel.functions || {}).filter((f) => !fs.existsSync(ROOT + "/" + f));
+ok(badFn.length === 0, "every function budget names a real handler" +
+  (badFn.length ? " (missing: " + badFn.join(", ") + ")" : ""));
+
+/* Long crons need a budget, or the platform kills them at its default and the
+ * work is silently truncated every night. These are the ones that walk whole
+ * tables. */
+const needsBudget = ["/api/unit-economics", "/api/referral-integrity", "/api/ad-insights"];
+const unbudgeted = needsBudget.filter((p) => !(vercel.functions || {})[p.slice(1) + ".js"]);
+ok(unbudgeted.length === 0, "every table-walking cron has a maxDuration" +
+  (unbudgeted.length ? " (missing: " + unbudgeted.join(", ") + ")" : ""));
+
 // ── 5. Every rewrite destination resolves.
 const badRw = vercel.rewrites.filter((r) => {
   const d = r.destination.split("?")[0];

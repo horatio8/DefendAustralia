@@ -38,14 +38,18 @@ the bundled campaign platform specification.
 | `/volunteer` | `volunteer.html` | `volunteer` |
 | `/contact` | `contact.html` | `contact` |
 | `/supporters/<slug>` | `webinar.html` | `webinar`, chromeless |
+| `/reception` | `reception.html` | `reception`, chromeless, noindex |
+| `/shop` | `shop.html` | `shop` (dormant until a store is configured) |
 | `/s/<slug>` | `survey/index.html` | standalone survey app |
 | `/admin` | `admin/index.html` | Decap CMS |
 | any unmatched URL | `404.html` | self-contained real 404 |
 
-Vanity redirects (302, repointable) live in `vercel.json`. `/fund` and
-`/fight` rewrite to the tracked-link endpoint; `/leaderboard` rewrites to the
-API. `/take-action/:slug` falls through to the petition shell so an unknown
-slug renders the in-app "not found" rather than a bare 404.
+Vanity redirects (302, repointable) live in `vercel.json`. `/fund`, `/give`
+and `/fight` rewrite to the tracked-link endpoint; `/wa1` and `/wa2` rewrite to
+the channel redirect, which is a function rather than an edge redirect
+precisely so the taps can be counted; `/leaderboard` rewrites to the API.
+`/take-action/:slug` falls through to the petition shell so an unknown slug
+renders the in-app "not found" rather than a bare 404.
 
 ---
 
@@ -329,16 +333,25 @@ is not carried by the jitter into an 8.01pm send.
 
 **Public capture:** `petition-signup`, `capture`, `partial`, `event-log`,
 `checkout`, `share-issued`, `share-click`, `share-context`, `share-signup`,
-`signature-count`, `donation-status`, `youtube`, `track-redirect`,
-`report-broken-link`, `rewrite`, `meta-capi`, `survey/{resolve,capture,answer,complete}`,
-`webinar-{context,register,question}`, `rally-{checkout,claim}`.
+`signature-count`, `donation-status`, `youtube`, `instagram`, `track-redirect`,
+`wa-redirect`, `thanks-destination`, `report-broken-link`, `rewrite`,
+`meta-capi`, `shop`, `prefill/{resolve,probe}`,
+`survey/{resolve,capture,answer,complete}`,
+`webinar-{context,register,question}`, `reception/{resolve,register}`,
+`rally-{checkout,claim}`.
 
 **Webhooks:** `stripe-webhook`, `rally-webhook`, `cellcast-inbound`,
-`meta-lead-webhook`.
+`meta-lead-webhook`, `zernio-webhook`.
 
-**Admin (basic auth):** `env-check`, `leaderboard`, `ab-report`,
-`stripe-backfill`, `lapse-reconcile`, `survey-uids`, `webinar-tokens`,
-`meta-lead-pull`, `link-report`.
+**Admin (basic auth):** `env-check`, `features`, `reconcile`,
+`meta-token-debug`, `leaderboard`, `ab-report`, `link-report`, `wa-report`,
+`econ-dashboard`, `social-dashboard`, `reception-invites`, `stripe-backfill`,
+`lapse-reconcile`, `survey-uids`, `webinar-tokens`, `meta-lead-pull`.
+
+`/api/env-check` says whether a credential is present; `/api/features` says
+what the site is doing with it and where each behaviour is controlled. They
+answer different questions and both are worth reading before changing
+anything.
 
 **Crons:** see below.
 
@@ -354,7 +367,13 @@ that string directly, so it is written for a person and not for a log.
 | `/api/lapse-sweep` | every 5 min | Enrol non-completers, close the ones who finished, tail-kick the SMS queue |
 | `/api/sms-inbound-poll` | hourly | Pull inbound SMS, handle STOP |
 | `/api/nightly-rollup` | daily 04:15 AEST | Referral rollup, A/B daily, full signature recount, milestone hook |
-| `/api/survey-uid-topup` | daily 04:40 AEST | Survey tokens for contacts added since the last run |
+| `/api/survey-uid-topup` | daily 04:40 AEST | Survey tokens for contacts added since the last run, plus any whose code was repaired |
+| `/api/ad-insights` | every 30 min | Per-ad spend from Meta, joined to our own signature counts; cost guardrail |
+| `/api/social-analyse` | every 10 min | Score unread comments and messages for tone, stance and escalation |
+| `/api/social-rollup` | daily 04:25 AEST | Rebuild the social daily rows from source |
+| `/api/identity-resolver` | daily 04:30 AEST | Link social identities to contacts, on email and mobile only |
+| `/api/unit-economics` | daily 04:45 AEST | Acquisition cost, channel and journey classification, revenue and return per ad |
+| `/api/referral-integrity` | hourly | Mint missing referral codes, reissue colliding ones |
 
 `/api/sms-queue` has no schedule. It drains off `/api/signature-count`, the
 busiest endpoint on the site, throttled to once per five minutes per warm
@@ -363,7 +382,7 @@ quiet hours nothing runs.
 
 ## Data model
 
-Base **Defend Sacred Ground** (`appVVWhWpNfImwxH9`), 21 tables.
+Base **Defend Sacred Ground** (`appVVWhWpNfImwxH9`), 27 tables.
 
 Core: `Contacts`, `Events` (append-only, source of truth), `Petition Signatures`,
 `Donations`, `Form Submissions`, `Signups`, `Lapse Queue`, `Site Stats`,
@@ -373,12 +392,68 @@ Growth and measurement: `Referral Rollup`, `AB Daily`, `SMS Sends`,
 `SMS Replies`, `AI Usage`, `Broken Links`.
 
 Programmes: `Webinars`, `Registrations`, `Questions`, `Survey Contacts`,
-`Survey Responses`, `Rally Tickets`.
+`Survey Responses`, `Rally Tickets`, `Reception Invites`.
+
+Economics: `Ad Performance` (spend joined to our own signature counts),
+`Sync State` (resumable watermarks and once-a-day alert guards).
+
+Listening: `Identities` (one row per person seen on social, deliberately not
+Contacts), `Social Messages`, `Social Daily`.
+
+`Contacts` also carries `acquisition_ad_id`, `acquisition_cost`,
+`acquisition_channel` and `donor_journey`, all written only by
+`/api/unit-economics` and only into blanks.
+
+## Measurement and listening
+
+Two systems were added to answer questions the site could not.
+
+**What a supporter costs.** `/api/ad-insights` pulls per-ad spend from Meta
+every half hour and joins it to signatures in *our own* database rather than
+to Meta's lead count. Those two numbers differ — a form completed inside
+Facebook that never reached the CRM is counted by one and not the other — and
+the gap is the point. `/api/unit-economics` then attributes each contact to
+the ad that recruited them, classifies how every supporter arrived and how
+every donor's first gift was raised, and rolls revenue and return back onto
+each ad. `/api/econ-dashboard` reads the snapshot and says how old it is.
+
+An ad id is fifteen digits or more, and `utm_campaign` is never read as one.
+The reference build matched a campaign id against ad ids once and reported
+$8.14 a supporter on a day the ad account showed $1.22.
+
+Nothing pauses an ad. A cron that switches off spend on a metric it computed
+itself will eventually switch off the best performer during an hour when the
+write queue was backed up. Thresholds live in the Site Stats `econ_settings`
+row and change with no redeploy.
+
+**What people are saying.** `/api/zernio-webhook` records comments and direct
+messages; `/api/social-analyse` scores them later. Capture never waits for the
+model — a provider that retries on a slow response eventually disables the
+subscription, and then nothing arrives at all and nobody notices for a week.
+
+An `Identity` is not a `Contact`. Somebody who comments has no email and may
+never give one, and putting them in Contacts would inflate the supporter count
+with people who have signed nothing. `/api/identity-resolver` links the two
+only on a matching email or mobile, never on a name: matching "John Smith" to
+"John Smith" would link hundreds of people, be wrong about most, and attribute
+one person's donations and opt-outs to another with no way to find them again.
+
+The classifier is told to answer *Unclear* rather than guess. That biases the
+picture slightly calm, and in exchange every label is one somebody can act on
+and `/api/social-dashboard`'s escalation list stays short enough to read.
 
 ## Things that are true about this codebase
 
 Written down because each was learned the hard way and each is easy to undo by
 accident.
+
+**Every environment variable the code reads must be documented.** `test/units.js`
+scans `api/` for `process.env` reads and fails unless each one is either listed
+in `/api/env-check` or supplied by the platform. It found five undocumented on
+the day it was written, including `SMS_SENDING` — the switch that holds the SMS
+queue. This is the same class of failure as 2 September, when
+`CELLCAST_SENDER_ID` held a number belonging to a different Cellcast account
+from the key, every text failed, and nothing anywhere was obliged to say so.
 
 **Campaign Nucleus is written first, always.** It is the system of record, the
 site's counter reads from it, and it is the only place a signature has to be

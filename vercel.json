@@ -165,6 +165,33 @@
     },
     "api/meta-lead-pull.js": {
       "maxDuration": 60
+    },
+    "api/unit-economics.js": {
+      "maxDuration": 300
+    },
+    "api/ad-insights.js": {
+      "maxDuration": 120
+    },
+    "api/referral-integrity.js": {
+      "maxDuration": 300
+    },
+    "api/social-analyse.js": {
+      "maxDuration": 60
+    },
+    "api/social-rollup.js": {
+      "maxDuration": 60
+    },
+    "api/identity-resolver.js": {
+      "maxDuration": 60
+    },
+    "api/reconcile.js": {
+      "maxDuration": 60
+    },
+    "api/econ-dashboard.js": {
+      "maxDuration": 60
+    },
+    "api/social-dashboard.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -195,6 +222,30 @@
     {
       "path": "/api/sms-queue",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/ad-insights",
+      "schedule": "5,35 * * * *"
+    },
+    {
+      "path": "/api/social-analyse",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/social-rollup?days=3",
+      "schedule": "25 18 * * *"
+    },
+    {
+      "path": "/api/identity-resolver",
+      "schedule": "30 18 * * *"
+    },
+    {
+      "path": "/api/unit-economics",
+      "schedule": "45 18 * * *"
+    },
+    {
+      "path": "/api/referral-integrity",
+      "schedule": "10 * * * *"
     }
   ]
 }

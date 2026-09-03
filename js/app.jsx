@@ -2605,6 +2605,201 @@ function whenText(startsAt, tz) {
 
 /* ── app shell ───────────────────────────────────────────────────── */
 
+/* The private reception.
+ *
+ * Two ways in, and the page has to make the difference obvious without
+ * lecturing. A personal invitation knows who you are, so the form is already
+ * filled in and the email box is gone — there is nothing to type that we do
+ * not already have, and offering the field invites somebody to register a
+ * different person from the one invited. The shared passcode knows nobody, so
+ * every field is blank and asked for.
+ *
+ * The refusal screen is the same for a wrong token, an expired one and no
+ * token at all. Distinguishing them would tell somebody probing the URL which
+ * of their guesses was closer.
+ */
+function ReceptionPage({ site }) {
+  const [ctx, setCtx] = useState({ state: "loading" });
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const tok = (() => {
+    try { return new URLSearchParams(location.search).get("t") || ""; } catch (e) { return ""; }
+  })();
+  const slug = (() => {
+    try { return new URLSearchParams(location.search).get("event") || ""; } catch (e) { return ""; }
+  })();
+
+  const open = (params) => {
+    setBusy(true);
+    setError("");
+    return apiGet("/api/reception/resolve?" + params)
+      .then((d) => {
+        setBusy(false);
+        if (d && d.admitted) return setCtx({ state: "ready", ...d });
+        setCtx({ state: "closed", passcode_accepted: !!(d && d.passcode_accepted) });
+      })
+      .catch((err) => { setBusy(false); setError(messageOf(err)); setCtx({ state: "closed" }); });
+  };
+
+  useEffect(() => {
+    if (!tok) return void setCtx({ state: "closed", first: true });
+    open("t=" + encodeURIComponent(tok) + (slug ? "&event=" + encodeURIComponent(slug) : ""));
+  }, []);
+
+  if (ctx.state === "loading") {
+    return <Chromeless><p style={{ fontSize: 17, color: C.mut }}>Loading…</p></Chromeless>;
+  }
+
+  if (ctx.state !== "ready") {
+    return (
+      <Chromeless>
+        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>By invitation only</div>
+        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(28px,3.6vw,42px)", lineHeight: 1.1, color: C.navy, margin: "16px 0 16px", fontWeight: 400 }}>
+          This event is by invitation.
+        </h1>
+        <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 26px", maxWidth: 560 }}>
+          {tok
+            ? "That link is not valid. Check the one in your email, or ask us to send it again."
+            : "Open the link from your email. If you were given a password instead, enter it below."}
+        </p>
+        <div style={{ maxWidth: 420 }}>
+          <Field id="rcode" label="Password" value={code} onChange={(e) => setCode(e.target.value)}
+            placeholder="From your invitation" />
+          <Notice>{error}</Notice>
+          <button
+            onClick={() => code.trim() && open("code=" + encodeURIComponent(code.trim()) + (slug ? "&event=" + encodeURIComponent(slug) : ""))}
+            disabled={busy}
+            className={busy ? undefined : "hov-red"}
+            style={btnRed({ width: "100%", marginTop: 18, padding: "18px 24px", opacity: busy ? .72 : 1, cursor: busy ? "default" : "pointer" })}>
+            {busy ? "Checking…" : "Continue"}
+          </button>
+        </div>
+        <p style={{ marginTop: 26 }}>
+          <a href="/contact" style={{ color: C.navy, fontSize: 15 }}>Ask us for the link</a>
+        </p>
+      </Chromeless>
+    );
+  }
+
+  return <ReceptionReady site={site} ctx={ctx} tok={tok} code={code} />;
+}
+
+function ReceptionReady({ site, ctx, tok, code }) {
+  const ev = ctx.event;
+  const [done, setDone] = useState(ctx.already_registered ? { attending: "Yes" } : null);
+  const t = whenText(ev.starts_at, ev.timezone);
+
+  return (
+    <Chromeless wide>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.red }}>By invitation only</div>
+      <h1 style={{ fontFamily: SERIF, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.08, color: C.navy, margin: "16px 0 14px", fontWeight: 400, textWrap: "balance" }}>{ev.title}</h1>
+      {ev.lede && <p style={{ fontSize: 18, lineHeight: 1.65, color: C.body, margin: "0 0 24px", maxWidth: 620, textWrap: "pretty" }}>{ev.lede}</p>}
+
+      <div style={{ border: "1px solid " + C.line, borderLeft: "3px solid " + C.gold, padding: "18px 22px", marginBottom: 32, background: C.creamCard, maxWidth: 620 }}>
+        <div style={{ fontSize: 17, fontWeight: 600, color: C.navy }}>{t.local}</div>
+        {t.other && <div style={{ fontSize: 14, color: C.mut, marginTop: 4 }}>{t.other}</div>}
+        {ev.venue && <div style={{ fontSize: 15, color: C.body, marginTop: 10, whiteSpace: "pre-line" }}>{ev.venue}</div>}
+        {ev.host ? <div style={{ fontSize: 13, color: C.faint, marginTop: 8 }}>With {ev.host}.</div> : null}
+      </div>
+
+      {done ? (
+        <div style={{ border: "1px solid " + C.line, borderLeft: "3px solid " + C.green, background: "#F1F5F1", padding: "18px 22px", maxWidth: 620 }}>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.green, marginBottom: 6 }}>
+            {done.attending === "Cannot make it" ? "Thank you for letting us know" : "You are on the list"}
+          </div>
+          <div style={{ fontSize: 16, lineHeight: 1.6, color: C.body }}>
+            {done.attending === "Cannot make it"
+              ? "We are sorry to miss you. We will send you what comes out of it."
+              : "Your name is on the door. Bring nothing but yourself."}
+          </div>
+        </div>
+      ) : (
+        <ReceptionForm ctx={ctx} tok={tok} code={code} onDone={setDone} />
+      )}
+    </Chromeless>
+  );
+}
+
+function ReceptionForm({ ctx, tok, code, onDone }) {
+  const pre = ctx.prefill || {};
+  const [f, setF] = useState({
+    first_name: pre.first || "", last_name: pre.last || "",
+    email: pre.email || "", mobile: pre.mobile || ""
+  });
+  const [attending, setAttending] = useState("Yes");
+  const [guests, setGuests] = useState(1);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const seats = Math.max(1, Number(ctx.seats) || 1);
+
+  const submit = () => {
+    if (!f.first_name.trim()) return setError("Please enter your first name.");
+    // With an invitation the server already holds the address and ignores
+    // whatever is posted, so the box is not shown and not required.
+    if (!tok && !validEmail(f.email)) return setError("Please enter a valid email address.");
+    setError("");
+    setBusy(true);
+    apiPost("/api/reception/register", { ...f, token: tok, code, attending, guests })
+      .then((d) => onDone(d))
+      .catch((err) => { setBusy(false); setError(messageOf(err)); });
+  };
+
+  const choice = (v, label) => (
+    <button key={v} type="button" onClick={() => setAttending(v)}
+      style={{
+        flex: 1, minHeight: 56, padding: "16px 14px", cursor: "pointer", fontSize: 14, fontWeight: 600,
+        background: attending === v ? C.navy : "#FFFFFF", color: attending === v ? C.cream : C.mut,
+        border: "1px solid " + (attending === v ? C.navy : C.tan), whiteSpace: "normal", lineHeight: 1.25
+      }}>{label}</button>
+  );
+
+  return (
+    <div className="pad-card" style={{ border: "1px solid " + C.tan, background: C.cream, padding: 32, maxWidth: 560 }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 18 }}>Are you coming?</div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+        {choice("Yes", "Yes")}
+        {choice("Maybe", "Maybe")}
+        {choice("Cannot make it", "Can't make it")}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <Field id="rfn" label="First name *" value={f.first_name} onChange={set("first_name")} />
+        <Field id="rln" label="Last name" value={f.last_name} onChange={set("last_name")} />
+      </div>
+      {!tok && (
+        <div style={{ marginTop: 16 }}>
+          <Field id="rem" label="Email *" value={f.email} onChange={set("email")} />
+        </div>
+      )}
+      <div style={{ marginTop: 16 }}>
+        <Field id="rmb" label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
+      </div>
+      {seats > 1 && attending !== "Cannot make it" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 14, color: C.mut, marginBottom: 8 }}>Your invitation admits {seats}.</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {Array.from({ length: seats }, (_, i) => i + 1).map((n) => (
+              <button key={n} type="button" onClick={() => setGuests(n)}
+                style={{
+                  minWidth: 48, minHeight: 44, cursor: "pointer", fontSize: 15, fontWeight: 600,
+                  background: guests === n ? C.navy : "#FFFFFF", color: guests === n ? C.cream : C.mut,
+                  border: "1px solid " + (guests === n ? C.navy : C.tan)
+                }}>{n}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      <Notice>{error}</Notice>
+      <button onClick={submit} disabled={busy} className={busy ? undefined : "hov-red"}
+        style={btnRed({ width: "100%", marginTop: 22, padding: "19px 24px", opacity: busy ? .72 : 1, cursor: busy ? "default" : "pointer" })}>
+        {busy ? "Saving…" : attending === "Cannot make it" ? "Let them know" : "Confirm my place"}
+      </button>
+    </div>
+  );
+}
+
 const PAGES = {
   home: HomePage,
   petition: PetitionPage,
@@ -2618,6 +2813,7 @@ const PAGES = {
   volunteer: VolunteerPage,
   contact: ContactPage,
   webinar: WebinarPage,
+  reception: ReceptionPage,
   takeaction: TakeActionPage,
   media: MediaPage,
   won: WonPage
@@ -2635,7 +2831,7 @@ function App({ site, page }) {
   let focus = false;
   try { focus = page === "donate" && new URLSearchParams(location.search).get("signed") === "1"; } catch (e) {}
   const Page = focus ? DonateFocusPage : (PAGES[page] || HomePage);
-  const chromeless = focus || page === "share" || page === "webinar";
+  const chromeless = focus || page === "share" || page === "webinar" || page === "reception";
   const shell = { fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" };
   if (chromeless) return <div style={shell}><Page site={site} /></div>;
   return (

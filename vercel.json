@@ -60,6 +60,18 @@
   ],
   "rewrites": [
     {
+      "source": "/wa2",
+      "destination": "/api/wa-redirect?v=wa2"
+    },
+    {
+      "source": "/wa1",
+      "destination": "/api/wa-redirect?v=wa1"
+    },
+    {
+      "source": "/reception",
+      "destination": "/reception.html"
+    },
+    {
       "source": "/fund",
       "destination": "/api/track-redirect?l=fund"
     },
@@ -144,8 +156,12 @@
     }
   ],
   "functions": {
-    "api/meta-lead-webhook.js": { "maxDuration": 60 },
-    "api/meta-lead-pull.js": { "maxDuration": 60 }
+    "api/meta-lead-webhook.js": {
+      "maxDuration": 60
+    },
+    "api/meta-lead-pull.js": {
+      "maxDuration": 60
+    }
   },
   "crons": [
     {

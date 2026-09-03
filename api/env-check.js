@@ -128,6 +128,8 @@ const GROUPS = [
       { key: "ZERNIO_API_KEY", need: "optional", why: "Reads the social inbox: comments, direct messages and lead forms. Unset means the campaign never sees what people say to it." },
       { key: "ZERNIO_WEBHOOK_SECRET", need: "optional", why: "Signs the social webhook. Unset makes /api/zernio-webhook answer 404, because an unsigned endpoint that writes to the identity graph is a way to fill it with invented people." },
       { key: "ZERNIO_API_BASE", need: "optional", why: "Only for a non-standard host." },
+      { key: "RECEPTION_PASSCODE", need: "optional", why: "Shared password for a private event, for people the campaign wants in the room but holds no email address for. Unset means there is no passcode route at all, rather than a built-in one nobody knows about." },
+      { key: "RECEPTION_EVENT_SLUG", need: "optional", why: "Which Webinars row /reception opens by default, so the link needs no query string." },
     ]
   },
   {

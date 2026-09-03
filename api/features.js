@@ -23,6 +23,7 @@ const econ = require("./_lib/econ");
 const ab = require("./_lib/ab");
 const milestones = require("./_lib/milestones");
 const social = require("./_lib/social");
+const reception = require("./_lib/reception");
 
 const set = (n) => process.env[n] !== undefined && process.env[n] !== "";
 const num = (n, d) => (set(n) && Number.isFinite(Number(process.env[n])) ? Number(process.env[n]) : d);
@@ -122,6 +123,14 @@ function register(live) {
   add("Listening", "Identity resolution", "Linking a commenter to a supporter we already know.",
     at.configured(), null, "Nightly cron /api/identity-resolver",
     "Email and mobile only, never a name. Most identities stay unresolved, which is the correct outcome.");
+
+  add("Events", "Private invitations", "One personal link per invited guest, and the ledger of who opened theirs.",
+    at.configured(), process.env.RECEPTION_EVENT_SLUG || null,
+    "RECEPTION_EVENT_SLUG (env); invitations issued at /api/reception-invites",
+    "The token is never a referral code: those travel in public share links, so honouring one would let anybody who saw a shared post into the room.");
+  add("Events", "Shared passcode", "A second way in for guests with no email address.",
+    reception.passcodeSet(), null, "RECEPTION_PASSCODE (env, needs redeploy)",
+    reception.passcodeSet() ? "Buys less than an invitation: no prefill, every field typed by hand." : "No passcode route exists while this is unset.");
 
   // ---- Money ----
   add("Donations", "Checkout", "Taking a card at all.",

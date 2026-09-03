@@ -9,6 +9,7 @@ const nucleus = require("./_lib/nucleus");
 // lazy require of a sibling handler is not packaged and fails at runtime with
 // "Cannot find module", which is exactly how this was learned.
 const smsQueue = require("./sms-queue");
+const milestones = require("./_lib/milestones");
 
 const CACHE_SECONDS = 60;
 let cached = null; // { count, at }
@@ -29,6 +30,20 @@ function kickSmsQueue() {
     .catch((err) => console.error("SMS_KICK_FAIL", err.message));
 }
 
+// Throttled the same way as the queue kick, and for the same reason: a warm
+// instance serving a thousand counter reads a minute must not make a thousand
+// datastore round trips to ask whether the number is round.
+const MILESTONE_EVERY_MS = 300000;
+let lastMilestoneCheck = 0;
+
+function checkMilestones(count) {
+  if (Date.now() - lastMilestoneCheck < MILESTONE_EVERY_MS) return;
+  lastMilestoneCheck = Date.now();
+  milestones.check(count)
+    .then((hit) => { if (hit.length) console.log("MILESTONE", JSON.stringify(hit)); })
+    .catch((err) => console.error("MILESTONE_FAIL", err.message));
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "method not allowed" });
   if (!nucleus.configured()) return res.status(503).json({ error: "signature count not configured" });
@@ -42,6 +57,10 @@ module.exports = async function handler(req, res) {
   try {
     const count = await nucleus.entryCount("petition");
     cached = { count, at: Date.now() };
+    // Not awaited. A milestone is worth announcing and not worth a supporter
+    // waiting on: the counter is the busiest endpoint on the site, and this
+    // only does anything at all on the one request that crosses a threshold.
+    checkMilestones(count);
     res.setHeader("Cache-Control", "public, max-age=30, s-maxage=60");
     return res.status(200).json({ count });
   } catch (err) {

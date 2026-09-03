@@ -774,6 +774,89 @@ ok(!h.validEmail("bad@-x.com"), "nor a label that starts with a hyphen");
 ok(h.validEmail("o.k@sub.example.com.au"), "a multi-label Australian domain still passes");
 ok(h.validEmail("ok@x-y.org"), "and a hyphen inside a label is fine");
 
+console.log("\n-- every environment variable the code reads is documented --");
+/* The failure this prevents happened on 2 September and cost a day.
+ *
+ * CELLCAST_SENDER_ID was set to a number belonging to a different Cellcast
+ * account from the key. Every text failed, the row said "sender id is not
+ * registered", and nothing anywhere said which account owned which number —
+ * because nothing was obliged to. A variable can be read by the code and
+ * described nowhere, and then the only person who knows what it means is
+ * whoever typed it.
+ *
+ * So: scan the source for every process.env read, and fail unless the
+ * variable is either listed in /api/env-check (which says what breaks without
+ * it) or named below as supplied by the platform. Adding a new switch now
+ * requires documenting it in the same commit. */
+const RUNTIME_ENV = new Set([
+  // Vercel and Node set these; nobody configures them.
+  "VERCEL", "VERCEL_ENV", "VERCEL_URL", "VERCEL_REGION",
+  "VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_GIT_COMMIT_SHA",
+  "NODE_ENV", "AWS_REGION", "PORT", "TZ"
+]);
+
+/* Names the scanner cannot see because they are composed at runtime: the
+ * lapse sweep builds "CN_AUTOMATION_" + form + "_LAPSE" and then appends the
+ * A/B arm. They are documented in the register and read by real code; only
+ * the regular expression cannot follow them there. */
+const COMPOSED_ENV = new Set([
+  "CN_AUTOMATION_PETITION_LAPSE", "CN_AUTOMATION_PETITION_LAPSE_A", "CN_AUTOMATION_PETITION_LAPSE_B",
+  "CN_AUTOMATION_DONATION_LAPSE", "CN_AUTOMATION_DONATION_LAPSE_A", "CN_AUTOMATION_DONATION_LAPSE_B"
+]);
+
+const declaredEnv = new Set();
+for (const g of require(ROOT + "/api/env-check").GROUPS) {
+  for (const v of g.vars) declaredEnv.add(v.key);
+}
+
+function readsEnv(dir) {
+  const found = new Map();
+  const walkDir = (d) => {
+    for (const name of fs.readdirSync(d)) {
+      const full = path.join(d, name);
+      const st = fs.statSync(full);
+      if (st.isDirectory()) { if (name !== "node_modules") walkDir(full); continue; }
+      if (!/\.(js|jsx)$/.test(name)) continue;
+      const src = fs.readFileSync(full, "utf8");
+      const re = /process\.env\.([A-Z][A-Z0-9_]*)/g;
+      let m;
+      while ((m = re.exec(src))) {
+        if (!found.has(m[1])) found.set(m[1], path.relative(ROOT, full));
+      }
+    }
+  };
+  walkDir(dir);
+  return found;
+}
+
+const used = readsEnv(ROOT + "/api");
+const undocumented = [];
+for (const [name, file] of used) {
+  if (declaredEnv.has(name) || RUNTIME_ENV.has(name)) continue;
+  undocumented.push(name + " (" + file + ")");
+}
+ok(undocumented.length === 0,
+   "no undocumented variables" + (undocumented.length ? ": " + undocumented.join(", ") : ""));
+ok(declaredEnv.size > 40, "the register is populated (" + declaredEnv.size + " variables)");
+// The register is not allowed to grow entries nothing reads either: a
+// variable documented but never read is an instruction to set something that
+// does nothing, which is worse than silence.
+const stale = [];
+for (const name of declaredEnv) if (!used.has(name) && !COMPOSED_ENV.has(name)) stale.push(name);
+ok(stale.length === 0, "no documented variable is unread" + (stale.length ? ": " + stale.join(", ") : ""));
+
+console.log("\n-- the capability report names a control for every entry --");
+/* A report that says a feature is off without saying where to turn it on is
+ * a bug report, not a diagnostic. */
+const featureRows = require(ROOT + "/api/features").register({ econ_settings: null, econ_settings_read: false });
+ok(featureRows.length >= 20, "the register covers the site (" + featureRows.length + " entries)");
+ok(featureRows.every((r) => r.area && r.name && r.what && r.control),
+   "and every entry names an area, what it changes, and where it is controlled");
+// A dial reports a value; a switch reports true or false. An entry that is
+// neither is an entry nobody can read.
+ok(featureRows.every((r) => r.on === true || r.on === false || (r.on === null && r.value)),
+   "a switch is on or off, and a dial carries its value");
+
 // Async checks last, and they own the tally: nothing may sit below this.
 // Simulated: a lead already sitting in the queue must not be ingested again.
 const seenFn = (function () {

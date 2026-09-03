@@ -54,9 +54,13 @@ const GROUPS = [
       { key: "META_PIXEL_ID", need: "should", why: "Browser pixel and the CAPI destination. Without it every ad dollar is unmeasured." },
       { key: "META_CAPI_TOKEN", need: "should", why: "Server-side events. Roughly a third of browser events never arrive without this half." },
       { key: "META_TEST_EVENT_CODE", need: "optional", why: "Routes events to Meta's test view instead of live. Remove before a real flight." },
+      { key: "INSTAGRAM_ACCESS_TOKEN", need: "optional", why: "Reads the Instagram grid on the News page. Falls back to META_LEAD_PAGE_TOKEN. Unset shows the curated tiles from site.json instead." },
+      { key: "INSTAGRAM_USER_ID", need: "optional", why: "The Instagram business account id. Optional: the site resolves it from the linked Page." },
       { key: "META_LEAD_VERIFY_TOKEN", need: "optional", why: "Meta's webhook subscription handshake for lead ads." },
       { key: "META_LEAD_SECRET", need: "optional", why: "Shared secret on the lead relay. Without it the lead webhook is open." },
-      { key: "META_LEAD_FORM_MAP", need: "optional", why: 'JSON map of Meta form id to petition slug, e.g. {"123":"defend-sacred-ground"}.' }
+      { key: "META_LEAD_FORM_MAP", need: "optional", why: 'JSON map of Meta form id to petition slug, e.g. {"123":"defend-sacred-ground"}.' },
+      { key: "META_LEAD_PAGE_TOKEN", need: "optional", why: "Page token with leads_retrieval, used by the hourly pull. Without it leads only arrive if the webhook fires, and a webhook that was down for an hour loses that hour." },
+      { key: "META_LEAD_FORM_IDS", need: "optional", why: "Comma-separated form ids the puller walks. Unset makes it discover the page's forms itself." }
     ]
   },
   {
@@ -65,7 +69,8 @@ const GROUPS = [
       { key: "CELLCAST_API_KEY", need: "optional", why: "Outbound texts and the inbound poll. Without it the queue holds and sends nothing." },
       { key: "CELLCAST_SENDER_ID", need: "optional", why: "The from name on a text." },
       { key: "CELLCAST_API_BASE", need: "optional", why: "Only for a non-standard Cellcast host." },
-      { key: "CELLCAST_WEBHOOK_SECRET", need: "optional", why: "Shared token on the inbound webhook. Without it the endpoint accepts anything." }
+      { key: "CELLCAST_WEBHOOK_SECRET", need: "optional", why: "Shared token on the inbound webhook. Without it the endpoint accepts anything." },
+      { key: "SMS_SENDING", need: "optional", why: "on or off. The master switch: off holds the queue and writes nothing to it, so a pause does not build a pile of stale texts that all send at once when it lifts. Unset uses the default compiled into api/_lib/sms.js." }
     ]
   },
   {
@@ -96,6 +101,30 @@ const GROUPS = [
       { key: "RALLY_STRIPE_WEBHOOK_SECRET", need: "optional", why: "Signs the ticket webhook. Without it no ticket is ever recorded." },
       { key: "RALLY_TICKET_PRICE_ID", need: "optional", why: "A Stripe price for tickets. Falls back to RALLY_TICKET_CENTS." },
       { key: "RALLY_TICKET_CENTS", need: "optional", why: "Ticket price in cents when no price id is set. Defaults to 2500." }
+    ]
+  },
+  {
+    name: "Advertising economics",
+    vars: [
+      { key: "META_AD_ACCOUNT_ID", need: "optional", why: "Which ad account to read spend from. Without it nothing knows what a supporter costs." },
+      { key: "META_ADS_TOKEN", need: "optional", why: "A token with ads_read. Falls back to META_CAPI_TOKEN, which works when that token's system user can reach the ad account." },
+      { key: "ADVERTISER_TZ", need: "optional", why: "The ad account's own timezone. Defaults to Australia/Sydney. An hour out puts a morning's spend on yesterday's cost per supporter." },
+      { key: "CPA_ALERT_THRESHOLD", need: "optional", why: "Cost per signature that counts as too expensive. Defaults to 2.5. The live value is the Site Stats econ_settings row, which needs no redeploy." },
+      { key: "ALERT_MIN_SPEND", need: "optional", why: "Spend floor before an ad can be called expensive. Defaults to 15, so a $2 ad cannot raise an alarm." },
+      { key: "ALERT_WINDOW_HOURS", need: "optional", why: "How many recent hours of spend the guardrail looks at. Defaults to 3." },
+      { key: "ALERT_MOBILE", need: "optional", why: "Where a cost alert is texted. Unset records the alert without texting anyone." },
+      { key: "JOURNEY_SIGNUP_WINDOW_HOURS", need: "optional", why: "How long after signing a gift still counts as given at signup. Defaults to 24." }
+    ]
+  },
+  {
+    name: "Growth and channels",
+    vars: [
+      { key: "PETITION_SHARE_PERCENT", need: "optional", why: "Percentage sent to the share page after signing; the rest get the donation ask. Unset means everybody is asked for money." },
+      { key: "WHATSAPP_CHANNEL_URL", need: "optional", why: "Where /wa1 and /wa2 lead. Unset makes both answer 404 rather than sending supporters somewhere arbitrary." },
+      { key: "SIGNATURE_MILESTONES", need: "optional", why: "Comma-separated totals worth announcing, e.g. 50000,75000,100000. Unset means no milestone ever fires." },
+      { key: "MILESTONE_WEBHOOK_URL", need: "optional", why: "Posted to when a milestone is crossed. Unset still records the event." },
+      { key: "SHOPIFY_STORE_DOMAIN", need: "optional", why: "Merchandise store host, e.g. shop.example.com. Unset leaves the shop page dormant." },
+      { key: "SHOPIFY_STOREFRONT_TOKEN", need: "optional", why: "Storefront API token for the merchandise catalogue." },
     ]
   },
   {
@@ -301,6 +330,7 @@ function html(groups, missingMust, missingShould, live) {
  * to answer the same question before it can trust a "no payment found". */
 const liveStripeKey = require("./_lib/stripe").liveKey;
 module.exports.liveStripeKey = liveStripeKey;
+module.exports.GROUPS = GROUPS;
 
 function esc(s) {
   return String(s == null ? "" : s)

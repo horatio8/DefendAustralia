@@ -225,6 +225,23 @@ collections:
               - { label: "YouTube handle", name: youtubeHandle, widget: string, required: false, hint: "e.g. @DefendSacredGround. The Latest videos rail follows this channel automatically; new uploads appear within about ten minutes." }
               - { label: "YouTube channel id", name: youtubeChannelId, widget: string, required: false, hint: "The UC… id. Optional if the handle is set; the site resolves it. Filling this in skips that lookup." }
 
+      - name: shop
+        label: Shop
+        file: content/site.json
+        fields:
+          - label: Shop
+            name: shop
+            widget: object
+            fields:
+              - { label: "Store address", name: storeUrl, widget: string, required: false, hint: "e.g. https://shop.example.com. The products, prices, photos and stock all come from there, and every purchase is made there. Leave blank and /shop says the shop is not open yet." }
+              - { label: "Store name", name: storeName, widget: string, required: false }
+              - { label: Currency, name: currency, widget: string, required: false, hint: "Three letters, e.g. AUD. Display only; the store decides what is actually charged." }
+              - { label: Kicker, name: kicker, widget: string, required: false }
+              - { label: Heading, name: heading, widget: string, required: false }
+              - { label: Lede, name: lede, widget: text, required: false }
+              - { label: "Heading when there is nothing to sell", name: emptyHeading, widget: string, required: false }
+              - { label: "Lede when there is nothing to sell", name: emptyLede, widget: text, required: false }
+
       - name: media
         label: Press kit
         file: content/site.json

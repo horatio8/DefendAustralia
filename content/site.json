@@ -820,5 +820,15 @@
     "nextBody": "The decisions still have not been published in full, and until they are nobody can say what else was approved. That is the next thing.",
     "ctaLabel": "Keep the pressure on",
     "ctaHref": "/take-action"
+  },
+  "shop": {
+    "storeUrl": "",
+    "storeName": "The shop",
+    "currency": "AUD",
+    "kicker": "Wear it",
+    "heading": "Merchandise",
+    "lede": "Every purchase funds the campaign. Orders are fulfilled by our store; nothing is charged on this site.",
+    "emptyHeading": "The shop is not open yet.",
+    "emptyLede": "Check back shortly, or join the campaign in the meantime."
   }
 }

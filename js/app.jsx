@@ -2605,6 +2605,133 @@ function whenText(startsAt, tz) {
 
 /* ── app shell ───────────────────────────────────────────────────── */
 
+/* The shop.
+ *
+ * Every price, image and stock state comes from the store, and every "Buy"
+ * link goes straight back to it. Nothing here takes money, holds stock, or
+ * knows what is in a basket — the moment a campaign site starts doing that it
+ * has acquired a payments problem, a tax problem and a refunds problem that
+ * nobody staffed for.
+ *
+ * The referral code rides on the cart link, so a supporter who shares the
+ * shop and brings a sale is visible against the order in the store. It is the
+ * only way a merch sale can ever be credited to the person who caused it.
+ */
+function ShopPage({ site }) {
+  const cfg = site.shop || {};
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    apiGet("/api/shop")
+      .then((d) => setData(d))
+      .catch((err) => { setError(messageOf(err)); setData({ products: [], collections: [] }); });
+  }, []);
+
+  const ref = (() => {
+    try { return localStorage.getItem("dsg_ref_code") || ""; } catch (e) { return ""; }
+  })();
+
+  const products = ((data && data.products) || [])
+    .filter((p) => filter === "all" || (p.collections || []).indexOf(filter) > -1);
+
+  return (
+    <div>
+      <div style={{ background: C.deep, color: C.cream }}>
+        <div className="m-pad p-hero" style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 28px 64px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".26em", textTransform: "uppercase", color: C.gold }}>{cfg.kicker || "Wear it"}</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(40px,5.4vw,72px)", lineHeight: 1, margin: "22px 0 0", fontWeight: 400 }}>{cfg.heading || "Merchandise"}</h1>
+          {cfg.lede && <p style={{ fontSize: 19, lineHeight: 1.6, color: C.goldPale, margin: "22px 0 0", maxWidth: 620, textWrap: "pretty" }}>{cfg.lede}</p>}
+        </div>
+      </div>
+
+      <div className="m-pad p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 96px" }}>
+        {!data && <p style={{ fontSize: 17, color: C.mut }}>Loading…</p>}
+        <Notice>{error}</Notice>
+
+        {data && !products.length && (
+          <div style={{ maxWidth: 560 }}>
+            <h2 style={{ fontFamily: SERIF, fontSize: 26, color: C.navy, fontWeight: 400, margin: "0 0 12px" }}>
+              {cfg.emptyHeading || "The shop is not open yet."}
+            </h2>
+            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.mut, margin: "0 0 24px" }}>
+              {cfg.emptyLede || "Check back shortly."}
+            </p>
+            <a href="/take-action/defend-sacred-ground" className="hov-red" style={btnRed({ padding: "17px 28px", display: "inline-block" })}>Sign the petition</a>
+          </div>
+        )}
+
+        {data && data.collections && data.collections.length > 1 && products.length ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+            {[{ handle: "all", title: "Everything" }].concat(data.collections.filter((c) => c.count)).map((c) => (
+              <button key={c.handle} type="button" onClick={() => setFilter(c.handle)}
+                style={{
+                  padding: "10px 16px", cursor: "pointer", fontSize: 14, fontWeight: 600,
+                  background: filter === c.handle ? C.navy : "#FFFFFF",
+                  color: filter === c.handle ? C.cream : C.mut,
+                  border: "1px solid " + (filter === c.handle ? C.navy : C.tan)
+                }}>{c.title}</button>
+            ))}
+          </div>
+        ) : null}
+
+        {products.length ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 24 }}>
+            {products.map((p) => <ShopItem key={p.handle} p={p} store={data.store} ref_={ref} />)}
+          </div>
+        ) : null}
+
+        {data && data.store && products.length ? (
+          <p style={{ fontSize: 13, color: C.faint, marginTop: 32, maxWidth: "60ch" }}>
+            Orders are taken and fulfilled by the store. Nothing is charged on this site.
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ShopItem({ p, store, ref_ }) {
+  // One variant means one button. More than one and the shopper has to choose
+  // a size, which the store's own page does properly — sending them there is
+  // better than half-rebuilding a variant picker here.
+  const single = p.variants.length === 1 && p.variants[0].available;
+  const href = single
+    ? store.url + "/cart/" + p.variants[0].id + ":1?attributes%5Bsource%5D=" +
+      encodeURIComponent(location.hostname) + (ref_ ? "&attributes%5Bref%5D=" + encodeURIComponent(ref_.toUpperCase()) : "")
+    : p.url;
+
+  const price = p.price == null ? "" :
+    (p.priceMax && p.priceMax !== p.price ? "$" + p.price + "–$" + p.priceMax : "$" + p.price);
+
+  return (
+    <div style={{ border: "1px solid " + C.tan, background: "#FFFFFF", display: "flex", flexDirection: "column" }}>
+      <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: C.creamCard, aspectRatio: "1/1", overflow: "hidden" }}>
+        {p.image
+          ? <img src={p.image.src} alt={p.image.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          : null}
+      </a>
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: C.navy, lineHeight: 1.35 }}>{p.title}</div>
+        <div style={{ fontSize: 14, color: C.mut, marginTop: 4 }}>
+          {price}
+          {p.compareAt ? <span style={{ marginLeft: 8, textDecoration: "line-through", color: C.faint }}>${p.compareAt}</span> : null}
+        </div>
+        <div style={{ flex: 1 }} />
+        {p.available ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="hov-red"
+            style={btnRed({ marginTop: 14, padding: "13px 18px", display: "block", textAlign: "center", fontSize: 14 })}>
+            {single ? "Buy" : "Choose a size"}
+          </a>
+        ) : (
+          <div style={{ marginTop: 14, padding: "13px 18px", textAlign: "center", fontSize: 14, color: C.faint, border: "1px solid " + C.tan }}>Sold out</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* The private reception.
  *
  * Two ways in, and the page has to make the difference obvious without
@@ -2814,6 +2941,7 @@ const PAGES = {
   contact: ContactPage,
   webinar: WebinarPage,
   reception: ReceptionPage,
+  shop: ShopPage,
   takeaction: TakeActionPage,
   media: MediaPage,
   won: WonPage

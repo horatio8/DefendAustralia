@@ -863,6 +863,52 @@ const areaOrder = [];
 for (const r of featureRows) if (areaOrder[areaOrder.length - 1] !== r.area) areaOrder.push(r.area);
 ok(new Set(areaOrder).size === areaOrder.length, "every area is contiguous, so no heading appears twice");
 
+console.log("\n-- the shop takes no money --");
+const shop = require(ROOT + "/api/shop");
+const shopSrc = fs.readFileSync(ROOT + "/api/shop.js", "utf8");
+/* The one rule. A campaign site that starts holding baskets and charging
+ * cards has acquired a payments problem, a tax problem and a refunds problem
+ * that nobody staffed for. Every purchase leaves for the store. */
+ok(!/stripe|payment_intent|charges\.create/i.test(shopSrc), "nothing here can take a card");
+ok(/\/cart\//.test(shopSrc), "buying is a link into the store's own cart");
+// Unset must mean off, not a default pointing at some other campaign's shop.
+ok(!shop.configured(), "with nothing configured the shop is off");
+const shopItem = shop.normaliseProduct({
+  handle: "t", title: "Tee", product_type: "Apparel", tags: "Navy, Unisex",
+  body_html: "<p>Cotton.</p><br>Local.",
+  variants: [{ id: 1, title: "S", price: "45.00", compare_at_price: "55.00", available: true },
+             { id: 2, title: "M", price: "49.50", available: false }]
+}, "https://s.example.com", new Map());
+ok(shopItem.price === 45 && shopItem.priceMax === 49.5, "a price range comes from the cheapest and dearest variant");
+ok(shopItem.available === true, "and one variant in stock means the product is buyable");
+ok(shopItem.colour === "Navy" && shopItem.fit === "unisex", "colour and fit are read off the store's own tags");
+ok(shopItem.description === "Cotton. Local.", "the description is plain text, with block tags becoming spaces");
+ok(/attributes%5Bref%5D=AB12CD/.test(shop.buyUrl("https://s.example.com", 1, { ref: " ab12cd " })),
+   "a referral code rides on the cart link, so a shared sale can be credited");
+ok(shop.buyUrl("https://s.example.com", 1, {}).indexOf("ref") === -1,
+   "and no empty attribute is sent when there is no code");
+
+console.log("\n-- private invitations --");
+const rec = require(ROOT + "/api/_lib/reception");
+const recSrc = fs.readFileSync(ROOT + "/api/reception/register.js", "utf8");
+const inviteToken = rec.mintToken();
+ok(inviteToken.length === rec.TOKEN_LEN && rec.validShape(inviteToken), "a token is the right length and shape");
+ok(!/[O0lI1]/.test(rec.ALPHABET), "and drops the glyphs that go wrong when it is read down a phone");
+ok(new Set(Array.from({ length: 50 }, () => rec.mintToken())).size === 50, "tokens do not repeat");
+// The invitation's own details win. Otherwise one forwarded link registers
+// any number of strangers under any names they type.
+ok(/invite\.fields\.email \? invite\.fields\.email :/.test(recSrc),
+   "a valid invitation registers its holder, not whoever the form claims to be");
+ok(/Math\.min\(allowed/.test(recSrc), "and never admits more people than the invitation grants");
+// A passcode nobody set must not exist.
+const hadPass = process.env.RECEPTION_PASSCODE;
+delete process.env.RECEPTION_PASSCODE;
+ok(!rec.passcodeSet() && !rec.passcodeOk("anything"), "with no passcode configured there is no passcode route");
+process.env.RECEPTION_PASSCODE = "Defend Forever";
+ok(rec.passcodeOk(" defendforever ") && !rec.passcodeOk("defendforeve"),
+   "a set passcode ignores case and spacing, because it is retyped off a text message");
+if (hadPass === undefined) delete process.env.RECEPTION_PASSCODE; else process.env.RECEPTION_PASSCODE = hadPass;
+
 console.log("\n-- what the campaign is told about its own inbox --");
 const socialLib = fs.readFileSync(ROOT + "/api/_lib/social.js", "utf8");
 const hookSrc = fs.readFileSync(ROOT + "/api/zernio-webhook.js", "utf8");

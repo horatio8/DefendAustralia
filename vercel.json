@@ -60,6 +60,10 @@
   ],
   "rewrites": [
     {
+      "source": "/shop",
+      "destination": "/shop.html"
+    },
+    {
       "source": "/wa2",
       "destination": "/api/wa-redirect?v=wa2"
     },

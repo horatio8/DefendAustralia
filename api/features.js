@@ -24,6 +24,7 @@ const ab = require("./_lib/ab");
 const milestones = require("./_lib/milestones");
 const social = require("./_lib/social");
 const reception = require("./_lib/reception");
+const shop = require("./shop");
 
 const set = (n) => process.env[n] !== undefined && process.env[n] !== "";
 const num = (n, d) => (set(n) && Number.isFinite(Number(process.env[n])) ? Number(process.env[n]) : d);
@@ -105,9 +106,9 @@ function register(live) {
     "WHATSAPP_CHANNEL_URL (env, needs redeploy)",
     process.env.WHATSAPP_CHANNEL_URL ? null : "Both paths answer 404 while unset, rather than redirecting somewhere arbitrary.");
   add("Growth", "Shop", "The merchandise catalogue on /shop.",
-    !!(process.env.SHOPIFY_STORE_DOMAIN && process.env.SHOPIFY_STOREFRONT_TOKEN),
-    process.env.SHOPIFY_STORE_DOMAIN || null,
-    "SHOPIFY_STORE_DOMAIN and SHOPIFY_STOREFRONT_TOKEN (env, needs redeploy)");
+    shop.configured(), shop.storeUrl() || null,
+    "shop.storeUrl in site.json (editable at /admin), or SHOP_STORE_URL",
+    shop.configured() ? "Checkout stays in Shopify; no card is ever taken on this site." : "Unset means /shop says the shop is not open, rather than pointing at another campaign's storefront.");
   add("Growth", "Referral integrity", "Repairing missing and colliding referral codes.",
     at.configured(), null, "Cron /api/referral-integrity",
     "Needs the Sync State table to remember its sweep clock.");

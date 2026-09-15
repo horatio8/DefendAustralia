@@ -181,6 +181,13 @@ collections:
               - { label: "Correspondence copy address", name: correspondenceEmail, widget: string }
               - { label: "Copy mode", name: copyMode, widget: select, options: ["bcc", "cc"], required: false, hint: "bcc keeps the campaign's copy off the supporter's own letter." }
               - { label: "Goes-to note", name: goesToNote, widget: text }
+              - label: "Hero image"
+                name: heroImage
+                widget: image
+                required: false
+                hint: "Sits behind the heading, desaturated under a navy wash so the words stay readable. Upload the conference banner here and it appears immediately. If the file is missing the hero falls back to plain navy rather than showing a broken image."
+              - { label: "Hero image description", name: heroAlt, widget: string, required: false, hint: "Leave blank to hide it from screen readers, which is right when the image is decoration rather than information." }
+              - { label: "Hero focal point", name: heroPosition, widget: string, required: false, hint: "CSS object-position, e.g. \"center 40%\". Moves the visible part of the crop." }
               - { label: "Chair's photo", name: portrait, widget: image, required: false }
               - { label: "Photo alt text", name: portraitAlt, widget: string, required: false }
               - { label: "Require a mobile number", name: mobileRequired, widget: boolean, default: false, hint: "On a page whose job is volume, this is the field people abandon on." }

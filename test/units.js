@@ -162,6 +162,23 @@ ok(/[Nn]ever accuse/.test(beazleySys), "the rewrite is forbidden from making an 
 ok(!/lie|corrupt|fraud|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
    "and no letter makes one either");
 
+/* The hero carries the conference's own banner, from our own assets.
+ *
+ * Hotlinking it would hand the organisation being campaigned against an off
+ * switch over our hero, and would tell them the referrer of every supporter
+ * who loads the page. */
+/* Empty is allowed and is the shipped state: the banner has to be uploaded
+ * at /admin before it can be pointed at. What is never allowed is an absolute
+ * URL, which would mean hotlinking. */
+const heroSrc = siteJson.beazley.heroImage || "";
+ok(heroSrc === "" || heroSrc.charAt(0) === "/",
+   "the hero image is served from our own assets, never hotlinked");
+ok(!/^https?:/i.test(heroSrc), "and never loaded from another site");
+ok(/onError=\{\(\) => setHeroOk\(false\)\}/.test(appSrc),
+   "and a missing file falls back to the plain hero rather than a broken image");
+ok(/grayscale\(/.test(appSrc) && /linear-gradient\(100deg,rgba\(13,31,51/.test(appSrc),
+   "it sits under a navy wash, because the banner is red type and so is the site");
+
 /* The campaign does not send traffic to the thing it is objecting to. */
 const linkable = [siteJson.beazley, JSON.stringify(siteJson.beazley)].map(String).join(" ");
 ok(!/awm\.gov\.au/i.test(linkable) && !/awm\.gov\.au/i.test(fs.readFileSync(ROOT + "/beazley.html", "utf8")),

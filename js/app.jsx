@@ -1046,6 +1046,10 @@ function MinisterPage({ site, configKey }) {
   const [delivered, setDelivered] = useState(false);
   const [error, setError] = useState("");
   const [rewriteError, setRewriteError] = useState("");
+  // A hero image that fails to load takes its own scrim with it, so the page
+  // falls back to the plain navy hero rather than to a broken-image icon
+  // under a dark wash.
+  const [heroOk, setHeroOk] = useState(true);
   const [toast, flash] = useToast();
   const sessionId = useRef("s-" + Math.random().toString(36).slice(2, 10));
   useHashScroll();
@@ -1136,8 +1140,37 @@ function MinisterPage({ site, configKey }) {
 
   return (
     <div>
-      <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
+      <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
+        {/* The conference's own banner, behind the heading that answers it.
+         *
+         * Two things had to be true. It has to be recognisable, because the
+         * whole page is about that event and a supporter should see it and
+         * know immediately which thing is being objected to. And it has to
+         * stay behind the words: the banner is mostly enormous red type, and
+         * red type under a white headline is unreadable for both.
+         *
+         * So it is desaturated, dimmed, and covered by a navy wash that is
+         * heaviest on the left where the text sits and lightest on the right
+         * where the artwork can still be read. The file is served from our
+         * own assets rather than hotlinked: a campaign that loads an image
+         * from the organisation it is campaigning against has handed them an
+         * off switch, and tells them who is looking. */}
+        {m.heroImage && heroOk && (
+          <React.Fragment>
+            <img src={m.heroImage} alt={m.heroAlt || ""} aria-hidden={m.heroAlt ? undefined : true}
+                 style={{
+                   position: "absolute", inset: 0, width: "100%", height: "100%",
+                   objectFit: "cover", objectPosition: m.heroPosition || "center center",
+                   filter: "grayscale(.55) contrast(1.05) brightness(.62)"
+                 }}
+                 onError={() => setHeroOk(false)} />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(100deg,rgba(13,31,51,.95) 0%,rgba(13,31,51,.88) 42%,rgba(13,31,51,.62) 78%,rgba(13,31,51,.5) 100%)"
+            }}></div>
+          </React.Fragment>
+        )}
+        <div className="m-pad m-col p-sec" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>{m.kicker}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: 54, lineHeight: 1.03, margin: "20px 0 18px", fontWeight: 400 }}>{m.heading}</h1>

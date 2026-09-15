@@ -185,7 +185,7 @@ collections:
                 name: heroImage
                 widget: image
                 required: false
-                hint: "Sits behind the heading, desaturated under a navy wash so the words stay readable. Upload the conference banner here and it appears immediately. If the file is missing the hero falls back to plain navy rather than showing a broken image."
+                hint: "Sits behind the heading, dimmed under a navy wash so the words stay readable. Upload here, or paste a link to our own media CDN. Never point it at an image hosted by the organisation we are campaigning against: they could change or remove it, and it would tell them who is visiting. A missing file falls back to plain navy rather than a broken image."
               - { label: "Hero image description", name: heroAlt, widget: string, required: false, hint: "Leave blank to hide it from screen readers, which is right when the image is decoration rather than information." }
               - { label: "Hero focal point", name: heroPosition, widget: string, required: false, hint: "CSS object-position, e.g. \"center 40%\". Moves the visible part of the crop." }
               - { label: "Chair's photo", name: portrait, widget: image, required: false }

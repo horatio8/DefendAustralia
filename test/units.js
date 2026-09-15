@@ -167,17 +167,30 @@ ok(!/lie|corrupt|fraud|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
  * Hotlinking it would hand the organisation being campaigned against an off
  * switch over our hero, and would tell them the referrer of every supporter
  * who loads the page. */
-/* Empty is allowed and is the shipped state: the banner has to be uploaded
- * at /admin before it can be pointed at. What is never allowed is an absolute
- * URL, which would mean hotlinking. */
+/* Where the hero may come from.
+ *
+ * A local asset, or the campaign's own media CDN, or nothing. The rule was
+ * never "no absolute URLs" — it is that the campaign must not load its hero
+ * from the organisation it is campaigning against. Doing so hands them an off
+ * switch over our page and tells them the referrer of everybody who opens it.
+ *
+ * Our own CDN is the opposite case: it is what a CDN is for, and the only
+ * cost is a third party in the render path, which the onError fallback below
+ * already covers. */
+const OUR_HOSTS = ["cdn.nucleusfiles.com", "nucleuspages.com", "defendsacredground.com"];
 const heroSrc = siteJson.beazley.heroImage || "";
-ok(heroSrc === "" || heroSrc.charAt(0) === "/",
-   "the hero image is served from our own assets, never hotlinked");
-ok(!/^https?:/i.test(heroSrc), "and never loaded from another site");
+const heroHost = /^https?:\/\/([^/]+)/i.exec(heroSrc);
+ok(heroSrc === "" || heroSrc.charAt(0) === "/" ||
+   (heroHost && OUR_HOSTS.some((hst) => heroHost[1].toLowerCase().endsWith(hst))),
+   "the hero image is ours: a local asset, or our own media CDN");
+/* Named explicitly rather than inferred, so this keeps failing even if the
+ * allowlist above is ever widened carelessly. */
+const THEIRS = /awm\.gov\.au|australianwarmemorial/i;
+ok(!THEIRS.test(heroSrc), "and never hosted by the organisation being campaigned against");
 ok(/onError=\{\(\) => setHeroOk\(false\)\}/.test(appSrc),
    "and a missing file falls back to the plain hero rather than a broken image");
 ok(/grayscale\(/.test(appSrc) && /linear-gradient\(100deg,rgba\(13,31,51/.test(appSrc),
-   "it sits under a navy wash, because the banner is red type and so is the site");
+   "it sits under a navy wash, so a headline over it is readable at every width");
 
 /* The campaign does not send traffic to the thing it is objecting to. */
 const linkable = [siteJson.beazley, JSON.stringify(siteJson.beazley)].map(String).join(" ");

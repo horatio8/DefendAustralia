@@ -1141,27 +1141,26 @@ function MinisterPage({ site, configKey }) {
   return (
     <div>
       <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
-        {/* The conference's own banner, behind the heading that answers it.
+        {/* Campaign artwork behind the heading.
          *
-         * Two things had to be true. It has to be recognisable, because the
-         * whole page is about that event and a supporter should see it and
-         * know immediately which thing is being objected to. And it has to
-         * stay behind the words: the banner is mostly enormous red type, and
-         * red type under a white headline is unreadable for both.
+         * Dimmed and lightly desaturated under a navy wash that is heaviest
+         * on the left, where the words sit, and lightest on the right, where
+         * the artwork can still be read. The wash is not decoration: a
+         * headline over an undimmed image is unreadable at some window width
+         * on some screen, and nobody finds out which.
          *
-         * So it is desaturated, dimmed, and covered by a navy wash that is
-         * heaviest on the left where the text sits and lightest on the right
-         * where the artwork can still be read. The file is served from our
-         * own assets rather than hotlinked: a campaign that loads an image
-         * from the organisation it is campaigning against has handed them an
-         * off switch, and tells them who is looking. */}
+         * The source may be a local asset or the campaign's own media CDN.
+         * What it must never be is an image hosted by the organisation being
+         * campaigned against: that hands them an off switch over our hero and
+         * tells them the referrer of everybody who opens the page. A test
+         * enforces the difference. */}
         {m.heroImage && heroOk && (
           <React.Fragment>
             <img src={m.heroImage} alt={m.heroAlt || ""} aria-hidden={m.heroAlt ? undefined : true}
                  style={{
                    position: "absolute", inset: 0, width: "100%", height: "100%",
                    objectFit: "cover", objectPosition: m.heroPosition || "center center",
-                   filter: "grayscale(.55) contrast(1.05) brightness(.62)"
+                   filter: "grayscale(.3) contrast(1.02) brightness(.6)"
                  }}
                  onError={() => setHeroOk(false)} />
             <div style={{

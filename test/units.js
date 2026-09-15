@@ -91,7 +91,7 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
-console.log("\n-- the letter to the Chair asks for the same three things --");
+console.log("\n-- the letter to the Chair carries the program and the question --");
 /* Two email-action pages now: the Minister, who can intervene, and the Chair
  * of the Council, who took the decision. They must ask for the same things.
  *
@@ -108,22 +108,64 @@ ok(beazleySys !== sys, "the Chair gets his own guardrails, not the Minister's");
 ok(/Chair of the Council/i.test(beazleySys), "which name the campaign correctly");
 
 const siteJson = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8"));
-for (const [key, block] of [["minister", siteJson.minister], ["beazley", siteJson.beazley]]) {
-  const promptText = prompts.systemPrompt(key);
-  const demands = block.demands || prompts.CAMPAIGNS[key].demands;
+{
+  const promptText = prompts.systemPrompt("minister");
+  const demands = siteJson.minister.demands || prompts.CAMPAIGNS.minister.demands;
   ok(demands.every((d) => promptText.indexOf(d) > -1),
-     key + ": every demand on the page is enforced on the rewrite");
-  ok(prompts.CAMPAIGNS[key].demands.length === demands.length,
-     key + ": and the rewrite carries no demand the page does not make");
+     "every demand on the Minister page is enforced on the rewrite");
+  ok(prompts.CAMPAIGNS.minister.demands.length === demands.length,
+     "and the rewrite carries no demand that page does not make");
 }
-/* The wording differs between the two letters and should: one asks a third
- * party to intervene, the other puts it to the man who decided. What must not
- * differ is what is being asked for. The opening verb of each demand is that
- * ask stripped of its manners, so those are compared and the prose is left
- * alone — "halt" must never become "review" on one page only. */
-const verbs = (c) => prompts.CAMPAIGNS[c].demands.map((d) => norm(d).split(" ")[0]);
-ok(JSON.stringify(verbs("minister")) === JSON.stringify(verbs("beazley")),
-   "both letters ask for the same three things, in the same order: " + verbs("beazley").join(", "));
+ok(siteJson.beazley.points.length >= 3, "the Chair's page states the program's facts in the hero");
+/* The two letters have different jobs and no longer make the same ask. The
+ * Minister is asked to intervene in the redevelopment; the Chair is asked one
+ * question about one conference. Holding them to identical demands, as an
+ * earlier version of this file did, would now force the campaign to argue the
+ * wrong thing on one of the two pages.
+ *
+ * What must hold is narrower and more important: the letters a supporter is
+ * shown and the guardrails the rewrite enforces must agree, on both pages. */
+const CONFERENCE = {
+  "the dates": /17 and 18 September/,
+  "the title": /Imperialism and Resistance/,
+  "the speaker count": /[Tt]wenty speakers/,
+  "the staff count": /[Ff]our/,
+  "the gallery": /gallery[^.]*already in development/i
+};
+const beazleyLetters = siteJson.beazley.variations.map((v) => v.body);
+
+/* Every letter carries every fact. A supporter who is randomly shown the
+ * third variation must be making the same case as one shown the first, or the
+ * campaign is running four different arguments and cannot answer for any of
+ * them. */
+for (const [what, re] of Object.entries(CONFERENCE)) {
+  ok(beazleyLetters.every((b) => re.test(b)), "every letter to the Chair carries " + what);
+  ok(re.test(beazleySys), "and the rewrite is told " + what);
+}
+
+/* The question is the letter. A rewrite that softens it into "I wonder
+ * whether" has asked nothing, and one that drops it has sent a complaint. */
+const THE_QUESTION = "Why will the Australian War Memorial not hear the other side?";
+ok(beazleyLetters.every((b) => b.indexOf(THE_QUESTION) > -1),
+   "every letter ends on the question");
+ok(beazleyLetters.every((b) => b.trim().endsWith("Yours sincerely,")),
+   "and nothing follows it but the sign-off the page completes");
+ok(/hear the other side/.test(beazleySys) && /end on it/.test(beazleySys),
+   "the rewrite is required to keep the question and to finish on it");
+ok(/never end on anything other than the question/i.test(beazleySys),
+   "and told so twice, because this is the one line that must survive");
+
+/* Nobody is accused of anything. Every fact is from the published program,
+ * and the letter's force comes from the program rather than from adjectives —
+ * which is also what keeps it from being dismissed unread. */
+ok(/[Nn]ever accuse/.test(beazleySys), "the rewrite is forbidden from making an accusation");
+ok(!/lie|corrupt|fraud|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
+   "and no letter makes one either");
+
+/* The campaign does not send traffic to the thing it is objecting to. */
+const linkable = [siteJson.beazley, JSON.stringify(siteJson.beazley)].map(String).join(" ");
+ok(!/awm\.gov\.au/i.test(linkable) && !/awm\.gov\.au/i.test(fs.readFileSync(ROOT + "/beazley.html", "utf8")),
+   "the page never links to the conference it is objecting to");
 
 /* The page must never claim a letter was delivered when there was nobody to
  * deliver it to. Shipping without a confirmed address is deliberate — a wrong

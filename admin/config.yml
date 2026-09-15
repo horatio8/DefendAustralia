@@ -160,11 +160,11 @@ collections:
               - { label: Kicker, name: kicker, widget: string }
               - { label: Heading, name: heading, widget: text }
               - { label: Lede, name: lede, widget: text }
-              - label: "The three demands"
-                name: demands
+              - label: "The facts, numbered in the hero"
+                name: points
                 widget: list
-                field: { label: Demand, name: demand, widget: text }
-                hint: "Shown numbered in the hero AND enforced on the AI rewrite. If you change these, api/_lib/prompts.js must change in the same release or the rewrite will argue for something the page does not ask for. A test fails if they drift."
+                field: { label: Fact, name: point, widget: text }
+                hint: "What is on the conference program. These are stated, not argued: the letter asks one question and the program is the case. If a number or a date changes here it must change in api/_lib/prompts.js in the same release, or the AI rewrite will keep repeating the old one. A test fails if the letters and the guardrails drift apart."
               - { label: "Nudge line", name: nudge, widget: string, required: false }
               - label: "Who it goes to"
                 name: recipients

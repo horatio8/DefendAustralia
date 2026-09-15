@@ -1145,9 +1145,9 @@ function MinisterPage({ site, configKey }) {
             {/* The ask, stated before the form rather than only inside the
                 letter. A supporter who scrolls past the hero and never reads
                 the draft should still be able to say what they just sent. */}
-            {m.demands && m.demands.length ? (
+            {(m.points || m.demands) && (m.points || m.demands).length ? (
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 26px", maxWidth: 520 }}>
-                {m.demands.map((d, i) => (
+                {(m.points || m.demands).map((d, i) => (
                   <li key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
                     <span style={{ fontFamily: MONO, fontSize: 12, color: C.gold, lineHeight: 1.7, flex: "none" }}>{i + 1}</span>
                     <span style={{ fontSize: 16, lineHeight: 1.55, color: C.cream }}>{d}</span>

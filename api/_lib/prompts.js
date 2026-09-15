@@ -49,23 +49,39 @@ const CAMPAIGNS = {
    * accusations below applies with full force to the man who chaired the
    * meeting.
    */
+  /* The letter to the Chair about the conference.
+   *
+   * This letter is a question, not a list of demands, and that is its whole
+   * design: every fact in it is on the Memorial's own published program, and
+   * the question is the only thing asked. A rewrite that turns it into an
+   * accusation hands the recipient a reason to dismiss it, and a rewrite that
+   * softens the question into "I wonder whether" asks nothing at all.
+   *
+   * The numbers, the dates and the title of the conference are the letter.
+   * They are on the permitted list exactly as the campaign states them, and
+   * the house rule against inventing specifics does the rest: no rewrite may
+   * round twenty to "many", move the dates, or reword the title.
+   *
+   * His record is permitted because it is the argument. A man who has held
+   * those offices knows what a one-sided program looks like, which is why the
+   * campaign's line is that he knows better, not that he does not understand.
+   */
   beazley: {
-    label: "Letter to the Chair of the Council of the Australian War Memorial",
+    label: "Letter to the Chair of the Council of the Australian War Memorial, about the September conference",
     demands: [
-      "Halt the works that alter the Memorial's commemorative character until they have been put to the public.",
-      "Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.",
-      "Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation."
+      "Ask this question, in these words or words just as direct, and end on it: why will the Australian War Memorial not hear the other side?"
     ],
     permitted: [
-      "The Australian War Memorial is undergoing a redevelopment with a budget of $548.7 million, and the reinterpretation of Australia's history is part of that program rather than the whole of it.",
-      "The decisions were taken by the Australian War Memorial Council.",
+      "The Australian War Memorial is holding a conference on 17 and 18 September titled Imperialism and Resistance: Australia's First Wars.",
+      "Twenty speakers are on the program.",
+      "No speaker has been invited to put the case against treating colonial frontier conflict as war.",
+      "Four of the presenters are Australian War Memorial staff.",
+      "The gallery is already in development.",
       "Kim Beazley chairs the Australian War Memorial Council.",
       "Kim Beazley has been Minister for Defence, Australia's Ambassador to the United States, and Governor of Western Australia.",
-      "The Memorial is governed by an Act of Parliament that covers war and warlike operations by the Australian Defence Force.",
-      "The changes were not put to the public before they were approved.",
       "The Memorial was established as a place of commemoration for Australians who died in war."
     ],
-    tone: "A private citizen writing to the Chair of a public board about a decision he took. Plain, direct, unmistakably genuine. It may appeal to his own record of service. Firm without being abusive, and never personal about anything beyond the decision itself."
+    tone: "A private citizen writing to the Chair of a public board with one direct question. Plain, civil and unmistakably genuine. The force comes from the program itself, not from adjectives: state the facts and ask the question. Never accuse anybody of anything, and never end on anything other than the question."
   }
 };
 

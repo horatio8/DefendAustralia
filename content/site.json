@@ -830,5 +830,49 @@
     "lede": "Every purchase funds the campaign. Orders are fulfilled by our store; nothing is charged on this site.",
     "emptyHeading": "The shop is not open yet.",
     "emptyLede": "Check back shortly, or join the campaign in the meantime."
+  },
+  "beazley": {
+    "kicker": "Direct action · the Chair",
+    "heading": "Kim Beazley chairs the Council that did this.",
+    "lede": "The Minister can ask. The Council decides. Write to the man who signed it off, in your own words, from your own address.",
+    "demands": [
+      "Halt the works that alter the Memorial's commemorative character until they have been put to the public.",
+      "Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.",
+      "Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation."
+    ],
+    "nudge": "Put your name to it. It takes ten seconds.",
+    "recipients": [],
+    "recipientName": "The Hon. Kim Beazley AC, Chair, Council of the Australian War Memorial",
+    "recipientDisplay": "Chair, Council of the Australian War Memorial",
+    "toEmail": "",
+    "correspondenceEmail": "correspondence@defendsacredground.com",
+    "copyMode": "bcc",
+    "goesToNote": "Blind copied to correspondence@defendsacredground.com so the campaign can count it",
+    "portrait": "",
+    "portraitAlt": "",
+    "mobileRequired": false,
+    "hideNav": true,
+    "sentHeading": "Sent. Now the Chair has to answer.",
+    "sentLede": "One letter is a letter. Thousands are a decision he cannot leave to the Director's office. Yours is on the record.",
+    "unaddressedHeading": "Your letter is ready. Send it now.",
+    "unaddressedLede": "The Chair's correspondence address is not published on this page yet, so your mail app cannot be opened for you. Copy the letter below and send it from your own email. We have kept every word.",
+    "variations": [
+      {
+        "subject": "The Memorial is not the Council's to reinterpret",
+        "body": "Dear Mr Beazley,\n\nI am writing to you as Chair of the Council of the Australian War Memorial.\n\nThe Memorial exists under an Act of Parliament, and that Act is about war and warlike operations by the Australian Defence Force. The Council has approved displays that reinterpret Australia's history inside that building. It did so without an Act of Parliament, without putting the question to the public, and without taking advice on whether it had the power at all.\n\nYou have been Minister for Defence. You have been Australia's Ambassador to the United States. You have been Governor of Western Australia. There is nobody on that Council who better understands what the Memorial is for and whose lives it honours.\n\nI ask you to:\n\n1. Halt the works that alter the Memorial's commemorative character until they have been put to the public.\n2. Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.\n3. Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation.\n\nThis is not yours to change quietly."
+      },
+      {
+        "subject": "Put the Council's decision to the public",
+        "body": "Dear Mr Beazley,\n\nI am one of many Australians who did not know the Council had decided this until it was already done.\n\nThe Australian War Memorial is being redeveloped at a cost of $548.7 million, and a reinterpretation of our history has been folded into that program. The families who go there go to remember someone. They were never asked.\n\nAs Chair, you can put it to them.\n\n1. Halt the works that alter the Memorial's commemorative character until they have been put to the public.\n2. Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.\n3. Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation.\n\nIf the case for these changes is a good one, it will survive being made in public. If it will not survive that, it should not have been made at all."
+      },
+      {
+        "subject": "You know what that building is for",
+        "body": "Dear Mr Beazley,\n\nMy family has someone on that wall. That is why I am writing.\n\nThe Memorial was built as a place of commemoration for Australians who died in war. It was not built as a place to argue about Australian history, and the Council has no mandate from anybody to turn it into one.\n\nYou have spent a lifetime in the service of this country and you know exactly what that building is for. I am asking you to act like it.\n\n1. Halt the works that alter the Memorial's commemorative character until they have been put to the public.\n2. Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.\n3. Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation.\n\nYou can be remembered as a Defence Minister and a Governor. Please do not be remembered for this."
+      },
+      {
+        "subject": "Who authorised this, and on what advice?",
+        "body": "Dear Mr Beazley,\n\nI would like a straight answer to a simple question: who authorised the reinterpretation of Australia's history inside the Australian War Memorial, and what advice did they rely on?\n\nThe Council made this decision. It did not put it to the public, and it has not published what it relied on. Australians paid for that building and Australians are buried in what it commemorates. We are entitled to see the reasoning.\n\nAs Chair, I ask you to:\n\n1. Halt the works that alter the Memorial's commemorative character until they have been put to the public.\n2. Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.\n3. Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation.\n\nI will be watching for the answer."
+      }
+    ]
   }
 }

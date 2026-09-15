@@ -149,6 +149,54 @@ collections:
               - { label: "Sent heading", name: sentHeading, widget: string }
               - { label: "Sent lede", name: sentLede, widget: text }
 
+      - name: beazley
+        label: "Letter to the Chair (Beazley)"
+        file: content/site.json
+        fields:
+          - label: Beazley
+            name: beazley
+            widget: object
+            fields:
+              - { label: Kicker, name: kicker, widget: string }
+              - { label: Heading, name: heading, widget: text }
+              - { label: Lede, name: lede, widget: text }
+              - label: "The three demands"
+                name: demands
+                widget: list
+                field: { label: Demand, name: demand, widget: text }
+                hint: "Shown numbered in the hero AND enforced on the AI rewrite. If you change these, api/_lib/prompts.js must change in the same release or the rewrite will argue for something the page does not ask for. A test fails if they drift."
+              - { label: "Nudge line", name: nudge, widget: string, required: false }
+              - label: "Who it goes to"
+                name: recipients
+                widget: list
+                required: false
+                fields:
+                  - { label: Name, name: name, widget: string }
+                  - { label: Role, name: role, widget: string, required: false }
+                  - { label: Email, name: email, widget: string }
+                hint: "Leave empty and the page tells supporters plainly that it cannot open their mail app, keeps their letter, and offers the copy and webmail routes. That is better than a wrong address, which looks like it worked."
+              - { label: "Recipient name", name: recipientName, widget: string }
+              - { label: "Recipient shown on the page", name: recipientDisplay, widget: string }
+              - { label: "Single recipient address", name: toEmail, widget: string, required: false, hint: "Only used when the list above is empty." }
+              - { label: "Correspondence copy address", name: correspondenceEmail, widget: string }
+              - { label: "Copy mode", name: copyMode, widget: select, options: ["bcc", "cc"], required: false, hint: "bcc keeps the campaign's copy off the supporter's own letter." }
+              - { label: "Goes-to note", name: goesToNote, widget: text }
+              - { label: "Chair's photo", name: portrait, widget: image, required: false }
+              - { label: "Photo alt text", name: portraitAlt, widget: string, required: false }
+              - { label: "Require a mobile number", name: mobileRequired, widget: boolean, default: false, hint: "On a page whose job is volume, this is the field people abandon on." }
+              - { label: "Hide the nav", name: hideNav, widget: boolean, default: true, hint: "A single-purpose action page keeps a logo and nothing else. Every nav item is a way to leave before the letter is sent." }
+              - { label: "Sent heading", name: sentHeading, widget: string }
+              - { label: "Sent lede", name: sentLede, widget: text }
+              - { label: "Heading when there is no address yet", name: unaddressedHeading, widget: string }
+              - { label: "Lede when there is no address yet", name: unaddressedLede, widget: text }
+              - label: "Letter variations"
+                name: variations
+                widget: list
+                fields:
+                  - { label: Subject, name: subject, widget: string }
+                  - { label: Body, name: body, widget: text }
+                hint: "One is picked at random per visitor, so a thousand letters do not arrive identical."
+
       - name: donate
         label: Donation copy
         file: content/site.json

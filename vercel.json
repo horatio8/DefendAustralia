@@ -56,9 +56,28 @@
       "source": "/media-kit",
       "destination": "/media",
       "permanent": false
+    },
+    {
+      "source": "/demandbeazley",
+      "destination": "/beazley",
+      "permanent": false
+    },
+    {
+      "source": "/demand-beazley",
+      "destination": "/beazley",
+      "permanent": false
+    },
+    {
+      "source": "/chair",
+      "destination": "/beazley",
+      "permanent": false
     }
   ],
   "rewrites": [
+    {
+      "source": "/beazley",
+      "destination": "/beazley.html"
+    },
     {
       "source": "/shop",
       "destination": "/shop.html"

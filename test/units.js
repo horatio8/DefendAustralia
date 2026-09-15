@@ -83,6 +83,7 @@ ok(meta.fbcFrom("abc123", 1700000000000) === "fb.1.1700000000000.abc123", "fbc i
 
 console.log("\n-- the rewrite keeps the campaign's position --");
 const prompts = require(ROOT + "/api/_lib/prompts.js");
+const norm = (d) => String(d).toLowerCase().replace(/[^a-z ]/g, "").trim();
 const sys = prompts.systemPrompt("minister");
 ok(/halt/i.test(sys), "the first demand says halt");
 ok(/never demote the first demand|full strength|force intact/i.test(sys), "softening the demands is forbidden");
@@ -90,12 +91,93 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
-console.log("\n-- nobody who has paid gets dunned --");
-// The Farmers Fightback failure: a donor taps an amount, goes back, taps
-// another, pays on the second session. The first session never turns paid and
-// looks exactly like an abandon, because it is one, by somebody who has
-// already given. Airtable alone cannot see that, because it only learns about
-// a gift through the webhook and the drain.
+console.log("\n-- the letter to the Chair asks for the same three things --");
+/* Two email-action pages now: the Minister, who can intervene, and the Chair
+ * of the Council, who took the decision. They must ask for the same things.
+ *
+ * A campaign that asks the Minister to halt the works and the Chair to review
+ * them has two positions, and the first person to notice will be whichever of
+ * them wants a reason to do nothing. Worse, nobody on the campaign would
+ * spot it: the two sets of words live in different files, and each reads
+ * fine on its own.
+ *
+ * So the demands shown on the page and the demands enforced on the AI rewrite
+ * are compared directly, in both directions, for both campaigns. */
+const beazleySys = prompts.systemPrompt("beazley");
+ok(beazleySys !== sys, "the Chair gets his own guardrails, not the Minister's");
+ok(/Chair of the Council/i.test(beazleySys), "which name the campaign correctly");
+
+const siteJson = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8"));
+for (const [key, block] of [["minister", siteJson.minister], ["beazley", siteJson.beazley]]) {
+  const promptText = prompts.systemPrompt(key);
+  const demands = block.demands || prompts.CAMPAIGNS[key].demands;
+  ok(demands.every((d) => promptText.indexOf(d) > -1),
+     key + ": every demand on the page is enforced on the rewrite");
+  ok(prompts.CAMPAIGNS[key].demands.length === demands.length,
+     key + ": and the rewrite carries no demand the page does not make");
+}
+/* The wording differs between the two letters and should: one asks a third
+ * party to intervene, the other puts it to the man who decided. What must not
+ * differ is what is being asked for. The opening verb of each demand is that
+ * ask stripped of its manners, so those are compared and the prose is left
+ * alone — "halt" must never become "review" on one page only. */
+const verbs = (c) => prompts.CAMPAIGNS[c].demands.map((d) => norm(d).split(" ")[0]);
+ok(JSON.stringify(verbs("minister")) === JSON.stringify(verbs("beazley")),
+   "both letters ask for the same three things, in the same order: " + verbs("beazley").join(", "));
+
+/* The page must never claim a letter was delivered when there was nobody to
+ * deliver it to. Shipping without a confirmed address is deliberate — a wrong
+ * address looks exactly like a working one from the supporter's side. */
+ok(Array.isArray(siteJson.beazley.recipients), "the Chair's recipients are a list");
+ok(siteJson.beazley.variations.length >= 3,
+   "and there are several letters, so a thousand do not arrive identical");
+ok(siteJson.beazley.unaddressedHeading && siteJson.beazley.unaddressedLede,
+   "with an honest state for having no address yet");
+ok(/setDelivered\(!!toLine\)/.test(appSrc),
+   "delivery is claimed only when there was an address to send to");
+ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),
+   "the campaign copy can ride as bcc, so a supporter's letter does not expose it");
+ok(/configKey \|\| "minister"/.test(appSrc),
+   "one component serves both targets rather than a forked page");
+
+console.log("\n-- an action page can take a surge --");
+/* The request path writes one queue row and returns; the drain expands it
+ * into Contacts, Events and the typed tables at a rate Airtable accepts. That
+ * is the difference between a page that can take a thousand people in an hour
+ * and one that starts returning errors to supporters at the two hundredth. */
+const captureSrc = fs.readFileSync(ROOT + "/api/capture.js", "utf8");
+const drainSrc = fs.readFileSync(ROOT + "/api/drain.js", "utf8");
+const actions = require(ROOT + "/api/_lib/actions.js");
+
+ok(/queue\.enqueue\(campaign, p,/.test(captureSrc),
+   "a capture is queued rather than written straight through");
+/* The writer and the reader of the queue have to agree on the type. When they
+ * do not, rows land with a type nothing handles, the drain skips them, and
+ * the campaign finds out a week later that a page it was advertising captured
+ * nobody. So every registered campaign must have a handler. */
+ok(/for \(const key of Object\.keys\(actions\.CAMPAIGNS\)\)/.test(drainSrc),
+   "and every registered campaign is guaranteed a drain handler");
+ok(actions.queueType("nonsense") === "minister",
+   "an unregistered campaign falls back rather than being dropped");
+ok(actions.get("beazley").eventType !== actions.get("minister").eventType,
+   "the two campaigns are distinguishable in the events log");
+ok(actions.get("beazley").tags.join() !== actions.get("minister").tags.join(),
+   "and in the CRM");
+
+/* The lead page is a second write and a separate failure. A profile that
+ * lands without its form entry is still a supporter the campaign can mail, so
+ * one must never take the other down. */
+ok(captureSrc.indexOf("upsertProfile") < captureSrc.indexOf("submitEntryTo"),
+   "the profile is written before the lead page");
+ok(/CN_LEADPAGE_FAIL/.test(captureSrc) && /CN_PROFILE_FAIL/.test(captureSrc),
+   "and the two failures are reported separately");
+ok(/const form = actions\.formId\(campaign\);\s*\n\s*if \(form\)/.test(captureSrc),
+   "no lead page configured means the profile write still stands");
+// Only a finished letter reaches the CRM. Posting keystrokes would fill the
+// lead page with half-typed addresses that can never be mailed or cleaned out.
+ok(/status === "send_clicked" && email/.test(captureSrc),
+   "only a completed send is posted to the CRM");
+
 const sweepSrc = fs.readFileSync(ROOT + "/api/lapse-sweep.js", "utf8");
 const stripeLib = require(ROOT + "/api/_lib/stripe.js");
 
@@ -801,7 +883,10 @@ const RUNTIME_ENV = new Set([
  * the regular expression cannot follow them there. */
 const COMPOSED_ENV = new Set([
   "CN_AUTOMATION_PETITION_LAPSE", "CN_AUTOMATION_PETITION_LAPSE_A", "CN_AUTOMATION_PETITION_LAPSE_B",
-  "CN_AUTOMATION_DONATION_LAPSE", "CN_AUTOMATION_DONATION_LAPSE_A", "CN_AUTOMATION_DONATION_LAPSE_B"
+  "CN_AUTOMATION_DONATION_LAPSE", "CN_AUTOMATION_DONATION_LAPSE_A", "CN_AUTOMATION_DONATION_LAPSE_B",
+  // Read as process.env[campaign.formEnv] out of the action registry, so the
+  // name exists in api/_lib/actions.js rather than at the point of use.
+  "CN_MINISTER_FORM_ID", "CN_BEAZLEY_FORM_ID"
 ]);
 
 const declaredEnv = new Set();
@@ -844,6 +929,13 @@ ok(declaredEnv.size > 40, "the register is populated (" + declaredEnv.size + " v
 const stale = [];
 for (const name of declaredEnv) if (!used.has(name) && !COMPOSED_ENV.has(name)) stale.push(name);
 ok(stale.length === 0, "no documented variable is unread" + (stale.length ? ": " + stale.join(", ") : ""));
+/* An exemption for a composed name is only safe while something composes it.
+ * Checked against the registry so a campaign removed from the code takes its
+ * exemption with it rather than leaving a documented variable nothing reads. */
+const registrySrc = fs.readFileSync(ROOT + "/api/_lib/actions.js", "utf8");
+const orphaned = ["CN_MINISTER_FORM_ID", "CN_BEAZLEY_FORM_ID"].filter((n) => registrySrc.indexOf(n) === -1);
+ok(orphaned.length === 0, "every exempted form id is still named in the registry" +
+  (orphaned.length ? ": " + orphaned.join(", ") : ""));
 
 console.log("\n-- the capability report names a control for every entry --");
 /* A report that says a feature is off without saying where to turn it on is

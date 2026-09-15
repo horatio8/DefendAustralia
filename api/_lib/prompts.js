@@ -28,6 +28,44 @@ const CAMPAIGNS = {
       "The Memorial was established as a place of commemoration for Australians who died in war."
     ],
     tone: "A private citizen writing to a minister. Plain, direct, unmistakably genuine. Firm without being abusive."
+  },
+
+  /* The letter to the Chair of the Council.
+   *
+   * Same three demands as the minister letter, and that is deliberate: a
+   * campaign that asks the Minister for one thing and the Chair for another
+   * has two positions, and the first person to notice will be whichever of
+   * them wants a reason to do nothing.
+   *
+   * What changes is who is being addressed and what they are answerable for.
+   * The Minister is being asked to intervene in someone else's decision. The
+   * Chair took the decision, so the letter puts it to him directly.
+   *
+   * The extra permitted facts are his own public record, and they are on the
+   * list for one reason: they are the argument. A man who has held those
+   * offices knows what the Memorial is for, which is why the campaign's line
+   * is that he knows better, not that he does not understand. Nothing about
+   * his family, his politics or his health is permitted, and the ban on legal
+   * accusations below applies with full force to the man who chaired the
+   * meeting.
+   */
+  beazley: {
+    label: "Letter to the Chair of the Council of the Australian War Memorial",
+    demands: [
+      "Halt the works that alter the Memorial's commemorative character until they have been put to the public.",
+      "Publish the Council decisions that authorised the changes, with the minutes and the advice relied on.",
+      "Guarantee the Memorial stays a place of commemoration, not a venue for political interpretation."
+    ],
+    permitted: [
+      "The Australian War Memorial is undergoing a redevelopment with a budget of $548.7 million, and the reinterpretation of Australia's history is part of that program rather than the whole of it.",
+      "The decisions were taken by the Australian War Memorial Council.",
+      "Kim Beazley chairs the Australian War Memorial Council.",
+      "Kim Beazley has been Minister for Defence, Australia's Ambassador to the United States, and Governor of Western Australia.",
+      "The Memorial is governed by an Act of Parliament that covers war and warlike operations by the Australian Defence Force.",
+      "The changes were not put to the public before they were approved.",
+      "The Memorial was established as a place of commemoration for Australians who died in war."
+    ],
+    tone: "A private citizen writing to the Chair of a public board about a decision he took. Plain, direct, unmistakably genuine. It may appeal to his own record of service. Firm without being abusive, and never personal about anything beyond the decision itself."
   }
 };
 

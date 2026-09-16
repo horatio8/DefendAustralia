@@ -191,10 +191,17 @@ ok(/onError=\{\(\) => setHeroOk\(false\)\}/.test(appSrc),
 ok(/grayscale\(/.test(appSrc) && /linear-gradient\(100deg,rgba\(13,31,51/.test(appSrc),
    "it sits under a navy wash, so a headline over it is readable at every width");
 
-/* The campaign does not send traffic to the thing it is objecting to. */
-const linkable = [siteJson.beazley, JSON.stringify(siteJson.beazley)].map(String).join(" ");
-ok(!/awm\.gov\.au/i.test(linkable) && !/awm\.gov\.au/i.test(fs.readFileSync(ROOT + "/beazley.html", "utf8")),
+/* The campaign does not send traffic to the thing it is objecting to.
+ *
+ * A link, specifically. An address at that domain is now the whole point of
+ * the page — the letter has to arrive somewhere — so the check is for a
+ * clickable URL rather than for the string, which an earlier version got
+ * wrong the moment the recipient was filled in. */
+const linkable = JSON.stringify(siteJson.beazley) + fs.readFileSync(ROOT + "/beazley.html", "utf8");
+ok(!/https?:(\\\/|\/)+[^"'\s]*awm\.gov\.au/i.test(linkable),
    "the page never links to the conference it is objecting to");
+ok(!/href=["'][^"']*awm\.gov\.au/i.test(linkable),
+   "and carries no anchor to that domain at all");
 
 /* The page must never claim a letter was delivered when there was nobody to
  * deliver it to. Shipping without a confirmed address is deliberate — a wrong
@@ -204,6 +211,21 @@ ok(siteJson.beazley.variations.length >= 3,
    "and there are several letters, so a thousand do not arrive identical");
 ok(siteJson.beazley.unaddressedHeading && siteJson.beazley.unaddressedLede,
    "with an honest state for having no address yet");
+
+/* The page is addressed now, so the checks that matter change from "does it
+ * fail honestly" to "does it reach the right place". */
+ok(/^[^@\s]+@awm\.gov\.au$/.test(siteJson.beazley.toEmail),
+   "the letter goes to the Memorial");
+ok(siteJson.beazley.recipientDisplay === siteJson.beazley.toEmail,
+   "and the page shows supporters the address it will use");
+/* It is the executive office, for the Chair's attention, not a personal
+ * inbox. Saying so is the difference between a campaign a supporter trusts
+ * and one that told them something that was not quite true. */
+ok(/executive office/i.test(siteJson.beazley.goesToNote),
+   "the note says where it actually lands");
+/* bcc, so a supporter's own letter does not display the campaign's counting
+ * address to the recipient. */
+ok(siteJson.beazley.copyMode === "bcc", "the campaign copy is blind");
 ok(/setDelivered\(!!toLine\)/.test(appSrc),
    "delivery is claimed only when there was an address to send to");
 ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),

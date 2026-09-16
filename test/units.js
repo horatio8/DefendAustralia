@@ -224,9 +224,21 @@ ok(siteJson.beazley.recipientDisplay === siteJson.beazley.toEmail,
  * and one that told them something that was not quite true. */
 ok(/executive office/i.test(siteJson.beazley.goesToNote),
    "the note says where it actually lands");
-/* bcc, so a supporter's own letter does not display the campaign's counting
- * address to the recipient. */
-ok(siteJson.beazley.copyMode === "bcc", "the campaign copy is blind");
+/* cc by the campaign's choice: the copy address is visible on every letter,
+ * which tells the recipient these are organised. That is a judgement about
+ * how the campaign wants to be read, not a bug, so the test pins the address
+ * and the disclosure rather than the mode. */
+ok(siteJson.beazley.correspondenceEmail === "hello@defendsacredground.com",
+   "the campaign copy goes to the published inbox");
+ok(["cc", "bcc"].indexOf(siteJson.beazley.copyMode) > -1, "and rides as a real mail header");
+/* Whichever mode is set, the note under the form has to describe it. A
+ * supporter copying a third party into their own letter is entitled to know
+ * they are doing it. */
+const openCopy = siteJson.beazley.copyMode === "cc";
+ok(new RegExp(openCopy ? "^(?!.*[Bb]lind).*[Cc]opied to" : "[Bb]lind copied to").test(siteJson.beazley.goesToNote),
+   "and the note describes the copy honestly");
+ok(siteJson.beazley.goesToNote.indexOf(siteJson.beazley.correspondenceEmail) > -1,
+   "naming the address it will use");
 ok(/setDelivered\(!!toLine\)/.test(appSrc),
    "delivery is claimed only when there was an address to send to");
 ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),

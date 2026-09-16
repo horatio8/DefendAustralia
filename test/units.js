@@ -125,6 +125,20 @@ ok(Array.isArray(siteJson.beazley.points) && siteJson.beazley.points.length === 
 ok(/\(m\.points \|\| m\.demands\)\.length \? \(/.test(appSrc),
    "and the page renders nothing at all when a campaign lists no points");
 
+/* Partial capture is the whole reason a half-filled form is worth anything,
+ * and it turns on the beacons being ordered. The drain refuses a beacon older
+ * than the row it already holds; that refusal is inert unless the page
+ * actually numbers them, which for a long time it did not. */
+{
+  ok(/seq: \+\+seq\.current/.test(appSrc),
+     "every beacon carries a number, and the number only goes up");
+  ok(/const seq = useRef\(0\)/.test(appSrc),
+     "the counter lives for the life of the form, not of a render");
+  const drainSrc = fs.readFileSync(ROOT + "/api/drain.js", "utf8");
+  ok(/Number\(existing\.fields\.seq \|\| 0\) > Number\(p\.seq \|\| 0\)\) return;/.test(drainSrc),
+     "and the drain drops a beacon that arrives behind a newer one");
+}
+
 /* Sending is not the end of the ask. A supporter who has just written to the
  * Chair is the likeliest person in the country to give, and the moment passes
  * in seconds. The redirect has to stay same-site: an absolute URL here would

@@ -370,6 +370,63 @@ ok(/const form = actions\.formId\(campaign\);\s*\n\s*if \(form\)/.test(captureSr
 ok(/status === "send_clicked" && email/.test(captureSrc),
    "only a completed send is posted to the CRM");
 
+
+/* The Chair's lead page. Its receiver is public and its id is in the URL the
+ * campaign hands out, so the id is committed and the environment overrides it
+ * — the same ordering nucleus.js has always used for the petition. A page
+ * that captures nobody because a dashboard field was never filled in is the
+ * worse failure, and it is silent. */
+{
+  const saved = Object.prototype.hasOwnProperty.call(process.env, "CN_BEAZLEY_FORM_ID")
+    ? process.env.CN_BEAZLEY_FORM_ID : null;
+  delete process.env.CN_BEAZLEY_FORM_ID;
+  ok(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(actions.formId("beazley")),
+     "the Chair's page posts to a real form id with nothing configured");
+  process.env.CN_BEAZLEY_FORM_ID = "env-wins";
+  ok(actions.formId("beazley") === "env-wins", "a deployment can point it somewhere else");
+  process.env.CN_BEAZLEY_FORM_ID = "";
+  ok(actions.formId("beazley") === "", "and an empty variable turns the form write off entirely");
+  if (saved === null) delete process.env.CN_BEAZLEY_FORM_ID;
+  else process.env.CN_BEAZLEY_FORM_ID = saved;
+}
+
+/* The entry is posted under the form's field names, not ours. A key the form
+ * has no column for is not recorded, so "mobile" here would mean the campaign
+ * silently never receives a phone number — the failure looks like supporters
+ * who declined to give one. Checked against the live form, whose columns are
+ * First Name, Last Name, Email, Postcode and Phone. */
+{
+  const entry = captureSrc.split("submitEntryTo(form, {")[1].split("});")[0];
+  ok(/phone: p\.mobile/.test(entry), "the number is sent as phone, which is what the form calls it");
+  ok(!/\bmobile:/.test(entry), "and never as mobile, which the form would discard");
+  ok(/first_name: p\.first_name/.test(entry) && /last_name: p\.last_name/.test(entry) && /email,/.test(entry),
+     "the three required columns are all sent");
+  ok(/postcode: p\.postcode/.test(entry), "postcode is carried for a page that ever collects one");
+  ok(!/campaign,/.test(entry) && !/source:/.test(entry),
+     "and nothing is sent that the form has no column for");
+}
+
+/* Attribution. The utm_* keys are built-in entry columns on every Nucleus
+ * form rather than fields on any particular one, which is how the petition has
+ * been reporting its ad sources all along. Without them a lead page records
+ * every send as having come from nowhere, and no ad that drove one can be
+ * credited with it. */
+{
+  const utm = require(ROOT + "/api/_lib/utm.js");
+  const got = utm.utmsFrom("https://defendsacredground.com/beazley?utm_source=FB_ads&utm_campaign=c1");
+  ok(got.utm_source === "FB_ads" && got.utm_campaign === "c1", "the tags are read off the landing URL");
+  ok(Object.keys(utm.utmsFrom("")).length === 0, "a page opened untagged reports nothing, and does not throw");
+  ok(Object.keys(utm.utmsFrom("not a url")).length === 0, "nor does an unparseable one");
+  ok(/\.\.\.utm\.utmsFrom\(p\.source_url\)/.test(captureSrc),
+     "and the entry carries them");
+  ok(/source_url: str\(b\.source_url\)/.test(captureSrc),
+     "which requires the beacon to say where it was fired from");
+  ok(/source_url: location\.href/.test(appSrc), "so the page sends it");
+  const petitionSrc = fs.readFileSync(ROOT + "/api/petition-signup.js", "utf8");
+  ok(/_lib\/utm/.test(petitionSrc) && !/function utmsFrom/.test(petitionSrc),
+     "the petition reads the same helper rather than a second copy that can drift");
+}
+
 console.log("\n-- nobody who has paid gets dunned --");
 // The Farmers Fightback failure: a donor taps an amount, goes back, taps
 // another, pays on the second session. The first session never turns paid and

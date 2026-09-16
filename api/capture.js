@@ -21,6 +21,7 @@ const nucleus = require("./_lib/nucleus");
 const queue = require("./_lib/queue");
 const at = require("./_lib/airtable");
 const actions = require("./_lib/actions");
+const utm = require("./_lib/utm");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
@@ -35,7 +36,11 @@ module.exports = async function handler(req, res) {
     campaign,
     session_id: str(b.session_id),
     first_name: str(b.first), last_name: str(b.last),
-    email, mobile: str(b.mobile),
+    email, mobile: str(b.mobile), postcode: str(b.postcode),
+    // Where they were standing when they wrote. Without it the lead page
+    // records every send as having come from nowhere, and no ad, text or post
+    // that drove one can ever be credited with it.
+    source_url: str(b.source_url).slice(0, 500),
     status, seq: Number(b.seq) || 0,
     sent_subject: b.sent_subject ? String(b.sent_subject).slice(0, 250) : "",
     sent_body: b.sent_body ? String(b.sent_body) : "",
@@ -65,8 +70,27 @@ module.exports = async function handler(req, res) {
     const form = actions.formId(campaign);
     if (form) {
       try {
+        /* The lead page's own field set, which is the petition's field set:
+         * first name, last name, email, postcode, phone. The names here are
+         * the form's and not ours — phone, not mobile — because a key the
+         * form has no column for is simply not recorded, and a mobile number
+         * filed under the wrong name is a mobile number the campaign does not
+         * have.
+         *
+         * The five utm_* keys are not form fields and do not need to be. They
+         * are built-in columns on every Nucleus entry, which is how the
+         * petition has been reporting its ad attribution all along.
+         *
+         * There is no campaign or source column, so neither is sent. What the
+         * form cannot carry rides on the profile's tags above, and everything
+         * is written to Airtable regardless, so nothing submitted is lost.
+         *
+         * Blank values are stripped by submitEntryTo, so this page — which
+         * asks for no postcode — simply does not send one. */
         entryId = await nucleus.submitEntryTo(form, {
-          ...person, campaign, source: "email-action"
+          first_name: p.first_name, last_name: p.last_name, email,
+          phone: p.mobile, postcode: p.postcode,
+          ...utm.utmsFrom(p.source_url)
         });
       } catch (err) {
         const msg = String(err.message || err);

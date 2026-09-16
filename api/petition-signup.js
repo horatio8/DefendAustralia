@@ -17,6 +17,7 @@ const at = require("./_lib/airtable");
 const meta = require("./_lib/meta");
 const sms = require("./_lib/sms");
 const { refCodeFor, normCode } = require("./_lib/refcode");
+const utm_ = require("./_lib/utm");
 
 /* The welcome text. One segment, always, which is not a style preference:
  * Cellcast bills per segment, so 161 characters is double the cost of 160 on
@@ -64,7 +65,7 @@ module.exports = async function handler(req, res) {
   const first = str(b.first), last = str(b.last), email = at.normEmail(b.email);
   if (!first || !last || !email) return res.status(400).json({ error: "name and email required" });
 
-  const utm = utmsFrom(str(b.source_url));
+  const utm = utm_.utmsFrom(str(b.source_url));
   const p = {
     first_name: first, last_name: last, email,
     mobile: str(b.mobile), postcode: str(b.postcode),
@@ -222,14 +223,3 @@ const HOSTED_FORM = process.env.CN_HOSTED_PETITION_URL || "https://teller.nucleu
 function str(v) { return v == null ? "" : String(v).trim(); }
 function safeParse(v) { try { return JSON.parse(v); } catch (e) { return null; } }
 
-function utmsFrom(sourceUrl) {
-  const out = {};
-  try {
-    const q = new URL(sourceUrl).searchParams;
-    ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"].forEach((k) => {
-      const v = q.get(k);
-      if (v) out[k] = v;
-    });
-  } catch (e) { /* no or unparseable URL */ }
-  return out;
-}

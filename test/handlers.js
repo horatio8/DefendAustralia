@@ -45,7 +45,12 @@ const STUBS = new Map([
       "send_id", "phone", "dedupe_key", "contact_id", "template", "test", "variant",
       "message", "status", "not_before", "attempts", "created_at"] }); return { queued: true }; },
     send: async () => "m1", inbound: async () => [], isStop: (b) => /^stop/i.test(String(b || "")),
-    dedupeKey: () => "k1", optedOut: async () => false
+    dedupeKey: () => "k1", optedOut: async () => false,
+    // The real module exports this and the queue drain calls it first. Without
+    // it the stub throws before the handler does anything, and the smoke test
+    // reports a failure that says nothing about the handler.
+    paused: () => false, ownedNumbers: () => [],
+    withinSendingHours: () => true, nextSendableTime: () => new Date()
   }],
   [path.join(ROOT, "api/_lib/meta.js"), {
     configured: () => true, send: async () => ({ sent: true }), userData: () => ({}),

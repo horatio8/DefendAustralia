@@ -1057,7 +1057,10 @@ function MinisterPage({ site, configKey }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const chars = subject.length + body.length;
   const counterColor = chars > 1900 ? C.red : chars > 1650 ? C.gold : C.faint;
-  const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "Within safe length";
+  // Only the warnings. A note confirming the letter is fine tells a supporter
+  // nothing they can act on, and puts a number in their head at the moment
+  // they should be reading their own words.
+  const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "";
 
   const capture = (extra, keepalive) =>
     apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: key, ...extra }, keepalive)
@@ -1121,6 +1124,9 @@ function MinisterPage({ site, configKey }) {
     setDelivered(!!toLine);
     setSent(true);
     window.scrollTo(0, 0);
+    if (m.afterSend) {
+      setTimeout(() => { window.location.href = m.afterSend; }, 2500);
+    }
   };
 
   /* One or many. A Chair sits on a board, and a letter that reaches only the
@@ -1226,7 +1232,7 @@ function MinisterPage({ site, configKey }) {
               <Field id="efn" label="First name *" value={f.first} onChange={set("first")} onBlur={() => capture({}, false)} />
               <Field id="eln" label="Last name *" value={f.last} onChange={set("last")} onBlur={() => capture({}, false)} />
               <Field id="eem" label="Email *" value={f.email} onChange={set("email")} onBlur={() => capture({}, false)} />
-              <Field id="emb" label={m.mobileRequired ? "Mobile *" : "Mobile (optional)"} value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
+              <Field id="emb" label={m.mobileRequired ? "Mobile *" : "Mobile (optional)"} value={f.mobile} onChange={set("mobile")} onBlur={() => capture({}, false)} placeholder="04xxxxxxxx" mono />
             </div>
             <div style={{ marginTop: 28, borderTop: "1px solid " + C.line, paddingTop: 20 }}>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 12 }}>
@@ -1260,7 +1266,7 @@ function MinisterPage({ site, configKey }) {
 
           <div style={{ border: "1px solid " + C.line, padding: 32 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, marginBottom: 24 }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Your message · variation {variantIdx + 1} of {m.variations.length}</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Your message</div>
               {/* The rewrite is per campaign, because it is not always wanted.
                   Where the campaign has settled on an exact letter, offering
                   to reword it invites a supporter to soften the one sentence
@@ -1276,7 +1282,7 @@ function MinisterPage({ site, configKey }) {
             <label htmlFor="subj" style={labelStyle}>Subject</label>
             <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} data-clarity-mask="true" />
             <label htmlFor="body" style={labelStyle}>Message</label>
-            <textarea id="body" className="field" rows={14} value={body} onChange={(e) => setBody(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.65, padding: 16, background: C.cream, resize: "vertical" }} data-clarity-mask="true"></textarea>
+            <textarea id="body" className="field" rows={14} value={body} onChange={(e) => setBody(e.target.value)} style={{ ...inputStyle(false), lineHeight: 1.65, padding: 16, resize: "vertical" }} data-clarity-mask="true"></textarea>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, fontFamily: MONO, fontSize: 12 }}>
               <span style={{ color: counterColor }}>{fmt(chars)} / 1,900 characters</span>
               <span style={{ color: C.faint }}>{counterNote}</span>

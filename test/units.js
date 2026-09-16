@@ -212,6 +212,16 @@ ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),
 ok(/configKey \|\| "minister"/.test(appSrc),
    "one component serves both targets rather than a forked page");
 
+/* The rewrite is off on this page and on by default everywhere else. The
+ * letter is exact: offering to reword it invites a supporter to soften the
+ * one sentence the page exists to deliver. */
+ok(siteJson.beazley.allowRewrite === false, "the Chair's page does not offer the AI rewrite");
+ok(siteJson.minister.allowRewrite === undefined, "and the Minister page is untouched, so it still does");
+ok(/const allowRewrite = m\.allowRewrite !== false;/.test(appSrc),
+   "the switch defaults to on, so a page that says nothing keeps the button");
+ok(/if \(!allowRewrite \|\| rewrites >= 3/.test(appSrc),
+   "and the call is guarded too, not only the button");
+
 console.log("\n-- an action page can take a surge --");
 /* The request path writes one queue row and returns; the drain expands it
  * into Contacts, Events and the typed tables at a rate Airtable accepts. That

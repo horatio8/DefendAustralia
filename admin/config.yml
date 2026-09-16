@@ -190,6 +190,7 @@ collections:
               - { label: "Hero focal point", name: heroPosition, widget: string, required: false, hint: "CSS object-position, e.g. \"center 40%\". Moves the visible part of the crop." }
               - { label: "Chair's photo", name: portrait, widget: image, required: false }
               - { label: "Photo alt text", name: portraitAlt, widget: string, required: false }
+              - { label: "Offer the AI rewrite", name: allowRewrite, widget: boolean, default: false, hint: "Off on this page. The letter is exact, and offering to reword it invites a supporter to soften the one sentence the page exists to deliver. The box stays editable either way." }
               - { label: "Require a mobile number", name: mobileRequired, widget: boolean, default: false, hint: "On a page whose job is volume, this is the field people abandon on." }
               - { label: "Hide the nav", name: hideNav, widget: boolean, default: true, hint: "A single-purpose action page keeps a logo and nothing else. Every nav item is a way to leave before the letter is sent." }
               - { label: "Sent heading", name: sentHeading, widget: string }

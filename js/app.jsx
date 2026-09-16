@@ -1069,8 +1069,10 @@ function MinisterPage({ site, configKey }) {
    * supporter whose rewrite had failed was shown two sentences of boilerplate
    * and told nothing. Their own words are already good enough to send, so the
    * honest failure state is to keep them and explain. */
+  const allowRewrite = m.allowRewrite !== false;
+
   const rewrite = () => {
-    if (rewrites >= 3 || rewriting) return;
+    if (!allowRewrite || rewrites >= 3 || rewriting) return;
     setRewriting(true);
     setRewriteError("");
     apiPost("/api/rewrite", { session_id: sessionId.current, subject, body, first_name: f.first, campaign: key })
@@ -1253,11 +1255,18 @@ function MinisterPage({ site, configKey }) {
           <div style={{ border: "1px solid " + C.line, padding: 32 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, marginBottom: 24 }}>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Your message · variation {variantIdx + 1} of {m.variations.length}</div>
-              <button onClick={rewrite} disabled={rewrites >= 3} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.cream, background: C.navy, border: "none", padding: "12px 18px", opacity: rewrites >= 3 ? .6 : 1, cursor: rewrites >= 3 ? "default" : "pointer" }}>
-                {rewrites >= 3 ? "Rewrite limit reached" : rewriting ? "Rewriting…" : "Say it my way (" + (3 - rewrites) + " left)"}
-              </button>
+              {/* The rewrite is per campaign, because it is not always wanted.
+                  Where the campaign has settled on an exact letter, offering
+                  to reword it invites a supporter to soften the one sentence
+                  the whole page exists to deliver. The box stays editable
+                  either way: anybody can still write their own. */}
+              {allowRewrite && (
+                <button onClick={rewrite} disabled={rewrites >= 3} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.cream, background: C.navy, border: "none", padding: "12px 18px", opacity: rewrites >= 3 ? .6 : 1, cursor: rewrites >= 3 ? "default" : "pointer" }}>
+                  {rewrites >= 3 ? "Rewrite limit reached" : rewriting ? "Rewriting…" : "Say it my way (" + (3 - rewrites) + " left)"}
+                </button>
+              )}
             </div>
-            <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>
+            {allowRewrite && <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>}
             <label htmlFor="subj" style={labelStyle}>Subject</label>
             <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} data-clarity-mask="true" />
             <label htmlFor="body" style={labelStyle}>Message</label>

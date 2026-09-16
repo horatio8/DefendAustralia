@@ -876,6 +876,7 @@
     ],
     "heroImage": "https://cdn.nucleusfiles.com/f2/f2885e38-0d68-47c0-a4f0-76287c4c22bc/stop-our-australian-war-memorial-being-hijacked-by-indigenous-politics-5.png",
     "heroAlt": "",
-    "heroPosition": "center center"
+    "heroPosition": "center center",
+    "allowRewrite": false
   }
 }

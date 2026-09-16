@@ -1074,7 +1074,7 @@ function MinisterPage({ site, configKey }) {
   const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "";
 
   const capture = (extra, keepalive) =>
-    apiPost("/api/capture", { session_id: sessionId.current, seq: ++seq.current, ...f, subject, body, campaign: key, ...extra }, keepalive)
+    apiPost("/api/capture", { session_id: sessionId.current, seq: ++seq.current, ...f, subject, body, campaign: key, source_url: location.href, ...extra }, keepalive)
       .catch((err) => console.warn("capture failed:", messageOf(err)));
 
   /* "Say it my way". A failure here says so and leaves the letter alone.

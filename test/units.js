@@ -116,7 +116,30 @@ const siteJson = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8")
   ok(prompts.CAMPAIGNS.minister.demands.length === demands.length,
      "and the rewrite carries no demand that page does not make");
 }
-ok(siteJson.beazley.points.length >= 3, "the Chair's page states the program's facts in the hero");
+/* The hero used to number the conference's facts above the form. It no
+ * longer does: the facts belong in the letter, where the recipient reads
+ * them, and the hero argues instead. Two things have to hold for that to be
+ * a choice rather than a regression — the list is deliberately empty, and
+ * the renderer survives an empty list rather than printing a stray bullet. */
+ok(Array.isArray(siteJson.beazley.points) && siteJson.beazley.points.length === 0,
+   "the Chair's hero argues rather than listing, so the points list is empty");
+ok(/\(m\.points \|\| m\.demands\)\.length \? \(/.test(appSrc),
+   "and the page renders nothing at all when a campaign lists no points");
+
+/* Sending is not the end of the ask. A supporter who has just written to the
+ * Chair is the likeliest person in the country to give, and the moment passes
+ * in seconds. The redirect has to stay same-site: an absolute URL here would
+ * let a CMS edit hand the campaign's warmest traffic to anybody. */
+{
+  const after = siteJson.beazley.afterSend || "";
+  ok(after.charAt(0) === "/" && after.charAt(1) !== "/",
+     "a sent letter leads to a page on this site, not an address off it");
+  ok(after.indexOf("/donate") === 0, "and that page is the donation page");
+  ok(fs.existsSync(ROOT + "/donate.html"), "which exists to be redirected to");
+  ok(/if \(m\.afterSend\)/.test(appSrc),
+     "the redirect is guarded, so a campaign without one simply stays put");
+  ok(!siteJson.minister.afterSend, "the Minister page keeps its old ending");
+}
 
 /* The hero argues in paragraphs. A blank line in the CMS field has to become
  * a real paragraph break: HTML collapses the newline, so three paragraphs in
@@ -268,6 +291,27 @@ ok(/configKey \|\| "minister"/.test(appSrc),
 /* The rewrite is off on this page and on by default everywhere else. The
  * letter is exact: offering to reword it invites a supporter to soften the
  * one sentence the page exists to deliver. */
+/* The editor is a letter, not an instrument panel. Three things used to sit
+ * around it that told the supporter about the machinery rather than about
+ * their letter: which of four drafts they had been dealt, a reassurance that
+ * the length was safe, and a tinted field that read as disabled. All three
+ * are gone, and the tests hold them gone, because each was added in good
+ * faith and would be re-added the same way. */
+ok(/color: C\.faint \}\}>Your message<\/div>/.test(appSrc),
+   "the editor is labelled 'Your message' and nothing else");
+ok(!/variation \{/.test(appSrc) && !/of \{m\.variations\.length\}/.test(appSrc),
+   "the supporter is not told they are reading variation N of four");
+ok(!/Within safe length/.test(appSrc),
+   "and is not congratulated on the length of a letter they did not write");
+ok(/const counterNote = chars > 1900 \? "Too long/.test(appSrc),
+   "the counter still warns when the letter really is too long");
+{
+  const editor = appSrc.split('id="body"')[1].split("</textarea>")[0];
+  ok(/\.\.\.inputStyle\(false\)/.test(editor) && !/background:/.test(editor),
+     "the message field takes the same white background as every other field");
+  ok(/background: "#FFFFFF"/.test(appSrc), "which is white");
+}
+
 ok(siteJson.beazley.allowRewrite === false, "the Chair's page does not offer the AI rewrite");
 ok(siteJson.minister.allowRewrite === undefined, "and the Minister page is untouched, so it still does");
 ok(/const allowRewrite = m\.allowRewrite !== false;/.test(appSrc),

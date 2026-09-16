@@ -1175,7 +1175,13 @@ function MinisterPage({ site, configKey }) {
           <div>
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>{m.kicker}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: 54, lineHeight: 1.03, margin: "20px 0 18px", fontWeight: 400 }}>{m.heading}</h1>
-            <p style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: "0 0 28px", maxWidth: 520 }}>{m.lede}</p>
+            {/* The lede may be several paragraphs. A blank line in the CMS
+                field becomes a real paragraph break, because HTML collapses
+                the newline and a three-paragraph argument pasted into a
+                single <p> renders as one unreadable slab. */}
+            {String(m.lede || "").split(/\n\s*\n/).filter(Boolean).map((para, i, all) => (
+              <p key={i} style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: i === all.length - 1 ? "0 0 28px" : "0 0 16px", maxWidth: 520 }}>{para.trim()}</p>
+            ))}
             {/* The ask, stated before the form rather than only inside the
                 letter. A supporter who scrolls past the hero and never reads
                 the draft should still be able to say what they just sent. */}

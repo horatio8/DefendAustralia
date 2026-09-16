@@ -117,6 +117,25 @@ const siteJson = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8")
      "and the rewrite carries no demand that page does not make");
 }
 ok(siteJson.beazley.points.length >= 3, "the Chair's page states the program's facts in the hero");
+
+/* The hero argues in paragraphs. A blank line in the CMS field has to become
+ * a real paragraph break: HTML collapses the newline, so three paragraphs in
+ * one <p> render as a single unreadable slab and nobody notices until it is
+ * live. */
+ok(siteJson.beazley.lede.split(/\n\s*\n/).filter(Boolean).length === 3,
+   "the Chair's lede is three paragraphs");
+ok(/String\(m\.lede \|\| ""\)\.split\(\/\\n\\s\*\\n\/\)/.test(appSrc),
+   "and the page splits them rather than printing one slab");
+ok(siteJson.minister.lede.split(/\n\s*\n/).filter(Boolean).length === 1,
+   "the Minister page is unaffected, being one paragraph as before");
+
+/* The page argues; the letters do not. The accusation belongs in the
+ * campaign's own voice on its own site, not in a letter going out over a
+ * supporter's name to the person being accused. */
+ok(/shameful|hijacking/i.test(siteJson.beazley.lede),
+   "the hero makes the campaign's case in the campaign's words");
+ok(!/shameful|hijack/i.test(siteJson.beazley.variations.map((v) => v.body).join(" ")),
+   "and no letter borrows that language");
 /* The two letters have different jobs and no longer make the same ask. The
  * Minister is asked to intervene in the redevelopment; the Chair is asked one
  * question about one conference. Holding them to identical demands, as an

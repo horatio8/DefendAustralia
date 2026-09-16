@@ -1052,6 +1052,17 @@ function MinisterPage({ site, configKey }) {
   const [heroOk, setHeroOk] = useState(true);
   const [toast, flash] = useToast();
   const sessionId = useRef("s-" + Math.random().toString(36).slice(2, 10));
+  /* Beacons arrive out of order. They are fired on blur, they cross the
+   * network independently, and they are drained from a queue a minute later,
+   * so the last one written is not reliably the last one typed. The drain
+   * already refuses to apply a beacon older than the row it holds — it just
+   * had nothing to compare, because this counter was never sent and every
+   * beacon claimed to be number zero.
+   *
+   * The cost of that was silent and real: a supporter who typed a mobile
+   * number and then had a later, emptier beacon land on top lost the number
+   * from their row while it sat, correct, in the queue behind it. */
+  const seq = useRef(0);
   useHashScroll();
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -1063,7 +1074,7 @@ function MinisterPage({ site, configKey }) {
   const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "";
 
   const capture = (extra, keepalive) =>
-    apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: key, ...extra }, keepalive)
+    apiPost("/api/capture", { session_id: sessionId.current, seq: ++seq.current, ...f, subject, body, campaign: key, ...extra }, keepalive)
       .catch((err) => console.warn("capture failed:", messageOf(err)));
 
   /* "Say it my way". A failure here says so and leaves the letter alone.

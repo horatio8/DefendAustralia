@@ -31,7 +31,9 @@ const GROUPS = [
       { key: "CN_CONTACT_FORM_ID", need: "optional", why: "Overrides the built-in contact form id." },
       { key: "CN_VOLUNTEER_FORM_ID", need: "optional", why: "Overrides the built-in volunteer form id." },
       { key: "CN_HOSTED_PETITION_URL", need: "optional", why: "Fallback hosted form offered when a signature cannot be stored." },
-      { key: "CRM_UID_FIELD", need: "should", why: "Which CRM custom slot holds the survey token. Defaults to custom2. Nothing else may write to it." }
+      { key: "CRM_UID_FIELD", need: "should", why: "Which CRM custom slot holds the survey token. Defaults to custom2. Nothing else may write to it." },
+      { key: "CN_MINISTER_FORM_ID", need: "optional", why: "Lead page that completed letters to the Minister are posted to. Unset means the supporter still reaches the CRM as a profile, just not as a form entry." },
+      { key: "CN_BEAZLEY_FORM_ID", need: "optional", why: "Lead page for completed letters to the Chair of the Council. Same fallback: profile only while unset." }
     ]
   },
   {

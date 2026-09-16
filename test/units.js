@@ -90,6 +90,175 @@ ok(/548\.7/.test(sys), "the corrected budget figure is in the permitted facts");
 ok(/Council/.test(sys) && !/War Memorial board/i.test(sys), "it is the Council, not a board");
 ok(prompts.systemPrompt("unknown-campaign") === sys, "an unknown campaign falls back to the guarded default");
 
+console.log("\n-- the letter to the Chair carries the program and the question --");
+/* Two email-action pages now: the Minister, who can intervene, and the Chair
+ * of the Council, who took the decision. They must ask for the same things.
+ *
+ * A campaign that asks the Minister to halt the works and the Chair to review
+ * them has two positions, and the first person to notice will be whichever of
+ * them wants a reason to do nothing. Worse, nobody on the campaign would
+ * spot it: the two sets of words live in different files, and each reads
+ * fine on its own.
+ *
+ * So the demands shown on the page and the demands enforced on the AI rewrite
+ * are compared directly, in both directions, for both campaigns. */
+const beazleySys = prompts.systemPrompt("beazley");
+ok(beazleySys !== sys, "the Chair gets his own guardrails, not the Minister's");
+ok(/Chair of the Council/i.test(beazleySys), "which name the campaign correctly");
+
+const siteJson = JSON.parse(fs.readFileSync(ROOT + "/content/site.json", "utf8"));
+{
+  const promptText = prompts.systemPrompt("minister");
+  const demands = siteJson.minister.demands || prompts.CAMPAIGNS.minister.demands;
+  ok(demands.every((d) => promptText.indexOf(d) > -1),
+     "every demand on the Minister page is enforced on the rewrite");
+  ok(prompts.CAMPAIGNS.minister.demands.length === demands.length,
+     "and the rewrite carries no demand that page does not make");
+}
+ok(siteJson.beazley.points.length >= 3, "the Chair's page states the program's facts in the hero");
+/* The two letters have different jobs and no longer make the same ask. The
+ * Minister is asked to intervene in the redevelopment; the Chair is asked one
+ * question about one conference. Holding them to identical demands, as an
+ * earlier version of this file did, would now force the campaign to argue the
+ * wrong thing on one of the two pages.
+ *
+ * What must hold is narrower and more important: the letters a supporter is
+ * shown and the guardrails the rewrite enforces must agree, on both pages. */
+const CONFERENCE = {
+  "the dates": /17 and 18 September/,
+  "the title": /Imperialism and Resistance/,
+  "the speaker count": /[Tt]wenty speakers/,
+  "the staff count": /[Ff]our/,
+  "the gallery": /gallery[^.]*already in development/i
+};
+const beazleyLetters = siteJson.beazley.variations.map((v) => v.body);
+
+/* Every letter carries every fact. A supporter who is randomly shown the
+ * third variation must be making the same case as one shown the first, or the
+ * campaign is running four different arguments and cannot answer for any of
+ * them. */
+for (const [what, re] of Object.entries(CONFERENCE)) {
+  ok(beazleyLetters.every((b) => re.test(b)), "every letter to the Chair carries " + what);
+  ok(re.test(beazleySys), "and the rewrite is told " + what);
+}
+
+/* The question is the letter. A rewrite that softens it into "I wonder
+ * whether" has asked nothing, and one that drops it has sent a complaint. */
+const THE_QUESTION = "Why will the Australian War Memorial not hear the other side?";
+ok(beazleyLetters.every((b) => b.indexOf(THE_QUESTION) > -1),
+   "every letter ends on the question");
+ok(beazleyLetters.every((b) => b.trim().endsWith("Yours sincerely,")),
+   "and nothing follows it but the sign-off the page completes");
+ok(/hear the other side/.test(beazleySys) && /end on it/.test(beazleySys),
+   "the rewrite is required to keep the question and to finish on it");
+ok(/never end on anything other than the question/i.test(beazleySys),
+   "and told so twice, because this is the one line that must survive");
+
+/* Nobody is accused of anything. Every fact is from the published program,
+ * and the letter's force comes from the program rather than from adjectives —
+ * which is also what keeps it from being dismissed unread. */
+ok(/[Nn]ever accuse/.test(beazleySys), "the rewrite is forbidden from making an accusation");
+ok(!/lie|corrupt|fraud|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
+   "and no letter makes one either");
+
+/* The hero carries the conference's own banner, from our own assets.
+ *
+ * Hotlinking it would hand the organisation being campaigned against an off
+ * switch over our hero, and would tell them the referrer of every supporter
+ * who loads the page. */
+/* Where the hero may come from.
+ *
+ * A local asset, or the campaign's own media CDN, or nothing. The rule was
+ * never "no absolute URLs" — it is that the campaign must not load its hero
+ * from the organisation it is campaigning against. Doing so hands them an off
+ * switch over our page and tells them the referrer of everybody who opens it.
+ *
+ * Our own CDN is the opposite case: it is what a CDN is for, and the only
+ * cost is a third party in the render path, which the onError fallback below
+ * already covers. */
+const OUR_HOSTS = ["cdn.nucleusfiles.com", "nucleuspages.com", "defendsacredground.com"];
+const heroSrc = siteJson.beazley.heroImage || "";
+const heroHost = /^https?:\/\/([^/]+)/i.exec(heroSrc);
+ok(heroSrc === "" || heroSrc.charAt(0) === "/" ||
+   (heroHost && OUR_HOSTS.some((hst) => heroHost[1].toLowerCase().endsWith(hst))),
+   "the hero image is ours: a local asset, or our own media CDN");
+/* Named explicitly rather than inferred, so this keeps failing even if the
+ * allowlist above is ever widened carelessly. */
+const THEIRS = /awm\.gov\.au|australianwarmemorial/i;
+ok(!THEIRS.test(heroSrc), "and never hosted by the organisation being campaigned against");
+ok(/onError=\{\(\) => setHeroOk\(false\)\}/.test(appSrc),
+   "and a missing file falls back to the plain hero rather than a broken image");
+ok(/grayscale\(/.test(appSrc) && /linear-gradient\(100deg,rgba\(13,31,51/.test(appSrc),
+   "it sits under a navy wash, so a headline over it is readable at every width");
+
+/* The campaign does not send traffic to the thing it is objecting to. */
+const linkable = [siteJson.beazley, JSON.stringify(siteJson.beazley)].map(String).join(" ");
+ok(!/awm\.gov\.au/i.test(linkable) && !/awm\.gov\.au/i.test(fs.readFileSync(ROOT + "/beazley.html", "utf8")),
+   "the page never links to the conference it is objecting to");
+
+/* The page must never claim a letter was delivered when there was nobody to
+ * deliver it to. Shipping without a confirmed address is deliberate — a wrong
+ * address looks exactly like a working one from the supporter's side. */
+ok(Array.isArray(siteJson.beazley.recipients), "the Chair's recipients are a list");
+ok(siteJson.beazley.variations.length >= 3,
+   "and there are several letters, so a thousand do not arrive identical");
+ok(siteJson.beazley.unaddressedHeading && siteJson.beazley.unaddressedLede,
+   "with an honest state for having no address yet");
+ok(/setDelivered\(!!toLine\)/.test(appSrc),
+   "delivery is claimed only when there was an address to send to");
+ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),
+   "the campaign copy can ride as bcc, so a supporter's letter does not expose it");
+ok(/configKey \|\| "minister"/.test(appSrc),
+   "one component serves both targets rather than a forked page");
+
+/* The rewrite is off on this page and on by default everywhere else. The
+ * letter is exact: offering to reword it invites a supporter to soften the
+ * one sentence the page exists to deliver. */
+ok(siteJson.beazley.allowRewrite === false, "the Chair's page does not offer the AI rewrite");
+ok(siteJson.minister.allowRewrite === undefined, "and the Minister page is untouched, so it still does");
+ok(/const allowRewrite = m\.allowRewrite !== false;/.test(appSrc),
+   "the switch defaults to on, so a page that says nothing keeps the button");
+ok(/if \(!allowRewrite \|\| rewrites >= 3/.test(appSrc),
+   "and the call is guarded too, not only the button");
+
+console.log("\n-- an action page can take a surge --");
+/* The request path writes one queue row and returns; the drain expands it
+ * into Contacts, Events and the typed tables at a rate Airtable accepts. That
+ * is the difference between a page that can take a thousand people in an hour
+ * and one that starts returning errors to supporters at the two hundredth. */
+const captureSrc = fs.readFileSync(ROOT + "/api/capture.js", "utf8");
+const drainSrc = fs.readFileSync(ROOT + "/api/drain.js", "utf8");
+const actions = require(ROOT + "/api/_lib/actions.js");
+
+ok(/queue\.enqueue\(campaign, p,/.test(captureSrc),
+   "a capture is queued rather than written straight through");
+/* The writer and the reader of the queue have to agree on the type. When they
+ * do not, rows land with a type nothing handles, the drain skips them, and
+ * the campaign finds out a week later that a page it was advertising captured
+ * nobody. So every registered campaign must have a handler. */
+ok(/for \(const key of Object\.keys\(actions\.CAMPAIGNS\)\)/.test(drainSrc),
+   "and every registered campaign is guaranteed a drain handler");
+ok(actions.queueType("nonsense") === "minister",
+   "an unregistered campaign falls back rather than being dropped");
+ok(actions.get("beazley").eventType !== actions.get("minister").eventType,
+   "the two campaigns are distinguishable in the events log");
+ok(actions.get("beazley").tags.join() !== actions.get("minister").tags.join(),
+   "and in the CRM");
+
+/* The lead page is a second write and a separate failure. A profile that
+ * lands without its form entry is still a supporter the campaign can mail, so
+ * one must never take the other down. */
+ok(captureSrc.indexOf("upsertProfile") < captureSrc.indexOf("submitEntryTo"),
+   "the profile is written before the lead page");
+ok(/CN_LEADPAGE_FAIL/.test(captureSrc) && /CN_PROFILE_FAIL/.test(captureSrc),
+   "and the two failures are reported separately");
+ok(/const form = actions\.formId\(campaign\);\s*\n\s*if \(form\)/.test(captureSrc),
+   "no lead page configured means the profile write still stands");
+// Only a finished letter reaches the CRM. Posting keystrokes would fill the
+// lead page with half-typed addresses that can never be mailed or cleaned out.
+ok(/status === "send_clicked" && email/.test(captureSrc),
+   "only a completed send is posted to the CRM");
+
 console.log("\n-- nobody who has paid gets dunned --");
 // The Farmers Fightback failure: a donor taps an amount, goes back, taps
 // another, pays on the second session. The first session never turns paid and

@@ -28,6 +28,60 @@ const CAMPAIGNS = {
       "The Memorial was established as a place of commemoration for Australians who died in war."
     ],
     tone: "A private citizen writing to a minister. Plain, direct, unmistakably genuine. Firm without being abusive."
+  },
+
+  /* The letter to the Chair of the Council.
+   *
+   * Same three demands as the minister letter, and that is deliberate: a
+   * campaign that asks the Minister for one thing and the Chair for another
+   * has two positions, and the first person to notice will be whichever of
+   * them wants a reason to do nothing.
+   *
+   * What changes is who is being addressed and what they are answerable for.
+   * The Minister is being asked to intervene in someone else's decision. The
+   * Chair took the decision, so the letter puts it to him directly.
+   *
+   * The extra permitted facts are his own public record, and they are on the
+   * list for one reason: they are the argument. A man who has held those
+   * offices knows what the Memorial is for, which is why the campaign's line
+   * is that he knows better, not that he does not understand. Nothing about
+   * his family, his politics or his health is permitted, and the ban on legal
+   * accusations below applies with full force to the man who chaired the
+   * meeting.
+   */
+  /* The letter to the Chair about the conference.
+   *
+   * This letter is a question, not a list of demands, and that is its whole
+   * design: every fact in it is on the Memorial's own published program, and
+   * the question is the only thing asked. A rewrite that turns it into an
+   * accusation hands the recipient a reason to dismiss it, and a rewrite that
+   * softens the question into "I wonder whether" asks nothing at all.
+   *
+   * The numbers, the dates and the title of the conference are the letter.
+   * They are on the permitted list exactly as the campaign states them, and
+   * the house rule against inventing specifics does the rest: no rewrite may
+   * round twenty to "many", move the dates, or reword the title.
+   *
+   * His record is permitted because it is the argument. A man who has held
+   * those offices knows what a one-sided program looks like, which is why the
+   * campaign's line is that he knows better, not that he does not understand.
+   */
+  beazley: {
+    label: "Letter to the Chair of the Council of the Australian War Memorial, about the September conference",
+    demands: [
+      "Ask this question, in these words or words just as direct, and end on it: why will the Australian War Memorial not hear the other side?"
+    ],
+    permitted: [
+      "The Australian War Memorial is holding a conference on 17 and 18 September titled Imperialism and Resistance: Australia's First Wars.",
+      "Twenty speakers are on the program.",
+      "No speaker has been invited to put the case against treating colonial frontier conflict as war.",
+      "Four of the presenters are Australian War Memorial staff.",
+      "The gallery is already in development.",
+      "Kim Beazley chairs the Australian War Memorial Council.",
+      "Kim Beazley has been Minister for Defence, Australia's Ambassador to the United States, and Governor of Western Australia.",
+      "The Memorial was established as a place of commemoration for Australians who died in war."
+    ],
+    tone: "A private citizen writing to the Chair of a public board with one direct question. Plain, civil and unmistakably genuine. The force comes from the program itself, not from adjectives: state the facts and ask the question. Never accuse anybody of anything, and never end on anything other than the question."
   }
 };
 

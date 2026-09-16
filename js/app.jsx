@@ -1022,8 +1022,19 @@ function PetitionPage({ site }) {
   );
 }
 
-function MinisterPage({ site }) {
-  const m = site.minister;
+/* The email-action page, once, for every target it is pointed at.
+ *
+ * There are two of these now: the Minister, who can intervene, and the Chair
+ * of the Council, who took the decision. They differ by recipient, copy and
+ * demands, and by nothing else worth a second implementation — a forked page
+ * is a page whose bug fixes land on one of the two and are noticed on the
+ * other six months later.
+ *
+ * Every optional key below degrades to the Minister page's existing
+ * behaviour, so adding these cost that page nothing. */
+function MinisterPage({ site, configKey }) {
+  const key = configKey || "minister";
+  const m = site[key] || site.minister;
   const [variantIdx] = useState(() => Math.floor(Math.random() * m.variations.length));
   const [f, setF] = useState({ first: "", last: "", email: "", mobile: "" });
   const [hp, setHp] = useState("");
@@ -1035,6 +1046,10 @@ function MinisterPage({ site }) {
   const [delivered, setDelivered] = useState(false);
   const [error, setError] = useState("");
   const [rewriteError, setRewriteError] = useState("");
+  // A hero image that fails to load takes its own scrim with it, so the page
+  // falls back to the plain navy hero rather than to a broken-image icon
+  // under a dark wash.
+  const [heroOk, setHeroOk] = useState(true);
   const [toast, flash] = useToast();
   const sessionId = useRef("s-" + Math.random().toString(36).slice(2, 10));
   useHashScroll();
@@ -1045,7 +1060,7 @@ function MinisterPage({ site }) {
   const counterNote = chars > 1900 ? "Too long for some mail apps" : chars > 1650 ? "Approaching the limit" : "Within safe length";
 
   const capture = (extra, keepalive) =>
-    apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: "minister", ...extra }, keepalive)
+    apiPost("/api/capture", { session_id: sessionId.current, ...f, subject, body, campaign: key, ...extra }, keepalive)
       .catch((err) => console.warn("capture failed:", messageOf(err)));
 
   /* "Say it my way". A failure here says so and leaves the letter alone.
@@ -1054,11 +1069,13 @@ function MinisterPage({ site }) {
    * supporter whose rewrite had failed was shown two sentences of boilerplate
    * and told nothing. Their own words are already good enough to send, so the
    * honest failure state is to keep them and explain. */
+  const allowRewrite = m.allowRewrite !== false;
+
   const rewrite = () => {
-    if (rewrites >= 3 || rewriting) return;
+    if (!allowRewrite || rewrites >= 3 || rewriting) return;
     setRewriting(true);
     setRewriteError("");
-    apiPost("/api/rewrite", { session_id: sessionId.current, subject, body, first_name: f.first, campaign: "minister" })
+    apiPost("/api/rewrite", { session_id: sessionId.current, subject, body, first_name: f.first, campaign: key })
       .then((d) => {
         if (!d || !d.body) throw new Error("The rewrite came back empty. Your letter is unchanged.");
         setSubject(d.subject || subject);
@@ -1074,6 +1091,11 @@ function MinisterPage({ site }) {
     if (hp) { setSent(true); window.scrollTo(0, 0); return; }
     if (!f.first.trim() || !f.last.trim() || !validEmail(f.email))
       return setError("Add your name and a valid email before sending.");
+    /* Whether a mobile is compulsory is a per-campaign call, not a rule.
+     * On a page whose job is volume of correspondence it is the field people
+     * abandon on, and a lost letter costs more than a missing phone number. */
+    if (m.mobileRequired && f.mobile.replace(/\D/g, "").length < 9)
+      return setError("Add a mobile number so we can keep you posted.");
     if (f.mobile.trim() && f.mobile.replace(/\D/g, "").length < 9)
       return setError("That mobile number looks incomplete. Correct it or clear the field.");
     setError("");
@@ -1081,10 +1103,9 @@ function MinisterPage({ site }) {
     const sig = f.first.trim() + " " + f.last.trim();
     if (!finalBody.includes(sig)) finalBody = finalBody + "\n\n" + sig + "\n" + f.email.trim();
     capture({ status: "send_clicked", sent_subject: subject, sent_body: finalBody }, true);
-    if (m.toEmail) {
-      // mailto rules: single recipient in To, correspondence copy via cc.
-      const mailto = "mailto:" + encodeURIComponent(m.toEmail) +
-        "?cc=" + encodeURIComponent(m.correspondenceEmail) +
+    if (toLine) {
+      const mailto = "mailto:" + encodeURIComponent(toLine) +
+        "?" + copyParam + "=" + encodeURIComponent(m.correspondenceEmail) +
         "&subject=" + encodeURIComponent(subject) +
         "&body=" + encodeURIComponent(finalBody);
       window.location.href = mailto;
@@ -1093,28 +1114,82 @@ function MinisterPage({ site }) {
     // must not claim the letter went. The letter is kept either way and the
     // copy and webmail routes below still work, but the supporter is told
     // plainly which of those two things just happened.
-    track("Contact", { content_name: "minister letter" }, {
+    track("Contact", { content_name: key + " letter" }, {
       email: f.email.trim().toLowerCase(), first_name: f.first.trim(),
       last_name: f.last.trim(), mobile: f.mobile.trim()
     });
-    setDelivered(!!m.toEmail);
+    setDelivered(!!toLine);
     setSent(true);
     window.scrollTo(0, 0);
   };
 
-  const recipient = m.toEmail || m.recipientDisplay;
+  /* One or many. A Chair sits on a board, and a letter that reaches only the
+   * Chair can be handled by the Chair alone; the list lets the campaign put
+   * the Director or the secretariat on the same mail without a second page.
+   * Falls back to the single address the Minister page already had. */
+  const people = (m.recipients && m.recipients.length)
+    ? m.recipients
+    : (m.toEmail ? [{ name: m.recipientName, role: "", email: m.toEmail }] : []);
+  const toLine = people.map((r) => r.email).filter(Boolean).join(",");
+  /* bcc, where configured, so a supporter's own letter does not show every
+   * recipient that the campaign is counting it. cc stays the default because
+   * on the Minister page the copy is disclosed in the note beneath the form. */
+  const copyParam = m.copyMode === "bcc" ? "bcc" : "cc";
+  const recipient = toLine || m.recipientDisplay;
   const sig = f.first.trim() && f.last.trim() ? "\n\n" + f.first.trim() + " " + f.last.trim() + "\n" + f.email.trim() : "";
-  const gmailHref = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(m.toEmail) + "&cc=" + encodeURIComponent(m.correspondenceEmail) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body + sig);
-  const outlookHref = "https://outlook.office.com/mail/deeplink/compose?to=" + encodeURIComponent(m.toEmail) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body + sig);
+  const gmailHref = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(toLine) + "&" + copyParam + "=" + encodeURIComponent(m.correspondenceEmail) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body + sig);
+  const outlookHref = "https://outlook.office.com/mail/deeplink/compose?to=" + encodeURIComponent(toLine) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body + sig);
 
   return (
     <div>
-      <div style={{ background: C.deep, color: C.cream }}>
-        <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
+      <div style={{ position: "relative", background: C.deep, color: C.cream, overflow: "hidden" }}>
+        {/* Campaign artwork behind the heading.
+         *
+         * Dimmed and lightly desaturated under a navy wash that is heaviest
+         * on the left, where the words sit, and lightest on the right, where
+         * the artwork can still be read. The wash is not decoration: a
+         * headline over an undimmed image is unreadable at some window width
+         * on some screen, and nobody finds out which.
+         *
+         * The source may be a local asset or the campaign's own media CDN.
+         * What it must never be is an image hosted by the organisation being
+         * campaigned against: that hands them an off switch over our hero and
+         * tells them the referrer of everybody who opens the page. A test
+         * enforces the difference. */}
+        {m.heroImage && heroOk && (
+          <React.Fragment>
+            <img src={m.heroImage} alt={m.heroAlt || ""} aria-hidden={m.heroAlt ? undefined : true}
+                 style={{
+                   position: "absolute", inset: 0, width: "100%", height: "100%",
+                   objectFit: "cover", objectPosition: m.heroPosition || "center center",
+                   filter: "grayscale(.3) contrast(1.02) brightness(.6)"
+                 }}
+                 onError={() => setHeroOk(false)} />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(100deg,rgba(13,31,51,.95) 0%,rgba(13,31,51,.88) 42%,rgba(13,31,51,.62) 78%,rgba(13,31,51,.5) 100%)"
+            }}></div>
+          </React.Fragment>
+        )}
+        <div className="m-pad m-col p-sec" style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: "64px 28px 56px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>{m.kicker}</div>
             <h1 style={{ fontFamily: SERIF, fontSize: 54, lineHeight: 1.03, margin: "20px 0 18px", fontWeight: 400 }}>{m.heading}</h1>
             <p style={{ fontSize: 18, lineHeight: 1.65, color: C.goldPale, margin: "0 0 28px", maxWidth: 520 }}>{m.lede}</p>
+            {/* The ask, stated before the form rather than only inside the
+                letter. A supporter who scrolls past the hero and never reads
+                the draft should still be able to say what they just sent. */}
+            {(m.points || m.demands) && (m.points || m.demands).length ? (
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 26px", maxWidth: 520 }}>
+                {(m.points || m.demands).map((d, i) => (
+                  <li key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
+                    <span style={{ fontFamily: MONO, fontSize: 12, color: C.gold, lineHeight: 1.7, flex: "none" }}>{i + 1}</span>
+                    <span style={{ fontSize: 16, lineHeight: 1.55, color: C.cream }}>{d}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {m.nudge && <p style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase", color: C.steel, margin: 0 }}>{m.nudge}</p>}
           </div>
           {/* The portrait is whoever config says it is, and nothing when it
               says nobody. It used to be a hardcoded file that shipped with the
@@ -1145,10 +1220,12 @@ function MinisterPage({ site }) {
               <Field id="efn" label="First name *" value={f.first} onChange={set("first")} onBlur={() => capture({}, false)} />
               <Field id="eln" label="Last name *" value={f.last} onChange={set("last")} onBlur={() => capture({}, false)} />
               <Field id="eem" label="Email *" value={f.email} onChange={set("email")} onBlur={() => capture({}, false)} />
-              <Field id="emb" label="Mobile (optional)" value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
+              <Field id="emb" label={m.mobileRequired ? "Mobile *" : "Mobile (optional)"} value={f.mobile} onChange={set("mobile")} placeholder="04xxxxxxxx" mono />
             </div>
             <div style={{ marginTop: 28, borderTop: "1px solid " + C.line, paddingTop: 20 }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 12 }}>Goes to</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 12 }}>
+                {people.length > 1 ? "Goes to " + people.length + " recipients" : "Goes to"}
+              </div>
               {/* The portrait is optional and the block reads correctly without
                   it, so an unset or missing photo costs nothing. A letter is
                   easier to write to a face than to a job title. */}
@@ -1158,8 +1235,17 @@ function MinisterPage({ site }) {
                        style={{ width: 56, height: 56, objectFit: "cover", objectPosition: "50% 22%", border: "1px solid " + C.line, flex: "none", background: C.creamMid }} />
                 )}
                 <div>
-                  <div style={{ fontSize: 15, color: C.ink, fontWeight: 600 }}>{m.recipientName}</div>
-                  <div style={{ fontSize: 13, color: C.mut, marginTop: 4 }}>{m.recipientDisplay}</div>
+                  {people.length > 1 ? people.map((r, i) => (
+                    <div key={i} style={{ marginBottom: i === people.length - 1 ? 0 : 10 }}>
+                      <div style={{ fontSize: 15, color: C.ink, fontWeight: 600 }}>{r.name}</div>
+                      <div style={{ fontSize: 13, color: C.mut, marginTop: 2 }}>{r.role || r.email}</div>
+                    </div>
+                  )) : (
+                    <div>
+                      <div style={{ fontSize: 15, color: C.ink, fontWeight: 600 }}>{m.recipientName}</div>
+                      <div style={{ fontSize: 13, color: C.mut, marginTop: 4 }}>{m.recipientDisplay}</div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ fontSize: 13, color: C.faint, marginTop: 10, lineHeight: 1.55 }}>{m.goesToNote}</div>
@@ -1169,11 +1255,18 @@ function MinisterPage({ site }) {
           <div style={{ border: "1px solid " + C.line, padding: 32 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, marginBottom: 24 }}>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint }}>Your message · variation {variantIdx + 1} of {m.variations.length}</div>
-              <button onClick={rewrite} disabled={rewrites >= 3} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.cream, background: C.navy, border: "none", padding: "12px 18px", opacity: rewrites >= 3 ? .6 : 1, cursor: rewrites >= 3 ? "default" : "pointer" }}>
-                {rewrites >= 3 ? "Rewrite limit reached" : rewriting ? "Rewriting…" : "Say it my way (" + (3 - rewrites) + " left)"}
-              </button>
+              {/* The rewrite is per campaign, because it is not always wanted.
+                  Where the campaign has settled on an exact letter, offering
+                  to reword it invites a supporter to soften the one sentence
+                  the whole page exists to deliver. The box stays editable
+                  either way: anybody can still write their own. */}
+              {allowRewrite && (
+                <button onClick={rewrite} disabled={rewrites >= 3} className="hov-navy-deep" style={{ ...btnBase, fontSize: 13, letterSpacing: ".04em", textTransform: "none", color: C.cream, background: C.navy, border: "none", padding: "12px 18px", opacity: rewrites >= 3 ? .6 : 1, cursor: rewrites >= 3 ? "default" : "pointer" }}>
+                  {rewrites >= 3 ? "Rewrite limit reached" : rewriting ? "Rewriting…" : "Say it my way (" + (3 - rewrites) + " left)"}
+                </button>
+              )}
             </div>
-            <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>
+            {allowRewrite && <Notice onRetry={rewriting ? null : rewrite}>{rewriteError}</Notice>}
             <label htmlFor="subj" style={labelStyle}>Subject</label>
             <input id="subj" className="field" value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle(false), marginBottom: 20 }} data-clarity-mask="true" />
             <label htmlFor="body" style={labelStyle}>Message</label>
@@ -2609,6 +2702,7 @@ const PAGES = {
   home: HomePage,
   petition: PetitionPage,
   minister: MinisterPage,
+  beazley: (props) => <MinisterPage {...props} configKey="beazley" />,
   donate: DonatePage,
   thankyou: ThankYouPage,
   share: SharePage,
@@ -2636,8 +2730,14 @@ function App({ site, page }) {
   try { focus = page === "donate" && new URLSearchParams(location.search).get("signed") === "1"; } catch (e) {}
   const Page = focus ? DonateFocusPage : (PAGES[page] || HomePage);
   const chromeless = focus || page === "share" || page === "webinar";
+  /* A single-purpose action page keeps a logo and nothing else. Every item in
+   * the nav is a way to leave before the letter is sent, and the pages that
+   * run behind advertising are judged on one number. The logo stays because a
+   * page with no way out at all reads as a trap rather than as a campaign. */
+  const bare = !chromeless && !!(site[page] && site[page].hideNav);
   const shell = { fontFamily: "'Public Sans',system-ui,sans-serif", color: C.ink, background: C.cream, minHeight: "100vh" };
   if (chromeless) return <div style={shell}><Page site={site} /></div>;
+  if (bare) return <div style={shell}><LogoBar /><Page site={site} /></div>;
   return (
     <div style={shell}>
       <Nav site={site} page={page} />

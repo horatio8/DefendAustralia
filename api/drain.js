@@ -12,6 +12,7 @@
 // expansion succeeded, and a row already Done is skipped, so a retry or an
 // overlapping run cannot double-write a person.
 const at = require("./_lib/airtable");
+const actions = require("./_lib/actions");
 const nucleus = require("./_lib/nucleus");
 
 const SLICE = 25;          // queue rows per invocation
@@ -161,6 +162,10 @@ const EXPAND = {
   contact: (p, cn) => submission("Contact us", "Contact Message", "Contact page", "Contact form", "Lead", p, cn),
   volunteer: (p, cn) => submission("Volunteer", "Volunteer Signup", "Volunteer page", "Volunteer", "Volunteer", p, cn),
 
+  /* An email-action capture. One handler for every such campaign: they differ
+   * by which channel and event type the supporter is recorded under, and by
+   * nothing else. The registry supplies those; a second copy of this function
+   * per campaign is how a fix lands on one page and is missed on the other. */
   minister: async (p, cn) => {
     const existing = await at.findOne(at.T.signups, "{session_id}='" + at.esc(p.session_id) + "'");
     if (existing && Number(existing.fields.seq || 0) > Number(p.seq || 0)) return; // stale beacon
@@ -179,10 +184,11 @@ const EXPAND = {
     else await at.create(at.T.signups, { ...fields, created_at: at.nowIso() });
 
     if (p.status !== "send_clicked" || !p.email) return;
-    const contact = await at.upsertContact({ ...p, consent: true, source_channel: "Minister email", status: "Lead" });
+    const action = actions.get(p.campaign);
+    const contact = await at.upsertContact({ ...p, consent: true, source_channel: action.sourceChannel, status: "Lead" });
     await at.logEvent({
-      contactRecId: contact.id, event_type: "Minister Email Sent",
-      source_channel: "Minister page", payload: { session_id: p.session_id, subject: p.sent_subject }
+      contactRecId: contact.id, event_type: action.eventType,
+      source_channel: action.sourceChannel, payload: { session_id: p.session_id, subject: p.sent_subject, campaign: p.campaign }
     });
   },
 
@@ -301,6 +307,13 @@ const EXPAND = {
     });
   }
 };
+
+/* Every email-action campaign drains through the Minister handler. Registered
+ * from the one registry so a new page cannot be added to the site, start
+ * capturing, and have its rows sit in the queue with a type nothing handles. */
+for (const key of Object.keys(actions.CAMPAIGNS)) {
+  if (!EXPAND[key]) EXPAND[key] = EXPAND.minister;
+}
 
 // Codes are matched case-insensitively: a link that has been through a mail
 // client may come back lowercased, and treating that as a different code

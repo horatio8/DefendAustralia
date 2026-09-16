@@ -72,6 +72,25 @@ async function submitEntry(formKey, fields) {
   return (res && res.data && res.data.id) || null;
 }
 
+/* The same write, addressed by form id rather than by a name in the map above.
+ *
+ * The named map is right for the three forms this site has always had: they
+ * are part of the build and a typo in a key is caught by a test. A campaign
+ * lead page is different. It is created in the CRM by whoever is running the
+ * campaign, often the week it launches, and its id belongs in the environment
+ * rather than in a commit. This is the door for those. */
+async function submitEntryTo(formId, fields) {
+  const id = String(formId || "").trim();
+  if (!id) throw new Error("no form id");
+  const clean = {};
+  Object.keys(fields || {}).forEach((k) => {
+    const v = fields[k];
+    if (v !== undefined && v !== null && String(v).trim() !== "") clean[k] = v;
+  });
+  const res = await call("POST", "/forms/" + encodeURIComponent(id) + "/entries", clean);
+  return (res && res.data && res.data.id) || null;
+}
+
 // Has this email already signed this form? Used to keep a second press of the
 // button, a back-button re-submit or a retry from adding another signature.
 //
@@ -165,4 +184,4 @@ async function automationAdd(automationId, p) {
   }
 }
 
-module.exports = { FORMS, configured, submitEntry, entryExists, entryCount, upsertProfile, automationAdd };
+module.exports = { FORMS, configured, submitEntry, submitEntryTo, entryExists, entryCount, upsertProfile, automationAdd };

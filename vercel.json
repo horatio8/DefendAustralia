@@ -56,9 +56,28 @@
       "source": "/media-kit",
       "destination": "/media",
       "permanent": false
+    },
+    {
+      "source": "/demandbeazley",
+      "destination": "/beazley",
+      "permanent": false
+    },
+    {
+      "source": "/demand-beazley",
+      "destination": "/beazley",
+      "permanent": false
+    },
+    {
+      "source": "/chair",
+      "destination": "/beazley",
+      "permanent": false
     }
   ],
   "rewrites": [
+    {
+      "source": "/beazley",
+      "destination": "/beazley.html"
+    },
     {
       "source": "/fund",
       "destination": "/api/track-redirect?l=fund"
@@ -144,8 +163,12 @@
     }
   ],
   "functions": {
-    "api/meta-lead-webhook.js": { "maxDuration": 60 },
-    "api/meta-lead-pull.js": { "maxDuration": 60 }
+    "api/meta-lead-webhook.js": {
+      "maxDuration": 60
+    },
+    "api/meta-lead-pull.js": {
+      "maxDuration": 60
+    }
   },
   "crons": [
     {

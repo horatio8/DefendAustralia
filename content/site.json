@@ -820,5 +820,53 @@
     "nextBody": "The decisions still have not been published in full, and until they are nobody can say what else was approved. That is the next thing.",
     "ctaLabel": "Keep the pressure on",
     "ctaHref": "/take-action"
+  },
+  "beazley": {
+    "kicker": "Direct action · the Chair",
+    "heading": "Tell Kim Beazley the War Memorial is not for politics.",
+    "lede": "On 17 and 18 September the Memorial hosts a conference on Australia's colonial frontier. Twenty speakers, and not one asked to put the other side. Kim Beazley chairs the Council. Write to him.",
+    "nudge": "The conference opens on 17 September. It takes ten seconds.",
+    "recipients": [],
+    "recipientName": "The Hon. Kim Beazley AC, Chair, Council of the Australian War Memorial",
+    "recipientDisplay": "Chair, Council of the Australian War Memorial",
+    "toEmail": "",
+    "correspondenceEmail": "correspondence@defendsacredground.com",
+    "copyMode": "bcc",
+    "goesToNote": "Blind copied to correspondence@defendsacredground.com so the campaign can count it",
+    "portrait": "",
+    "portraitAlt": "",
+    "mobileRequired": false,
+    "hideNav": true,
+    "sentHeading": "Sent. Now the question is on the record.",
+    "sentLede": "One letter is a letter. Thousands are a question the Memorial has to answer before it opens the doors on the seventeenth. Yours is counted.",
+    "unaddressedHeading": "Your letter is ready. Send it now.",
+    "unaddressedLede": "The Chair's correspondence address is not published on this page yet, so your mail app cannot be opened for you. Copy the letter below and send it from your own email. We have kept every word.",
+    "variations": [
+      {
+        "subject": "The conference at the Memorial, 17 and 18 September",
+        "body": "Dear Mr Beazley,\n\nI am writing about the conference at the Australian War Memorial on 17 and 18 September, titled Imperialism and Resistance: Australia's First Wars.\n\nTwenty speakers are on the program and not one has been invited to put the case against treating colonial frontier conflict as war. Four of the presenters are Memorial staff, and the gallery is already in development.\n\nWhy will the Australian War Memorial not hear the other side?\n\nYours sincerely,"
+      },
+      {
+        "subject": "Twenty speakers, and not one for the other side",
+        "body": "Dear Mr Beazley,\n\nThe Australian War Memorial is holding a conference on 17 and 18 September called Imperialism and Resistance: Australia's First Wars.\n\nI have read the program. Twenty speakers, and not one of them has been asked to argue that colonial frontier conflict is not war. Four of them are on the Memorial's own staff. The gallery is already in development.\n\nThat is not a conference. That is a program with the answer written first.\n\nWhy will the Australian War Memorial not hear the other side?\n\nYours sincerely,"
+      },
+      {
+        "subject": "A question about the program, 17 and 18 September",
+        "body": "Dear Mr Beazley,\n\nI want to ask you about the conference at the Australian War Memorial on 17 and 18 September, Imperialism and Resistance: Australia's First Wars.\n\nTwenty speakers are listed. Not one is there to put the case against treating colonial frontier conflict as war. Four work for the Memorial. And the gallery this conference is meant to inform is already in development.\n\nYou have spent a lifetime in public service and you know what a stacked program looks like.\n\nWhy will the Australian War Memorial not hear the other side?\n\nYours sincerely,"
+      },
+      {
+        "subject": "If the case is good, it can be argued",
+        "body": "Dear Mr Beazley,\n\nOn 17 and 18 September the Australian War Memorial is hosting Imperialism and Resistance: Australia's First Wars.\n\nTwenty speakers. None invited to put the contrary case. Four of them Memorial staff. A gallery already in development.\n\nIf the Memorial's position can be defended, it can be defended in front of somebody who disagrees with it.\n\nWhy will the Australian War Memorial not hear the other side?\n\nYours sincerely,"
+      }
+    ],
+    "points": [
+      "Twenty speakers on the program, and not one invited to put the case against treating colonial frontier conflict as war.",
+      "Four of the presenters are Memorial staff.",
+      "The gallery is already in development."
+    ],
+    "heroImage": "https://cdn.nucleusfiles.com/f2/f2885e38-0d68-47c0-a4f0-76287c4c22bc/stop-our-australian-war-memorial-being-hijacked-by-indigenous-politics-5.png",
+    "heroAlt": "",
+    "heroPosition": "center center",
+    "allowRewrite": false
   }
 }

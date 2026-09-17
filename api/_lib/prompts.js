@@ -66,22 +66,38 @@ const CAMPAIGNS = {
    * those offices knows what a one-sided program looks like, which is why the
    * campaign's line is that he knows better, not that he does not understand.
    */
+  /* The Chair's letters changed character deliberately in September. They used
+   * to state the conference program and end on a question. They now make the
+   * campaign's charge directly: the Memorial belongs to the Australian people,
+   * the council changed what it means without consultation, a vote or the
+   * Parliament, and that change is unlawful.
+   *
+   * That is the campaign's stated position and it is a claim about the
+   * Memorial's governing Act, which is the argument this campaign has always
+   * run. It is not an accusation of personal dishonesty, and the line between
+   * those two is the one the guardrails below actually hold.
+   *
+   * The rewrite is switched off on this page (allowRewrite: false in
+   * site.json) because the letters are exact. This entry exists so that the
+   * guardrails match the letters if it is ever switched back on, rather than
+   * enforcing an argument the campaign has stopped making. */
   beazley: {
-    label: "Letter to the Chair of the Council of the Australian War Memorial, about the September conference",
+    label: "Letter to the Chair of the Council of the Australian War Memorial, about the hijacking of the Memorial",
+    assertsLegalClaim: true,
     demands: [
-      "Ask this question, in these words or words just as direct, and end on it: why will the Australian War Memorial not hear the other side?"
+      "State that the change was made without consultation, without a vote and without reference to the Australian Parliament.",
+      "State plainly that the change is unlawful.",
+      "Demand that he stop, in these words or words just as direct, and end on it: we demand you stop this now."
     ],
     permitted: [
-      "The Australian War Memorial is holding a conference on 17 and 18 September titled Imperialism and Resistance: Australia's First Wars.",
-      "Twenty speakers are on the program.",
-      "No speaker has been invited to put the case against treating colonial frontier conflict as war.",
-      "Four of the presenters are Australian War Memorial staff.",
-      "The gallery is already in development.",
+      "The Australian War Memorial belongs to the Australian people and not to its council.",
       "Kim Beazley chairs the Australian War Memorial Council.",
-      "Kim Beazley has been Minister for Defence, Australia's Ambassador to the United States, and Governor of Western Australia.",
-      "The Memorial was established as a place of commemoration for Australians who died in war."
+      "The council made the change without consultation, without a vote and without reference to the Australian Parliament.",
+      "The change is unlawful under the Memorial's governing Act.",
+      "The Memorial was established as a place of commemoration for Australians who died in war.",
+      "Tens of thousands of Australians have signed against the change."
     ],
-    tone: "A private citizen writing to the Chair of a public board with one direct question. Plain, civil and unmistakably genuine. The force comes from the program itself, not from adjectives: state the facts and ask the question. Never accuse anybody of anything, and never end on anything other than the question."
+    tone: "A citizen who is angry and entitled to be, writing to the Chair of a public board. Short sentences, plain words, no adjectives doing work that the facts should do. Address him as Mr Beazley. The charge is about what the council did and what it had no authority to do, never about his character, his honesty or his motives. Never end on anything other than the demand that he stop."
   }
 };
 
@@ -90,7 +106,7 @@ const HOUSE_RULES = [
   "Keep every demand, in the order given, with its force intact. Never merge two demands, never drop one, and never demote the first demand to a request to review, consider, reconsider or look into. If the demand says halt, the letter says halt.",
   "Use only the permitted facts. If a fact is not on the list, it does not go in the letter.",
   "Never invent a specific: no amounts, dates, places, document names, job titles or people beyond those supplied.",
-  "Never make a legal accusation. Do not say anything is unlawful, corrupt, a breach, a fraud or a trespass.",
+  "Never make a legal accusation. Do not say anything is unlawful, corrupt, a breach, a fraud or a trespass.",  // see LEGAL_CLAIM_RULE
   "Never name an individual beyond those in the permitted facts.",
   "Never praise the redevelopment or describe it as well intentioned. The supporter is objecting to it.",
   "Keep the supporter's own charged wording where they used it. Anger is allowed and must not be sanded off.",
@@ -99,6 +115,23 @@ const HOUSE_RULES = [
   "The body must be under 1400 characters.",
   "Do not add a signature block, a name, or contact details. The site appends those."
 ];
+
+/* One campaign asserts that a change is unlawful, because that is the
+ * campaign's position and the letters say so. Leaving the blanket rule in
+ * place for it would hand the rewrite a prompt that contradicts the letter it
+ * was given, and the rewrite would resolve that by deleting the charge.
+ *
+ * The replacement is narrower, not absent. The campaign may argue that an act
+ * was beyond a body's authority. It may not accuse a person of dishonesty.
+ * That is the distinction worth enforcing, and the blanket rule was never
+ * really enforcing it — it was enforcing silence. */
+const NO_LEGAL_ACCUSATION = "Never make a legal accusation. Do not say anything is unlawful, corrupt, a breach, a fraud or a trespass.";
+const LEGAL_CLAIM_RULE = "You may state that the change was unlawful or beyond the council's authority, because that is what the supporter is writing to say. Never go further than that: no accusation that anybody lied, took a bribe, committed a fraud, or acted corruptly, and no accusation against any individual's character or motives.";
+
+function houseRules(c) {
+  if (!c.assertsLegalClaim) return HOUSE_RULES;
+  return HOUSE_RULES.map((r) => (r.indexOf(NO_LEGAL_ACCUSATION) === 0 ? LEGAL_CLAIM_RULE : r));
+}
 
 function systemPrompt(campaignKey) {
   // An unknown key falls back to the default rather than running unguarded:
@@ -117,7 +150,7 @@ function systemPrompt(campaignKey) {
     c.permitted.map((f) => "- " + f).join("\n"),
     "",
     "RULES:",
-    HOUSE_RULES.map((r) => "- " + r).join("\n"),
+    houseRules(c).map((r) => "- " + r).join("\n"),
     "",
     'Reply with strict JSON and nothing else: {"subject": "...", "body": "..."}'
   ].join("\n");

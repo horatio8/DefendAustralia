@@ -166,57 +166,73 @@ ok(/String\(m\.lede \|\| ""\)\.split\(\/\\n\\s\*\\n\/\)/.test(appSrc),
 ok(siteJson.minister.lede.split(/\n\s*\n/).filter(Boolean).length === 1,
    "the Minister page is unaffected, being one paragraph as before");
 
-/* The page argues; the letters do not. The accusation belongs in the
- * campaign's own voice on its own site, not in a letter going out over a
- * supporter's name to the person being accused. */
+/* The letters changed character in September and the tests changed with them.
+ *
+ * They used to state the conference program and end on a question, and this
+ * file used to hold them to that: every fact in every variation, no borrowed
+ * language from the hero, nobody accused of anything. That was the right test
+ * of the old strategy. The campaign now makes its charge directly in the
+ * letter — the Memorial belongs to the Australian people, the council changed
+ * it without asking, and the change is unlawful — so a test demanding the old
+ * restraint would be enforcing an argument the campaign has stopped making.
+ *
+ * What replaces it is the spine every variation shares. A supporter shown the
+ * fourth letter must be making the same case as one shown the first, or the
+ * campaign is running five different arguments and can answer for none. */
+const beazleyLetters = siteJson.beazley.variations.map((v) => v.body);
+const beazleySubjects = siteJson.beazley.variations.map((v) => v.subject);
+
+ok(beazleyLetters.length === 5, "there are five letters to the Chair");
+ok(new Set(beazleySubjects).size === beazleySubjects.length,
+   "each with its own subject, so a mailbox of them does not read as one blast");
+ok(beazleySubjects.every((x) => x.trim() && x.length <= 78),
+   "and every subject is present and short enough to survive a mail client");
+
+const SPINE = {
+  "names him as the letter does": /^Mr Beazley,/m,
+  "says the change was made without consultation": /consultation/i,
+  "says the Parliament was never involved": /[Pp]arliament/,
+  "states the charge that the change is unlawful": /unlawful/
+};
+for (const [what, re] of Object.entries(SPINE)) {
+  ok(beazleyLetters.every((b) => re.test(b)), "every letter to the Chair " + what);
+}
+ok(beazleyLetters.every((b) => b.trim().endsWith("We demand you stop this now.")),
+   "and every letter ends on the demand");
+
+/* The rewrite is off on this page, so these guardrails are dormant. They are
+ * still held to the letters, because a dormant prompt that contradicts the
+ * shipped letter is worse than no prompt: whoever switches the rewrite back on
+ * will trust it, and it will quietly argue the previous campaign. */
+ok(/unlawful/.test(beazleySys), "the guardrails carry the charge the letters make");
+ok(/we demand you stop this now/i.test(beazleySys), "and the demand they end on");
+ok(!/hear the other side/.test(beazleySys),
+   "and no longer require the question the letters have dropped");
+ok(siteJson.beazley.allowRewrite === false,
+   "which is moot while the rewrite stays off, and is the point if it is ever turned on");
+
+/* The line that does still hold, and matters more now than it did.
+ *
+ * Arguing that a body acted beyond its authority is politics, and this
+ * campaign's whole argument. Accusing a man of dishonesty is something else,
+ * it goes out over a supporter's own name, and no variation may drift into
+ * it. The blanket "never make a legal accusation" rule could not draw that
+ * line — it only enforced silence — so the Chair's prompt now draws it
+ * explicitly and the Minister's keeps the blanket rule. */
+ok(!/\blie[sd]?\b|corrupt|fraud|bribe|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
+   "no letter accuses the Chair of dishonesty");
+ok(/no accusation that anybody lied/i.test(beazleySys),
+   "and the rewrite is told where the line is rather than told to say nothing");
+ok(/Do not say anything is unlawful/.test(prompts.systemPrompt("minister")),
+   "the Minister's rewrite keeps the blanket rule, having made no such claim");
+ok(/assertsLegalClaim/.test(fs.readFileSync(ROOT + "/api/_lib/prompts.js", "utf8")),
+   "the exception is a named property, not a special case buried in a string");
+
+/* The hero still argues in the campaign's own voice, and now the letters do
+ * too. They are allowed to share language; that was a constraint of the old
+ * strategy and is not one of this one. */
 ok(/shameful|hijacking/i.test(siteJson.beazley.lede),
    "the hero makes the campaign's case in the campaign's words");
-ok(!/shameful|hijack/i.test(siteJson.beazley.variations.map((v) => v.body).join(" ")),
-   "and no letter borrows that language");
-/* The two letters have different jobs and no longer make the same ask. The
- * Minister is asked to intervene in the redevelopment; the Chair is asked one
- * question about one conference. Holding them to identical demands, as an
- * earlier version of this file did, would now force the campaign to argue the
- * wrong thing on one of the two pages.
- *
- * What must hold is narrower and more important: the letters a supporter is
- * shown and the guardrails the rewrite enforces must agree, on both pages. */
-const CONFERENCE = {
-  "the dates": /17 and 18 September/,
-  "the title": /Imperialism and Resistance/,
-  "the speaker count": /[Tt]wenty speakers/,
-  "the staff count": /[Ff]our/,
-  "the gallery": /gallery[^.]*already in development/i
-};
-const beazleyLetters = siteJson.beazley.variations.map((v) => v.body);
-
-/* Every letter carries every fact. A supporter who is randomly shown the
- * third variation must be making the same case as one shown the first, or the
- * campaign is running four different arguments and cannot answer for any of
- * them. */
-for (const [what, re] of Object.entries(CONFERENCE)) {
-  ok(beazleyLetters.every((b) => re.test(b)), "every letter to the Chair carries " + what);
-  ok(re.test(beazleySys), "and the rewrite is told " + what);
-}
-
-/* The question is the letter. A rewrite that softens it into "I wonder
- * whether" has asked nothing, and one that drops it has sent a complaint. */
-const THE_QUESTION = "Why will the Australian War Memorial not hear the other side?";
-ok(beazleyLetters.every((b) => b.indexOf(THE_QUESTION) > -1),
-   "every letter ends on the question");
-ok(beazleyLetters.every((b) => b.trim().endsWith("Yours sincerely,")),
-   "and nothing follows it but the sign-off the page completes");
-ok(/hear the other side/.test(beazleySys) && /end on it/.test(beazleySys),
-   "the rewrite is required to keep the question and to finish on it");
-ok(/never end on anything other than the question/i.test(beazleySys),
-   "and told so twice, because this is the one line that must survive");
-
-/* Nobody is accused of anything. Every fact is from the published program,
- * and the letter's force comes from the program rather than from adjectives —
- * which is also what keeps it from being dismissed unread. */
-ok(/[Nn]ever accuse/.test(beazleySys), "the rewrite is forbidden from making an accusation");
-ok(!/lie|corrupt|fraud|cover.?up|conspiracy/i.test(beazleyLetters.join(" ")),
-   "and no letter makes one either");
 
 /* The hero carries the conference's own banner, from our own assets.
  *

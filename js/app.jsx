@@ -1271,7 +1271,9 @@ function MinisterPage({ site, configKey }) {
                   )}
                 </div>
               </div>
-              <div style={{ fontSize: 13, color: C.faint, marginTop: 10, lineHeight: 1.55 }}>{m.goesToNote}</div>
+              {m.goesToNote ? (
+                <div style={{ fontSize: 13, color: C.faint, marginTop: 10, lineHeight: 1.55 }}>{m.goesToNote}</div>
+              ) : null}
             </div>
           </div>
 

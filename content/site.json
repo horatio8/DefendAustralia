@@ -832,7 +832,7 @@
     "toEmail": "executive@awm.gov.au",
     "correspondenceEmail": "hello@defendsacredground.com",
     "copyMode": "cc",
-    "goesToNote": "The Memorial's executive office, for the Chair's attention. Copied to hello@defendsacredground.com so the campaign can count it.",
+    "goesToNote": "",
     "portrait": "",
     "portraitAlt": "",
     "mobileRequired": false,

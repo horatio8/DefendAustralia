@@ -274,26 +274,39 @@ ok(/^[^@\s]+@awm\.gov\.au$/.test(siteJson.beazley.toEmail),
    "the letter goes to the Memorial");
 ok(siteJson.beazley.recipientDisplay === siteJson.beazley.toEmail,
    "and the page shows supporters the address it will use");
-/* It is the executive office, for the Chair's attention, not a personal
- * inbox. Saying so is the difference between a campaign a supporter trusts
- * and one that told them something that was not quite true. */
-ok(/executive office/i.test(siteJson.beazley.goesToNote),
-   "the note says where it actually lands");
-/* cc by the campaign's choice: the copy address is visible on every letter,
- * which tells the recipient these are organised. That is a judgement about
- * how the campaign wants to be read, not a bug, so the test pins the address
- * and the disclosure rather than the mode. */
+/* The explanatory note under the form is gone. The page already shows the
+ * Chair's name and title and the exact address it will use, which is what a
+ * supporter needs in order to know where their letter lands, so the note was
+ * restating the line above it. The renderer must not print an empty box in
+ * its place. */
+ok(siteJson.beazley.goesToNote === "", "the Chair's page carries no goes-to note");
+ok(/\{m\.goesToNote \? \(/.test(appSrc),
+   "and the page prints nothing rather than an empty line where it was");
+ok(siteJson.minister.goesToNote, "the Minister page keeps its own note");
+
+/* The campaign copy still has to be disclosed — a supporter copying a third
+ * party into a letter sent from their own address is entitled to know they
+ * are doing it. Removing the note did not remove that obligation, it moved
+ * where it is discharged.
+ *
+ * As cc, the address is in the supporter's own mail client before they press
+ * send: they can see it, and they can delete it. That is disclosure, and a
+ * stronger one than a line of small print under a form.
+ *
+ * As bcc it is not, and nothing else on the page would tell them. So bcc is
+ * allowed only with a note that names the address. This is the assertion that
+ * matters here, and it is the one that would catch somebody switching the
+ * mode later for deliverability and quietly making the copy silent. */
 ok(siteJson.beazley.correspondenceEmail === "hello@defendsacredground.com",
    "the campaign copy goes to the published inbox");
 ok(["cc", "bcc"].indexOf(siteJson.beazley.copyMode) > -1, "and rides as a real mail header");
-/* Whichever mode is set, the note under the form has to describe it. A
- * supporter copying a third party into their own letter is entitled to know
- * they are doing it. */
-const openCopy = siteJson.beazley.copyMode === "cc";
-ok(new RegExp(openCopy ? "^(?!.*[Bb]lind).*[Cc]opied to" : "[Bb]lind copied to").test(siteJson.beazley.goesToNote),
-   "and the note describes the copy honestly");
-ok(siteJson.beazley.goesToNote.indexOf(siteJson.beazley.correspondenceEmail) > -1,
-   "naming the address it will use");
+if (siteJson.beazley.copyMode === "bcc") {
+  ok(siteJson.beazley.goesToNote.indexOf(siteJson.beazley.correspondenceEmail) > -1,
+     "a blind copy is disclosed in the note, because the mail client will not");
+} else {
+  ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),
+     "an open copy discloses itself: it rides as cc, in the supporter's own mail client");
+}
 ok(/setDelivered\(!!toLine\)/.test(appSrc),
    "delivery is claimed only when there was an address to send to");
 ok(/const copyParam = m\.copyMode === "bcc" \? "bcc" : "cc"/.test(appSrc),

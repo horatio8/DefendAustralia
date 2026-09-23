@@ -280,6 +280,15 @@
         "In 2018 the Memorial's own Director wrote that the story \"should be told at the National Museum of Australia, not the Australian War Memorial.\" That is our position. It was the Memorial's position too, until the Council changed its mind without changing the law."
       ]
     },
+    "patron": {
+      "kicker": "Our patron",
+      "name": "The Hon. Tony Abbott AC",
+      "role": "28th Prime Minister of Australia",
+      "body": "Tony Abbott sat on the Council of the Australian War Memorial from 2019 until his term ended in 2025. He argued that the Memorial is not the place to dwell on frontier conflict, and that it belongs in a museum of its own. He knows the body taking this decision from the inside, and he is the patron of this campaign.",
+      "photo": "",
+      "photoAlt": "Tony Abbott",
+      "photoPlaceholder": "Tony Abbott's photo"
+    },
     "ask": {
       "kicker": "The petition",
       "heading": "Defend the Australian War Memorial from activist hijacking. Sign the petition today.",
@@ -631,6 +640,15 @@
       "Defend Sacred Ground began around kitchen tables in Canberra and grew through RSL halls, veterans' groups, and families with a name on the Roll of Honour. We hold no office, take no party's money, and want nothing for ourselves.",
       "We want one thing: that the Australian War Memorial remains what it was built to be, a place that honours Australians who died serving the Commonwealth, free of activism and contested history. When the plans are withdrawn, this campaign winds itself up."
     ],
+    "patronKicker": "Patron",
+    "patron": {
+      "name": "The Hon. Tony Abbott AC",
+      "role": "Patron",
+      "bio": "Australia's 28th Prime Minister, and Member for Warringah from 1994 to 2019. He sat on the Council of the Australian War Memorial from 2019 until his term ended in 2025, and has argued publicly that the Memorial is not the place to dwell on frontier conflict and that it belongs in a museum of its own. A Rhodes Scholar, a volunteer firefighter with the NSW Rural Fire Service for more than fifteen years and a Queenscliff surf lifesaver, he was made a Companion of the Order of Australia in 2020.",
+      "photo": "",
+      "photoAlt": "Tony Abbott",
+      "photoPlaceholder": "Tony Abbott's photo"
+    },
     "directorsKicker": "Directors · Defending Australia Pty Ltd",
     "directors": [
       {

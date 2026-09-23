@@ -457,6 +457,55 @@ ok(/status === "send_clicked" && email/.test(captureSrc),
      "the petition reads the same helper rather than a second copy that can drift");
 }
 
+
+console.log("\n-- the patron --");
+/* A patron is not a director.
+ *
+ * The obvious way to add Tony Abbott to the About page is a third entry in
+ * the directors list, and it is wrong: that list sits under a heading naming
+ * the board of Defending Australia Pty Ltd, so a row in it says he is a
+ * director of the company. He is not, and that is a statement about a real
+ * person that the company would have to answer for. */
+{
+  const about = siteJson.about;
+  ok(about.patron && about.patron.name, "the About page has a patron");
+  ok(about.directors.every((d) => d.name !== about.patron.name),
+     "who is not also listed among the directors");
+  ok(about.directors.length === 2, "the board is still the two directors it was");
+  ok(about.patron.role === "Patron", "and his role says exactly what he is");
+  ok(/patronKicker/.test(appSrc) && /a\.directorsKicker/.test(appSrc),
+     "the two blocks have their own headings");
+  ok(appSrc.indexOf("a.patronKicker") < appSrc.indexOf("a.directorsKicker"),
+     "with the patron above the board");
+
+  /* Both blocks render only when configured. A patron can resign, and the
+   * removal has to be a content edit rather than a deploy. */
+  ok(/\{a\.patron && \(/.test(appSrc), "the About block renders only when there is a patron");
+  ok(/\{h\.patron && \(/.test(appSrc), "and so does the home band");
+
+  const home = siteJson.home.patron;
+  ok(home && home.name === about.patron.name, "the home page names the same person");
+  ok(home.body && home.body.length > 80, "and says who he is rather than only naming him");
+  ok(Object.keys(siteJson.home).indexOf("patron") > Object.keys(siteJson.home).indexOf("notSaying") &&
+     Object.keys(siteJson.home).indexOf("patron") < Object.keys(siteJson.home).indexOf("donateBand"),
+     "the band sits after the argument and before the ask for money");
+}
+
+/* What the bio says about him has to be true, and checkable. He sat on the
+ * Council of the Australian War Memorial until 2025 and argued there that the
+ * Memorial is not the place for this. That is the whole reason he is worth
+ * having, and it is also the fact an opponent will reach for first, so it is
+ * stated plainly on both pages rather than left for them to reveal. */
+{
+  const bio = siteJson.about.patron.bio + " " + siteJson.home.patron.body;
+  ok(/Council of the Australian War Memorial/.test(bio),
+     "the bio says he sat on the Council rather than hiding it");
+  ok(/2019/.test(bio) && /2025/.test(bio), "and gives the years, so it can be checked");
+  ok(/museum of its own/.test(bio), "and states the position he actually took");
+  ok(!/oppose[ds]? any/i.test(bio) && !/against all/i.test(bio),
+     "without overstating it into a position he has not taken");
+}
+
 console.log("\n-- nobody who has paid gets dunned --");
 // The Farmers Fightback failure: a donor taps an amount, goes back, taps
 // another, pays on the second session. The first session never turns paid and

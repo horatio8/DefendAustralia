@@ -205,8 +205,19 @@ ok(!fs.existsSync(ROOT + "/assets/minister-portrait.jpg"), "the stock placeholde
 // portrait had nowhere to go. The placeholder is now the fallback, not the
 // only state, and the section is in the CMS so a photo can be added without
 // a deploy.
-ok(/dr\.photo \? \(/.test(appSrcTA), "a director's portrait renders when one is configured");
-ok(/aria-label=\{dr\.photoPlaceholder\}/.test(appSrcTA), "the dashed placeholder survives as the fallback");
+//
+// Both states now live in one Portrait component, shared by the directors and
+// the patron, so the check moved from the markup to the component. Pinning the
+// old inline ternary would fail the moment two people on one page were made to
+// agree, which is the opposite of what it was protecting.
+const portraitFn = appSrcTA.slice(appSrcTA.indexOf("function Portrait("), appSrcTA.indexOf("function Honeypot("));
+ok(/if \(src\) \{/.test(portraitFn), "a portrait renders when one is configured");
+ok(/aria-label=\{placeholder\}/.test(portraitFn) && /dashed/.test(portraitFn),
+   "the dashed placeholder survives as the fallback");
+ok(/<Portrait /.test(appSrcTA.slice(appSrcTA.indexOf("a.directors.map"))),
+   "the directors draw theirs through it");
+ok((appSrcTA.match(/<Portrait /g) || []).length >= 3,
+   "and so does everybody else with a face on this site");
 const cms = fs.readFileSync(ROOT + "/admin/config.yml", "utf8");
 ok(/name: about/.test(cms) && /name: photo, widget: image/.test(cms),
    "the About page and its director photos are editable at /admin");

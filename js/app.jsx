@@ -372,6 +372,26 @@ function Field({ id, label, value, onChange, onBlur, mono, placeholder }) {
   );
 }
 
+/* A portrait, or the dashed circle that stands in for one.
+ *
+ * Every person on this site is rendered through here so a supplied photograph
+ * and a missing one cannot drift apart in styling, and so adding somebody
+ * before their photo arrives is a config edit rather than a broken image on a
+ * live page. */
+function Portrait({ src, alt, placeholder, size }) {
+  const d = size || 120;
+  const box = { width: d, height: d, borderRadius: "50%", display: "block", boxSizing: "border-box", flex: "none" };
+  if (src) {
+    return <img src={src} alt={alt} width={d} height={d}
+                style={{ ...box, objectFit: "cover", objectPosition: "50% 30%", background: "#f2f1ef", border: "1px solid " + C.tan }} />;
+  }
+  return (
+    <div role="img" aria-label={placeholder} style={{ ...box, background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{placeholder}</span>
+    </div>
+  );
+}
+
 function Honeypot({ value, onChange }) {
   return (
     <div style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }} aria-hidden="true">
@@ -914,6 +934,27 @@ function HomePage({ site }) {
           ))}
         </div>
       </div>
+
+      {/* the patron.
+          *
+          * Placed after the argument and before the ask. A reader who has got
+          * this far has heard the case and is deciding whether the people
+          * making it are serious, which is the moment a patron is worth
+          * anything. Rendered only when one is configured, so a site without
+          * a patron simply does not have this band. */}
+      {h.patron && (
+        <div style={{ background: C.navy }}>
+          <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 28px", display: "grid", gridTemplateColumns: "auto 1fr", gap: 40, alignItems: "center" }}>
+            <Portrait src={h.patron.photo} alt={h.patron.photoAlt || h.patron.name} placeholder={h.patron.photoPlaceholder} size={148} />
+            <div>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: C.gold }}>{h.patron.kicker}</div>
+              <h2 style={{ fontFamily: SERIF, fontSize: 36, lineHeight: 1.1, color: "#FFFFFF", margin: "14px 0 4px", fontWeight: 400 }}>{h.patron.name}</h2>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.goldPale, marginBottom: 16 }}>{h.patron.role}</div>
+              <p style={{ fontSize: 17, lineHeight: 1.7, color: C.goldPale, margin: 0, maxWidth: 620, textWrap: "pretty" }}>{h.patron.body}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* donate band */}
       <div className="m-pad m-col p-sec" style={{ maxWidth: 1280, margin: "0 auto", padding: "88px 28px", display: "grid", gridTemplateColumns: ".9fr 1.1fr", gap: 72, alignItems: "start" }}>
@@ -1981,6 +2022,25 @@ function AboutPage({ site }) {
           <p key={i} style={{ fontSize: 18, lineHeight: 1.7, color: C.body, margin: i === a.who.length - 1 ? 0 : "0 0 20px", textWrap: "pretty" }}>{t}</p>
         ))}
       </div>
+      {/* The patron, in a block of his own above the board.
+          *
+          * Deliberately not a third card in the directors grid. A patron is
+          * not a director of the company, and listing him under a heading
+          * that names the company's board would say he is one. */}
+      {a.patron && (
+        <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 56px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.patronKicker}</div>
+          <div className="m-col" style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.gold, padding: 32, background: C.cream, display: "grid", gridTemplateColumns: "auto 1fr", gap: 32, alignItems: "start" }}>
+            <Portrait src={a.patron.photo} alt={a.patron.photoAlt || a.patron.name} placeholder={a.patron.photoPlaceholder} size={120} />
+            <div>
+              <h3 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 6px", lineHeight: 1.1, fontWeight: 400 }}>{a.patron.name}</h3>
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{a.patron.role}</div>
+              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0, maxWidth: 760, textWrap: "pretty" }}>{a.patron.bio}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="m-pad p-sec-b" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px 72px" }}>
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: C.faint, marginBottom: 24 }}>{a.directorsKicker}</div>
         {/* Fits however many directors are configured. Hardcoding three left a
@@ -1989,18 +2049,11 @@ function AboutPage({ site }) {
         <div className="m-col" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 32 }}>
           {a.directors.map((dr, i) => (
             <div key={i} style={{ border: "1px solid " + C.line, borderTop: "2px solid " + C.navy, padding: 32, background: C.cream }}>
-              {/* The portrait when there is one, the dashed circle when there
-                  is not. The placeholder was the only thing this slot could
-                  ever render, so a supplied photograph had nowhere to go. */}
-              {dr.photo ? (
-                <img src={dr.photo} alt={dr.photoAlt || dr.name}
-                     width="120" height="120"
-                     style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", objectFit: "cover", objectPosition: "50% 30%", display: "block", background: "#f2f1ef", border: "1px solid " + C.tan, boxSizing: "border-box" }} />
-              ) : (
-                <div role="img" aria-label={dr.photoPlaceholder} style={{ width: 120, height: 120, marginBottom: 20, borderRadius: "50%", background: "#f2f1ef", border: "1.5px dashed " + C.tan, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
-                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: C.faint, textAlign: "center", padding: 10 }}>{dr.photoPlaceholder}</span>
-                </div>
-              )}
+              {/* Through the shared portrait, so a director and the patron
+                  cannot end up with two different circles on one page. */}
+              <div style={{ marginBottom: 20 }}>
+                <Portrait src={dr.photo} alt={dr.photoAlt || dr.name} placeholder={dr.photoPlaceholder} size={120} />
+              </div>
               <h3 style={{ fontFamily: SERIF, fontSize: 28, color: C.navy, margin: "0 0 6px", lineHeight: 1.1, fontWeight: 400 }}>{dr.name}</h3>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: C.red, marginBottom: 14 }}>{dr.role}</div>
               <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mut, margin: 0 }}>{dr.bio}</p>

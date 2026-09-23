@@ -67,6 +67,20 @@ collections:
                   - { label: Lede, name: lede, widget: text }
                   - { label: "Emphasised line", name: ledeEm, widget: string, required: false }
                   - { label: "Button label", name: cta, widget: string }
+              # The patron band, between the argument and the ask. Optional:
+              # clear it and the band does not render at all.
+              - label: Patron
+                name: patron
+                widget: object
+                required: false
+                fields:
+                  - { label: Kicker, name: kicker, widget: string }
+                  - { label: Name, name: name, widget: string }
+                  - { label: Role, name: role, widget: string }
+                  - { label: Body, name: body, widget: text }
+                  - { label: Photo, name: photo, widget: image, required: false, hint: "Head and shoulders, square. Shown as a 148px circle on the navy band. Leave blank to keep the dashed placeholder." }
+                  - { label: "Photo alt text", name: photoAlt, widget: string, required: false }
+                  - { label: "Placeholder caption", name: photoPlaceholder, widget: string, required: false }
               - label: "The ask"
                 name: ask
                 widget: object
@@ -103,6 +117,20 @@ collections:
               - { label: Kicker, name: kicker, widget: string }
               - { label: Heading, name: heading, widget: text }
               - { label: Lede, name: lede, widget: text }
+              - { label: "Patron kicker", name: patronKicker, widget: string, required: false }
+              # A patron is not a director and is edited separately, so nobody
+              # adds one to the board by adding a row to the list below.
+              - label: Patron
+                name: patron
+                widget: object
+                required: false
+                fields:
+                  - { label: Name, name: name, widget: string }
+                  - { label: Role, name: role, widget: string }
+                  - { label: Photo, name: photo, widget: image, required: false, hint: "Head and shoulders, square. Shown as a 120px circle. Leave blank to keep the dashed placeholder." }
+                  - { label: "Photo alt text", name: photoAlt, widget: string, required: false }
+                  - { label: "Placeholder caption", name: photoPlaceholder, widget: string, required: false, hint: "Only shown while there is no photo." }
+                  - { label: Bio, name: bio, widget: text }
               - { label: "Directors kicker", name: directorsKicker, widget: string }
               - label: Directors
                 name: directors

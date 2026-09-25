@@ -914,7 +914,11 @@ function HomePage({ site }) {
         ))}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 34 }}>
           <div style={{ width: 36, height: 1, background: C.gold }}></div>
-          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", textTransform: "uppercase", color: C.faint }}>The Roll of Honour · 103,000 names</div>
+          {/* The count comes from config, like every other number on the site.
+              This one was a literal, which is how a page ends up giving one
+              figure under the scrolling names and a different one in the
+              paragraph beneath it. */}
+          <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".2em", textTransform: "uppercase", color: C.faint }}>The Roll of Honour · {site.org.rollCount} names</div>
           <div style={{ width: 36, height: 1, background: C.gold }}></div>
         </div>
       </div>

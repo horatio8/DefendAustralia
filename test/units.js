@@ -458,6 +458,37 @@ ok(/status === "send_clicked" && email/.test(captureSrc),
 }
 
 
+console.log("\n-- the number on the Roll of Honour --");
+/* The count appears in the stat panel, in the hero, in four argument cards
+ * and under the scrolling names. It is the campaign's central fact and the
+ * one a journalist checks first, so two different numbers on one site is
+ * worse than a wrong number: it says nobody here is paying attention.
+ *
+ * Nothing enforced that. The figure was typed into six paragraphs and
+ * hardcoded once in the page, so updating the stat and missing a card was a
+ * single edit away at all times. */
+{
+  const roll = siteJson.org.rollCount;
+  ok(/^\d{1,3}(,\d{3})*$/.test(roll), "the roll count is a formatted number in config");
+  ok(roll === "103,140", "and is the figure the campaign publishes");
+
+  // Every number in the copy that looks like the roll count has to be it.
+  const raw = fs.readFileSync(ROOT + "/content/site.json", "utf8");
+  const near = (raw.match(/\b10[0-9],\d{3}\b/g) || []);
+  const wrong = [...new Set(near.filter((n) => n !== roll))];
+  ok(wrong.length === 0,
+     "no stale roll count survives anywhere in the copy" + (wrong.length ? " (found " + wrong.join(", ") + ")" : ""));
+  ok(near.length >= 6, "and the figure is still made in every place it was made before");
+
+  ok(siteJson.stats[0].n === roll, "the stat panel leads with it");
+  ok(/Roll/i.test(siteJson.stats[0].label), "and says what it counts");
+
+  // The page reads it rather than carrying its own copy.
+  ok(/\{site\.org\.rollCount\} names/.test(appSrc),
+     "the line under the scrolling names reads the count from config");
+  ok(!/10[0-9],\d{3}/.test(appSrc), "and no roll figure is hardcoded in the page at all");
+}
+
 console.log("\n-- the patron --");
 /* A patron is not a director.
  *

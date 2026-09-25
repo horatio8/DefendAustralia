@@ -5,6 +5,7 @@
     "locale": "en-AU",
     "currency": "AUD",
     "petitionSlug": "defend-sacred-ground",
+    "rollCount": "103,140",
     "signatureFallbackCount": 0,
     "defaultRefCode": "K7QMR4",
     "signatureGoalStep": 15000,
@@ -143,7 +144,7 @@
   "soldiersLine": "Our soldiers did not die to protect a country for activists to destroy or give away.",
   "stats": [
     {
-      "n": "103,000",
+      "n": "103,140",
       "label": "Fallen Australians honoured on the Roll",
       "em": "",
       "accent": false
@@ -187,7 +188,7 @@
       "title": "A shrine turned exhibition complex",
       "img": "/assets/change-excavation.jpg",
       "pos": "center 55%",
-      "body": "83,000 square metres of new floor space, built for exhibitions rather than remembrance, on ground consecrated to 103,000 names."
+      "body": "83,000 square metres of new floor space, built for exhibitions rather than remembrance, on ground consecrated to 103,140 names."
     },
     {
       "tag": "Process",
@@ -200,7 +201,7 @@
   "home": {
     "hero": {
       "kicker": "The Australian War Memorial",
-      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,000 names. Now they want to fill it with activism and contested history. Our fallen cannot object.",
+      "lede": "The Memorial is not a political vehicle. It is our national shrine, the grave of 103,140 names. Now they want to fill it with activism and contested history. Our fallen cannot object.",
       "ledeEm": "You still can.",
       "cta": "Sign the petition"
     },
@@ -251,7 +252,7 @@
           "title": "It is sacred, not a museum.",
           "img": "/assets/poppy-wall.jpg",
           "pos": "center 40%",
-          "body": "The Memorial is sacred ground. It bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Introducing activism into that space is not something a nation does lightly. This history already has a home: the National Museum of Australia, the Australian Museum, and the $316.5 million Ngurra precinct. It is not this one."
+          "body": "The Memorial is sacred ground. It bears the names of 103,140 Australians who died serving this country, and it is where their families come to mourn. Introducing activism into that space is not something a nation does lightly. This history already has a home: the National Museum of Australia, the Australian Museum, and the $316.5 million Ngurra precinct. It is not this one."
         },
         {
           "title": "It was done by stealth.",
@@ -335,7 +336,7 @@
           "title": "It is sacred, not a museum.",
           "img": "/assets/poppy-wall.jpg",
           "pos": "center 40%",
-          "body": "The Memorial bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
+          "body": "The Memorial bears the names of 103,140 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
         },
         {
           "title": "It was done by stealth.",
@@ -379,7 +380,7 @@
             "title": "It is sacred, not a museum.",
             "img": "/assets/poppy-wall.jpg",
             "pos": "center 40%",
-            "body": "The Memorial bears the names of 103,000 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
+            "body": "The Memorial bears the names of 103,140 Australians who died serving this country, and it is where their families come to mourn. Contested history does not belong on that ground. It already has a home in the National Museum of Australia and the $316.5 million Ngurra precinct."
           },
           {
             "title": "It was done by stealth.",

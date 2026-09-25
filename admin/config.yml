@@ -49,7 +49,13 @@ collections:
               - { label: "Button label", name: cta, widget: string }
           # Everything not edited here still has to be written back, or saving
           # the banner would delete the rest of the file.
-          - { label: Organisation, name: org, widget: object, collapsed: true, fields: [{ label: Name, name: name, widget: string }] }
+          - label: Organisation
+            name: org
+            widget: object
+            collapsed: true
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: "Roll of Honour count", name: rollCount, widget: string, hint: "The number of names on the Roll, formatted with commas. Shown in the stat panel and under the scrolling names. The same figure appears inside several paragraphs of copy, which have to be edited as text." }
 
       - name: home
         label: Home page
